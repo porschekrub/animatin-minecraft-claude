@@ -1,0 +1,1 @@
+{"loader":"forge:separate_transforms","base":{"parent":"lifelikemotion:item3d/tropical_fish"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/tropical_fish"}}}}

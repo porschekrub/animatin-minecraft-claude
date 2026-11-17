@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.lifelikemotion.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "lifelikemotion.refmap.json",
+  "mixins": [],
+  "client": [
+    "HumanoidModelMixin",
+    "ItemInHandRendererInvoker"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

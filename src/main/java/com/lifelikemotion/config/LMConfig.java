@@ -1,0 +1,54 @@
+package com.lifelikemotion.config;
+
+import net.minecraftforge.common.ForgeConfigSpec;
+
+/** Client options (also on the in-game config screen: Mods → Lifelike Motion → Config). */
+public final class LMConfig {
+    private LMConfig() {}
+
+    public static final ForgeConfigSpec SPEC;
+
+    // first person
+    public static final ForgeConfigSpec.BooleanValue FP_ENABLED;
+    public static final ForgeConfigSpec.BooleanValue FP_ARMS_WITH_ITEMS;
+    public static final ForgeConfigSpec.DoubleValue FP_SWAY;
+    public static final ForgeConfigSpec.DoubleValue FP_BOB;
+    public static final ForgeConfigSpec.DoubleValue FP_SWING;
+    // body
+    public static final ForgeConfigSpec.BooleanValue BODY_ENABLED;
+    public static final ForgeConfigSpec.BooleanValue BODY_OTHER_PLAYERS;
+    public static final ForgeConfigSpec.DoubleValue BODY_INTENSITY;
+    // mobs
+    public static final ForgeConfigSpec.BooleanValue MOBS_ENABLED;
+    public static final ForgeConfigSpec.DoubleValue MOBS_INTENSITY;
+    // 3D items
+    public static final ForgeConfigSpec.BooleanValue ITEMS_3D_PACK_ADDED;
+
+    static {
+        ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
+        b.comment("First person: your arms, what they hold and how they move").push("firstPerson");
+        FP_ENABLED = b.comment("Custom first-person animations (off = the game's own)").define("enabled", true);
+        FP_ARMS_WITH_ITEMS = b.comment("Show your arm holding the item").define("armsWithItems", true);
+        FP_SWAY = b.comment("How much your hands lag behind when you look around and move").defineInRange("sway", 1.0, 0.0, 2.0);
+        FP_BOB = b.comment("How much your hands bob when you walk, run and jump").defineInRange("bob", 1.0, 0.0, 2.0);
+        FP_SWING = b.comment("How big swings, chops and punches are").defineInRange("swing", 1.0, 0.25, 2.0);
+        b.pop();
+
+        b.comment("Body: how players move in third person").push("body");
+        BODY_ENABLED = b.comment("Lively body movement").define("enabled", true);
+        BODY_OTHER_PLAYERS = b.comment("Also animate other players").define("otherPlayers", true);
+        BODY_INTENSITY = b.comment("Strength of the body animations").defineInRange("intensity", 1.0, 0.0, 2.0);
+        b.pop();
+
+        b.comment("Mobs").push("mobs");
+        MOBS_ENABLED = b.comment("Lively mob animations").define("enabled", true);
+        MOBS_INTENSITY = b.comment("Strength of the mob animations").defineInRange("intensity", 1.0, 0.0, 2.0);
+        b.pop();
+
+        b.comment("3D items come as a built-in resource pack: Options → Resource Packs → \"Lifelike 3D Items\"").push("items3d");
+        ITEMS_3D_PACK_ADDED = b.comment("Set once the pack has been switched on for you the first time (it is not switched on again if you turn it off)")
+                .define("packAddedOnce", false);
+        b.pop();
+        SPEC = b.build();
+    }
+}

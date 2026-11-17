@@ -1,0 +1,362 @@
+package com.lifelikemotion.client;
+
+import com.lifelikemotion.LifelikeMotion;
+import net.minecraft.client.CameraType;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.Screenshot;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.server.IntegratedServer;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * CI only (-Dlifelikemotion.clientsmoke=true): in the test world, puts the player through every animation and takes a
+ * screenshot of each (first person, third person, 3D items on the ground and in the inventory), then quits.
+ * "CLIENT SMOKE OK" in the log means every step ran.
+ */
+public final class ClientSmoke {
+    private ClientSmoke() {}
+
+    interface Step {
+        boolean tick(int t);
+    }
+
+    static final List<Step> STEPS = new ArrayList<>();
+    static int stepIndex, stepTick, shotNo, waited;
+    static boolean built;
+    /** keeps the camera still (the test's own turns excepted) */
+    static Float yaw = 0f, pitch = 10f;
+
+    @SubscribeEvent
+    public static void onTick(TickEvent.ClientTickEvent e) {
+        if (e.phase != TickEvent.Phase.END) return;
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || mc.level == null) return;
+        if (!built) {
+            if (++waited < 80) return;
+            built = true;
+            build();
+        }
+        try {
+            if (yaw != null) {
+                mc.player.setYRot(yaw);
+                mc.player.yRotO = yaw;
+                mc.player.setYHeadRot(yaw);
+                mc.player.yBodyRot = yaw;
+            }
+            if (pitch != null) {
+                mc.player.setXRot(pitch);
+                mc.player.xRotO = pitch;
+            }
+            if (stepIndex >= STEPS.size()) return;
+            if (STEPS.get(stepIndex).tick(stepTick++)) {
+                stepIndex++;
+                stepTick = 0;
+            }
+        } catch (Throwable ex) {
+            LifelikeMotion.LOG.error("[client smoke] step {} failed (com.lifelikemotion)", stepIndex, ex);
+            stepIndex++;
+            stepTick = 0;
+        }
+    }
+
+    // ------------------------------------------------------------------ the script
+    static void build() {
+        Minecraft mc = Minecraft.getInstance();
+        // the 3D items pack (normally switched on at the title screen, which quick play skips)
+        add(t -> {
+            if (t == 0) Packs.enableNow();
+            return t > 140 && mc.getOverlay() == null;
+        });
+        add(t -> {
+            if (t == 0) {
+                cmd("gamemode creative");
+                cmd("time set 6000");
+                cmd("weather clear");
+                cmd("gamerule doDaylightCycle false");
+                cmd("gamerule doMobSpawning false");
+                cmd("kill @e[type=!player]");
+                cmd("tp @s 0 -60 0 0 10");
+                // a pool to swim in, a ladder to climb, a wall to mine
+                cmd("fill 6 -64 -3 14 -61 3 water");
+                cmd("fill -4 -60 -1 -4 -52 1 stone");
+                cmd("fill -3 -60 0 -3 -52 0 ladder[facing=east]");
+                cmd("fill -1 -60 4 1 -58 4 stone");
+            }
+            return t > 30;
+        });
+        mc.options.bobView().set(true);
+
+        // ---- first person
+        fp("fp_empty_idle", "air", null, 0);
+        fp("fp_punch", "air", Motion.Action.ATTACK, 2);
+        fp("fp_sword_idle", "iron_sword", null, 0);
+        fp("fp_sword_slash_a", "iron_sword", Motion.Action.ATTACK, 2);
+        fp("fp_sword_slash_b", "iron_sword", Motion.Action.ATTACK, 2);
+        fp("fp_sword_followthrough", "iron_sword", Motion.Action.ATTACK, 4);
+        fp("fp_axe_windup", "diamond_axe", Motion.Action.ATTACK, 1);
+        fp("fp_axe_chop", "diamond_axe", Motion.Action.ATTACK, 3);
+        fp("fp_pickaxe_mine", "diamond_pickaxe", Motion.Action.MINE, 2);
+        fp("fp_shovel_scoop", "iron_shovel", Motion.Action.MINE, 3);
+        fp("fp_block_idle", "oak_planks", null, 0);
+        fp("fp_block_place", "oak_planks", Motion.Action.USE, 2);
+        fp("fp_torch", "torch", null, 0);
+        fp("fp_lantern", "lantern", null, 0);
+        fp("fp_apple", "apple", null, 0);
+        fp("fp_bow", "bow", null, 0);
+        use("fp_eat_golden_apple", "golden_apple", 14);
+        use("fp_drink_potion", "potion", 14);
+        use("fp_bow_draw", "bow", 14);
+        // turning fast: the hands trail
+        add(t -> {
+            if (t == 0) give("iron_sword");
+            if (t > 4 && t < 14) yaw = yaw + 12;
+            if (t == 12) shot("fp_turning");
+            if (t == 20) yaw = 0f;
+            return t > 30;
+        });
+        move("fp_sprint", "iron_sword", true, true, false, 14, CameraType.FIRST_PERSON);
+        move("fp_jump", "iron_sword", true, false, true, 5, CameraType.FIRST_PERSON);
+
+        // ---- third person (seen from the front)
+        move("tp_idle", "air", false, false, false, 20, CameraType.THIRD_PERSON_FRONT);
+        move("tp_walk", "air", true, false, false, 14, CameraType.THIRD_PERSON_FRONT);
+        move("tp_sprint", "iron_sword", true, true, false, 14, CameraType.THIRD_PERSON_FRONT);
+        move("tp_jump_up", "air", false, false, true, 3, CameraType.THIRD_PERSON_FRONT);
+        move("tp_jump_top", "air", false, false, true, 7, CameraType.THIRD_PERSON_FRONT);
+        add(t -> {
+            if (t == 0) {
+                mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT);
+                cmd("tp @s 0 -50 0 0 10");
+            }
+            if (t == 8) shot("tp_falling");
+            return t > 40;
+        });
+        tpSwing("tp_sword_slash", "iron_sword", 3);
+        tpSwing("tp_sword_backhand", "iron_sword", 3);
+        tpSwing("tp_axe_chop", "diamond_axe", 3);
+        tpSwing("tp_punch", "air", 2);
+        add(t -> {
+            if (t == 0) {
+                mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT);
+                give("golden_apple");
+                mc.options.keyUse.setDown(true);
+            }
+            if (t == 14) shot("tp_eat");
+            if (t == 15) mc.options.keyUse.setDown(false);
+            return t > 40;
+        });
+        add(t -> {
+            if (t == 0) {
+                give("air");
+                mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT);
+                mc.options.keyShift.setDown(true);
+            }
+            if (t == 10) shot("tp_sneak");
+            if (t == 11) mc.options.keyShift.setDown(false);
+            return t > 20;
+        });
+        // water: treading, then swimming
+        add(t -> {
+            if (t == 0) {
+                mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT);
+                cmd("tp @s 10 -62 0 0 10");
+            }
+            if (t == 30) shot("tp_tread_water");
+            if (t == 31) {
+                yaw = -90f;
+                pitch = 20f;
+                mc.options.keyUp.setDown(true);
+                mc.options.keySprint.setDown(true);
+            }
+            if (t == 50) shot("tp_swim");
+            if (t == 51) {
+                mc.options.keyUp.setDown(false);
+                mc.options.keySprint.setDown(false);
+                yaw = 0f;
+                pitch = 10f;
+            }
+            return t > 60;
+        });
+        // a ladder
+        add(t -> {
+            if (t == 0) {
+                mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
+                cmd("tp @s -3 -60 0 90 0");
+                yaw = 90f;
+                pitch = 0f;
+            }
+            if (t == 6) mc.options.keyUp.setDown(true);
+            if (t == 22) shot("tp_climb_a");
+            if (t == 26) shot("tp_climb_b");
+            if (t == 27) mc.options.keyUp.setDown(false);
+            if (t == 30) {
+                cmd("tp @s 0 -60 0 0 10");
+                yaw = 0f;
+                pitch = 10f;
+            }
+            return t > 40;
+        });
+
+        // ---- 3D items: on the ground, in the hand, and flat in the inventory
+        add(t -> {
+            if (t == 0) {
+                mc.options.setCameraType(CameraType.FIRST_PERSON);
+                give("air");
+                String[] items = {"diamond_sword", "iron_pickaxe", "golden_axe", "bread", "apple", "cooked_beef", "diamond", "iron_ingot",
+                        "stick", "torch", "carrot", "emerald", "book", "feather", "bone", "ender_pearl"};
+                for (int i = 0; i < items.length; i++) {
+                    double x = -1.8 + (i % 4) * 1.2, z = 2.2 + (i / 4) * 1.1;
+                    cmd(String.format("summon item %.2f -60 %.2f {Item:{id:\"minecraft:%s\",Count:1b},PickupDelay:32767,Age:-32768}", x, z, items[i]));
+                }
+                pitch = 45f;
+            }
+            if (t == 30) shot("items3d_ground");
+            if (t == 31) pitch = 10f;
+            return t > 40;
+        });
+        add(t -> {
+            if (t == 0) {
+                mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT);
+                give("diamond_sword");
+            }
+            if (t == 10) shot("items3d_held_third_person");
+            return t > 14;
+        });
+        add(t -> {
+            if (t == 0) {
+                mc.options.setCameraType(CameraType.FIRST_PERSON);
+                String[] hot = {"diamond_sword", "iron_pickaxe", "bread", "apple", "torch", "diamond", "stick", "bow", "cooked_beef"};
+                for (int i = 0; i < hot.length; i++) cmd("item replace entity @s hotbar." + i + " with minecraft:" + hot[i]);
+            }
+            if (t == 10) mc.setScreen(new InventoryScreen(mc.player));
+            if (t == 20) shot("items3d_inventory_flat");
+            if (t == 21) mc.setScreen(null);
+            return t > 26;
+        });
+
+        add(t -> {
+            if (t == 0) {
+                LifelikeMotion.LOG.info("[client smoke] took {} screenshots", shotNo);
+                LifelikeMotion.LOG.info("CLIENT SMOKE OK");
+            }
+            if (t == 40) mc.stop();
+            return false;
+        });
+    }
+
+    /** First person: hold an item, maybe swing it (a shot a few ticks into the swing). */
+    static void fp(String name, String item, Motion.Action action, int at) {
+        Minecraft mc = Minecraft.getInstance();
+        add(t -> {
+            if (t == 0) {
+                mc.options.setCameraType(CameraType.FIRST_PERSON);
+                give(item);
+            }
+            if (action == null) {
+                if (t == 25) shot(name);
+                return t > 27;
+            }
+            if (t == 20) {
+                Motion.pending = action;
+                mc.player.swing(InteractionHand.MAIN_HAND);
+            }
+            if (t == 20 + at) shot(name);
+            return t > 34;
+        });
+    }
+
+    /** Hold the use key (eat, drink, draw a bow) and take a shot partway. */
+    static void use(String name, String item, int at) {
+        Minecraft mc = Minecraft.getInstance();
+        add(t -> {
+            if (t == 0) {
+                mc.options.setCameraType(CameraType.FIRST_PERSON);
+                give(item);
+            }
+            if (t == 10) mc.options.keyUse.setDown(true);
+            if (t == 10 + at) shot(name);
+            if (t == 11 + at) mc.options.keyUse.setDown(false);
+            return t > 30 + at;
+        });
+    }
+
+    static void tpSwing(String name, String item, int at) {
+        Minecraft mc = Minecraft.getInstance();
+        add(t -> {
+            if (t == 0) {
+                mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT);
+                give(item);
+            }
+            if (t == 12) {
+                Motion.pending = Motion.Action.ATTACK;
+                mc.player.swing(InteractionHand.MAIN_HAND);
+            }
+            if (t == 12 + at) shot(name);
+            return t > 24;
+        });
+    }
+
+    /** Walk / run / jump for a while and take a shot. */
+    static void move(String name, String item, boolean forward, boolean sprint, boolean jump, int at, CameraType cam) {
+        Minecraft mc = Minecraft.getInstance();
+        add(t -> {
+            if (t == 0) {
+                mc.options.setCameraType(cam);
+                give(item);
+                cmd("tp @s 0 -60 -12 0 10");
+            }
+            if (t == 10) {
+                mc.options.keyUp.setDown(forward);
+                mc.options.keySprint.setDown(sprint);
+                if (sprint) mc.player.setSprinting(true);
+                mc.options.keyJump.setDown(jump);
+            }
+            if (t == 10 + at) shot(name);
+            if (t == 11 + at) {
+                mc.options.keyUp.setDown(false);
+                mc.options.keySprint.setDown(false);
+                mc.options.keyJump.setDown(false);
+                mc.player.setSprinting(false);
+            }
+            return t > 30 + at;
+        });
+    }
+
+    static void add(Step s) {
+        STEPS.add(s);
+    }
+
+    static void give(String item) {
+        Minecraft mc = Minecraft.getInstance();
+        ItemStack stack = item.equals("air") ? ItemStack.EMPTY
+                : new ItemStack(BuiltInRegistries.ITEM.get(new ResourceLocation("minecraft", item)));
+        mc.player.getInventory().selected = 0;
+        cmd("item replace entity @s weapon.mainhand with minecraft:" + (stack.isEmpty() ? "air" : item));
+    }
+
+    static void shot(String name) {
+        Minecraft mc = Minecraft.getInstance();
+        String file = String.format("%03d_%s.png", ++shotNo, name);
+        Screenshot.grab(mc.gameDirectory, file, mc.getMainRenderTarget(), c -> {});
+    }
+
+    static void cmd(String command) {
+        Minecraft mc = Minecraft.getInstance();
+        IntegratedServer server = mc.getSingleplayerServer();
+        if (server == null || mc.player == null) return;
+        var id = mc.player.getUUID();
+        server.execute(() -> {
+            var sp = server.getPlayerList().getPlayer(id);
+            if (sp == null) return;
+            server.getCommands().performPrefixedCommand(sp.createCommandSourceStack().withPermission(4).withSuppressedOutput(), command);
+        });
+    }
+}
