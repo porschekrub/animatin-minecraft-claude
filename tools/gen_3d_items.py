@@ -219,6 +219,8 @@ def main():
         # the game's item model: 3D everywhere, the usual flat picture in the inventory
         wr(f"assets/minecraft/models/item/{name}.json", {
             "loader": "forge:separate_transforms",
+            # (eating crumbs and breaking bits take their picture from here)
+            "textures": {"particle": layer0},
             "base": {"parent": f"{NS}:item3d/{name}"},
             "perspectives": {"gui": {"parent": parent if ":" in parent else "minecraft:" + parent, "textures": {"layer0": layer0}}},
         })

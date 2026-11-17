@@ -1,1 +1,1 @@
-{"loader":"forge:separate_transforms","base":{"parent":"lifelikemotion:item3d/scute"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/scute"}}}}
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/scute"},"base":{"parent":"lifelikemotion:item3d/scute"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/scute"}}}}

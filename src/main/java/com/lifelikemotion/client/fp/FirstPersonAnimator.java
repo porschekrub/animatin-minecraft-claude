@@ -28,6 +28,10 @@ public final class FirstPersonAnimator {
     private FirstPersonAnimator() {}
 
     static float lastFrameKey = Float.NaN;
+    /** client test: holds a swing at this point so a screenshot catches it */
+    public static Float testSwing;
+    /** where the arm sits relative to the item (x toward the arm's side, y up, z toward the camera) */
+    public static float[] TOOL_GRIP = {0, 0, 0}, SMALL_GRIP = {0, -0.08f, -0.15f};
 
     public static void onRenderHand(RenderHandEvent e) {
         Minecraft mc = Minecraft.getInstance();
@@ -44,7 +48,28 @@ public final class FirstPersonAnimator {
         float s = right ? 1 : -1;
         ItemStack stack = e.getItemStack();
         ItemKind kind = ItemKind.of(stack);
+        // an emote: your arms do it
+        var emote = com.lifelikemotion.client.emote.Emotes.of(p);
+        if (emote != null && !p.isInvisible()) {
+            e.setCanceled(true);
+            PoseStack eps = e.getPoseStack();
+            eps.pushPose();
+            try {
+                rig(eps, p, s, ItemKind.EMPTY, false, partial);
+                if (com.lifelikemotion.client.emote.EmotePoses.arm(eps, emote, right, hand == InteractionHand.MAIN_HAND, partial))
+                    vanillaArm(eps, e.getMultiBufferSource(), e.getPackedLight(), p, right);
+            } finally {
+                eps.popPose();
+            }
+            return;
+        }
+        // an empty off hand is not drawn (as in the game)
+        if (kind == ItemKind.EMPTY && hand == InteractionHand.OFF_HAND) {
+            e.setCanceled(true);
+            return;
+        }
         PoseStack ps = e.getPoseStack();
+        float swingProgress = testSwing != null && hand == InteractionHand.MAIN_HAND ? testSwing : e.getSwingProgress();
         boolean using = p.isUsingItem() && p.getUseItemRemainingTicks() > 0 && p.getUsedItemHand() == hand;
         boolean eating = using && (kind == ItemKind.FOOD || kind == ItemKind.DRINK);
         e.setCanceled(true);
@@ -53,11 +78,11 @@ public final class FirstPersonAnimator {
             rig(ps, p, s, kind, using, partial);
             if (kind == ItemKind.SPECIAL || (using && !eating) || p.isAutoSpinAttack()) {
                 ((ItemInHandRendererInvoker) mc.getEntityRenderDispatcher().getItemInHandRenderer()).lm$renderArmWithItem(
-                        p, partial, e.getInterpolatedPitch(), hand, e.getSwingProgress(), stack, e.getEquipProgress(), ps, e.getMultiBufferSource(), e.getPackedLight());
+                        p, partial, e.getInterpolatedPitch(), hand, swingProgress, stack, e.getEquipProgress(), ps, e.getMultiBufferSource(), e.getPackedLight());
             } else if (kind == ItemKind.EMPTY) {
-                if (!p.isInvisible()) emptyArm(ps, e.getMultiBufferSource(), e.getPackedLight(), p, right, e.getSwingProgress(), e.getEquipProgress());
+                if (!p.isInvisible()) emptyArm(ps, e.getMultiBufferSource(), e.getPackedLight(), p, right, swingProgress, e.getEquipProgress());
             } else {
-                held(ps, e.getMultiBufferSource(), e.getPackedLight(), p, right, stack, kind, e.getSwingProgress(), e.getEquipProgress(), eating, partial);
+                held(ps, e.getMultiBufferSource(), e.getPackedLight(), p, right, stack, kind, swingProgress, e.getEquipProgress(), eating, partial);
             }
         } finally {
             ps.popPose();
@@ -85,9 +110,9 @@ public final class FirstPersonAnimator {
         ps.translate(Mth.sin(phase) * 0.022f * amt, -Math.abs(Mth.cos(phase)) * 0.032f * amt, 0);
         if (sprint > 0.01f && !using) {
             float k = sprint * bobK;
-            ps.translate(s * 0.05f * k, -0.07f * k, 0.03f * k);
+            ps.translate(s * 0.03f * k, -0.035f * k, 0.02f * k);
             around(ps, s, () -> {
-                ps.mulPose(Axis.XP.rotationDegrees((kind.tool() ? 22 : 12) * k + Mth.sin(phase) * 7 * k));
+                ps.mulPose(Axis.XP.rotationDegrees((kind.tool() ? 12 : 7) * k + Mth.sin(phase) * 6 * k));
                 ps.mulPose(Axis.ZP.rotationDegrees(s * 8 * k));
             });
         }
@@ -136,6 +161,12 @@ public final class FirstPersonAnimator {
         // the hand's place (the game's own)
         ps.translate(s * 0.56f, -0.52f + equip * -0.6f, -0.72f);
         if (!eating && sw > 0) swing(ps, s, kind, sw, k);
+        if (eating && kind == ItemKind.DRINK) {
+            // a drink is tipped up to the lips
+            float m = toMouth(p, stack, partial);
+            ps.translate(0, 0.06f * m, 0);
+            ps.mulPose(Axis.XP.rotationDegrees(-28 * m));
+        }
         if (kind == ItemKind.LIGHT) {
             // a lantern / torch swings on the hand as you turn
             ps.mulPose(Axis.ZP.rotationDegrees(Motion.lagYaw * 1.1f));
@@ -143,6 +174,9 @@ public final class FirstPersonAnimator {
         }
         if (LMConfig.FP_ARMS_WITH_ITEMS.get() && !p.isInvisible()) {
             ps.pushPose();
+            // tools are gripped at the end of the handle; small things (torches, food, bottles) from underneath
+            float[] g = kind.tool() || kind == ItemKind.BLOCK ? TOOL_GRIP : SMALL_GRIP;
+            ps.translate(s * g[0], g[1], g[2]);
             ps.translate(s * -0.56f, 0.52f, 0.72f);
             holdingArm(ps, buf, light, p, right);
             ps.popPose();
@@ -178,23 +212,25 @@ public final class FirstPersonAnimator {
                 // a slash across the screen; every other one comes back the other way
                 boolean back = (Motion.swingCount & 1) == 0;
                 if (!back) {
-                    ps.translate(s * 0.06f * up - s * 0.34f * dn, 0.14f * up - 0.12f * dn, 0.05f * up - 0.16f * dn);
-                    ps.mulPose(Axis.YP.rotationDegrees(s * (15 * up - 60 * dn)));
-                    ps.mulPose(Axis.ZP.rotationDegrees(s * (25 * up - 45 * dn)));
-                    ps.mulPose(Axis.XP.rotationDegrees(-30 * up + 40 * dn));
+                    // raised up on the sword side, then cut across the middle of the screen, the blade laid flat
+                    ps.translate(s * 0.06f * up - s * 0.3f * dn, 0.14f * up - 0.02f * dn, 0.05f * up - 0.12f * dn);
+                    ps.mulPose(Axis.YP.rotationDegrees(s * (15 * up - 35 * dn)));
+                    ps.mulPose(Axis.ZP.rotationDegrees(s * (25 * up + 40 * dn)));
+                    ps.mulPose(Axis.XP.rotationDegrees(-30 * up + 5 * dn));
                 } else {
-                    ps.translate(-s * 0.22f * up + s * 0.08f * dn, -0.1f * up + 0.16f * dn, -0.1f * up - 0.12f * dn);
-                    ps.mulPose(Axis.YP.rotationDegrees(s * (-45 * up + 20 * dn)));
-                    ps.mulPose(Axis.ZP.rotationDegrees(s * (-40 * up + 35 * dn)));
-                    ps.mulPose(Axis.XP.rotationDegrees(25 * up - 35 * dn));
+                    // backhand: wound up low across the body, then swept back out and up to the right
+                    ps.translate(-s * 0.3f * up + s * 0.02f * dn, -0.03f * up + 0.07f * dn, -0.08f * up - 0.08f * dn);
+                    ps.mulPose(Axis.YP.rotationDegrees(s * (-40 * up + 10 * dn)));
+                    ps.mulPose(Axis.ZP.rotationDegrees(s * (35 * up - 25 * dn)));
+                    ps.mulPose(Axis.XP.rotationDegrees(10 * up - 15 * dn));
                 }
             }
-            case AXE -> chop(ps, up * 1.2f, dn * 1.1f);
+            case AXE -> chop(ps, up, dn);
             case PICKAXE, HOE -> {
                 if (a == Motion.Action.MINE) {
                     // short, quick strikes into the block
-                    ps.translate(0, 0.08f * up - 0.06f * dn, -0.12f * dn);
-                    ps.mulPose(Axis.XP.rotationDegrees(-30 * up + 45 * dn));
+                    ps.translate(0, 0.08f * up - 0.04f * dn, -0.12f * dn);
+                    ps.mulPose(Axis.XP.rotationDegrees(-30 * up + 32 * dn));
                     ps.mulPose(Axis.ZP.rotationDegrees(s * 6 * dn));
                 } else chop(ps, up, dn);
             }
@@ -218,8 +254,8 @@ public final class FirstPersonAnimator {
 
     /** raised high, then brought down hard */
     static void chop(PoseStack ps, float up, float dn) {
-        ps.translate(0, 0.18f * up - 0.12f * dn, 0.06f * up - 0.14f * dn);
-        ps.mulPose(Axis.XP.rotationDegrees(-55 * up + 60 * dn));
+        ps.translate(0, 0.14f * up - 0.05f * dn, -0.02f * up - 0.14f * dn);
+        ps.mulPose(Axis.XP.rotationDegrees(-35 * up + 35 * dn));
     }
 
     /** bringing food or a drink to the mouth, chewing / sipping */
@@ -233,9 +269,14 @@ public final class FirstPersonAnimator {
         }
         ps.translate(f3 * 0.6f * s, f3 * -0.5f, 0);
         ps.mulPose(Axis.YP.rotationDegrees(s * f3 * 90));
-        ps.mulPose(Axis.XP.rotationDegrees(f3 * (kind == ItemKind.DRINK ? -15 : 10)));
+        ps.mulPose(Axis.XP.rotationDegrees(f3 * 10));
         ps.mulPose(Axis.ZP.rotationDegrees(s * f3 * 30));
-        if (kind == ItemKind.DRINK) ps.translate(0, f3 * 0.08f, 0);
+    }
+
+    /** how far food or a drink has come up to the mouth (0..1) */
+    static float toMouth(AbstractClientPlayer p, ItemStack stack, float partial) {
+        float f = p.getUseItemRemainingTicks() - partial + 1;
+        return 1 - (float) Math.pow(f / stack.getUseDuration(), 27);
     }
 
     // ------------------------------------------------------------------ drawing the arm

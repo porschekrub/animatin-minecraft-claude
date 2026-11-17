@@ -1,1 +1,1 @@
-{"loader":"forge:separate_transforms","base":{"parent":"lifelikemotion:item3d/tripwire_hook"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:block/tripwire_hook"}}}}
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:block/tripwire_hook"},"base":{"parent":"lifelikemotion:item3d/tripwire_hook"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:block/tripwire_hook"}}}}

@@ -1,1 +1,1 @@
-{"loader":"forge:separate_transforms","base":{"parent":"lifelikemotion:item3d/iron_axe"},"perspectives":{"gui":{"parent":"minecraft:item/handheld","textures":{"layer0":"minecraft:item/iron_axe"}}}}
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/iron_axe"},"base":{"parent":"lifelikemotion:item3d/iron_axe"},"perspectives":{"gui":{"parent":"minecraft:item/handheld","textures":{"layer0":"minecraft:item/iron_axe"}}}}

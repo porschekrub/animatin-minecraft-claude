@@ -1,1 +1,1 @@
-{"loader":"forge:separate_transforms","base":{"parent":"lifelikemotion:item3d/quartz"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/quartz"}}}}
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/quartz"},"base":{"parent":"lifelikemotion:item3d/quartz"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/quartz"}}}}

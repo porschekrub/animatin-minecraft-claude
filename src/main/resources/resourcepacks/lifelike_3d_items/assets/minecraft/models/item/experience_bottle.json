@@ -1,1 +1,1 @@
-{"loader":"forge:separate_transforms","base":{"parent":"lifelikemotion:item3d/experience_bottle"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/experience_bottle"}}}}
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/experience_bottle"},"base":{"parent":"lifelikemotion:item3d/experience_bottle"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/experience_bottle"}}}}

@@ -1,1 +1,1 @@
-{"loader":"forge:separate_transforms","base":{"parent":"lifelikemotion:item3d/broken_elytra"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"item/broken_elytra"}}}}
+{"loader":"forge:separate_transforms","textures":{"particle":"item/broken_elytra"},"base":{"parent":"lifelikemotion:item3d/broken_elytra"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"item/broken_elytra"}}}}

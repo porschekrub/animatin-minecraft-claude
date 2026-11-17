@@ -1,1 +1,1 @@
-{"loader":"forge:separate_transforms","base":{"parent":"lifelikemotion:item3d/cobweb"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:block/cobweb"}}}}
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:block/cobweb"},"base":{"parent":"lifelikemotion:item3d/cobweb"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:block/cobweb"}}}}

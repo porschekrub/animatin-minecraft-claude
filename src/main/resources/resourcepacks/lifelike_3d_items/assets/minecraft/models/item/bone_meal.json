@@ -1,1 +1,1 @@
-{"loader":"forge:separate_transforms","base":{"parent":"lifelikemotion:item3d/bone_meal"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/bone_meal"}}}}
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/bone_meal"},"base":{"parent":"lifelikemotion:item3d/bone_meal"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/bone_meal"}}}}

@@ -1,1 +1,1 @@
-{"loader":"forge:separate_transforms","base":{"parent":"lifelikemotion:item3d/glowstone_dust"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/glowstone_dust"}}}}
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/glowstone_dust"},"base":{"parent":"lifelikemotion:item3d/glowstone_dust"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/glowstone_dust"}}}}

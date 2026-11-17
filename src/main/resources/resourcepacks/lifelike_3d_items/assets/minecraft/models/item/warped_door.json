@@ -1,1 +1,1 @@
-{"loader":"forge:separate_transforms","base":{"parent":"lifelikemotion:item3d/warped_door"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/warped_door"}}}}
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/warped_door"},"base":{"parent":"lifelikemotion:item3d/warped_door"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/warped_door"}}}}

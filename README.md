@@ -11,8 +11,12 @@ Everything you do gets an animation.
 - **Lively bodies** – breathing, a torso that twists and bounces with each step, leaning into a sprint, knees up on a
   jump and flailing on a fall, a squash on landing, paddling and kicking in water, a flutter kick when swimming, hand over
   hand up ladders, flinching when hurt, food to the mouth, big readable swings.
+- **Livelier mobs** – farm animals breathe, bob and glance around, chickens pump their heads, tamed wolves wag, creepers
+  sway, spiders twitch, villagers nod, zombies shamble and skeletons rattle.
+- **Emotes** – hold **B** for the wheel: wave, clap, cheer, point, bow, facepalm, dance, sit (keys 1-8 pick directly).
+  You see them in first and third person; on a server that also has the mod, other players with it see them too.
 
-Client-side only: servers don't need it. Settings: *Mods → Lifelike Motion → Config*.
+Client-side: servers don't need it (installing it on a server only adds emote sharing). Settings: *Mods → Lifelike Motion → Config*.
 
 ## Building
 

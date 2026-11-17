@@ -1,1 +1,1 @@
-{"loader":"forge:separate_transforms","base":{"parent":"lifelikemotion:item3d/bread"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/bread"}}}}
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/bread"},"base":{"parent":"lifelikemotion:item3d/bread"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/bread"}}}}

@@ -1,1 +1,1 @@
-{"loader":"forge:separate_transforms","base":{"parent":"lifelikemotion:item3d/red_mushroom"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:block/red_mushroom"}}}}
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:block/red_mushroom"},"base":{"parent":"lifelikemotion:item3d/red_mushroom"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:block/red_mushroom"}}}}

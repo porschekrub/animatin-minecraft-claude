@@ -29,6 +29,16 @@ public final class ClientSmoke {
     }
 
     static final List<Step> STEPS = new ArrayList<>();
+    /** -Dlifelikemotion.baseline=true: the same shots with this mod's animations off, to compare with the game's own */
+    static final boolean BASELINE = Boolean.getBoolean("lifelikemotion.baseline");
+    /** -Dlifelikemotion.only=fp_sword,fp_torch: only the shots starting with these (for quick local checks) */
+    static final String[] ONLY = System.getProperty("lifelikemotion.only", "").isBlank() ? null : System.getProperty("lifelikemotion.only").split(",");
+
+    static boolean wanted(String name) {
+        if (ONLY == null) return true;
+        for (String o : ONLY) if (name.startsWith(o)) return true;
+        return false;
+    }
     static int stepIndex, stepTick, shotNo, waited;
     static boolean built;
     /** keeps the camera still (the test's own turns excepted) */
@@ -72,7 +82,18 @@ public final class ClientSmoke {
         Minecraft mc = Minecraft.getInstance();
         // the 3D items pack (normally switched on at the title screen, which quick play skips)
         add(t -> {
-            if (t == 0) Packs.enableNow();
+            if (t == 0) {
+                if (BASELINE) {
+                    com.lifelikemotion.config.LMConfig.FP_ENABLED.set(false);
+                    com.lifelikemotion.config.LMConfig.BODY_ENABLED.set(false);
+                    com.lifelikemotion.config.LMConfig.MOBS_ENABLED.set(false);
+                } else {
+                    com.lifelikemotion.config.LMConfig.FP_ENABLED.set(true);
+                    com.lifelikemotion.config.LMConfig.BODY_ENABLED.set(true);
+                    com.lifelikemotion.config.LMConfig.MOBS_ENABLED.set(true);
+                    Packs.enableNow();
+                }
+            }
             return t > 140 && mc.getOverlay() == null;
         });
         add(t -> {
@@ -98,6 +119,8 @@ public final class ClientSmoke {
         fp("fp_empty_idle", "air", null, 0);
         fp("fp_punch", "air", Motion.Action.ATTACK, 2);
         fp("fp_sword_idle", "iron_sword", null, 0);
+        fp("fp_sword_slash_a_windup", "iron_sword", Motion.Action.ATTACK, 1);
+        fp("fp_sword_slash_b_windup", "iron_sword", Motion.Action.ATTACK, 1);
         fp("fp_sword_slash_a", "iron_sword", Motion.Action.ATTACK, 2);
         fp("fp_sword_slash_b", "iron_sword", Motion.Action.ATTACK, 2);
         fp("fp_sword_followthrough", "iron_sword", Motion.Action.ATTACK, 4);
@@ -114,8 +137,12 @@ public final class ClientSmoke {
         use("fp_eat_golden_apple", "golden_apple", 14);
         use("fp_drink_potion", "potion", 14);
         use("fp_bow_draw", "bow", 14);
-        // turning fast: the hands trail
         add(t -> {
+            if (t == 6) cmd("kill @e[type=arrow]");
+            return t > 8;
+        });
+        // turning fast: the hands trail
+        if (wanted("fp_turning")) add(t -> {
             if (t == 0) give("iron_sword");
             if (t > 4 && t < 14) yaw = yaw + 12;
             if (t == 12) shot("fp_turning");
@@ -131,7 +158,7 @@ public final class ClientSmoke {
         move("tp_sprint", "iron_sword", true, true, false, 14, CameraType.THIRD_PERSON_FRONT);
         move("tp_jump_up", "air", false, false, true, 3, CameraType.THIRD_PERSON_FRONT);
         move("tp_jump_top", "air", false, false, true, 7, CameraType.THIRD_PERSON_FRONT);
-        add(t -> {
+        if (wanted("tp_falling")) add(t -> {
             if (t == 0) {
                 mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT);
                 cmd("tp @s 0 -50 0 0 10");
@@ -143,7 +170,7 @@ public final class ClientSmoke {
         tpSwing("tp_sword_backhand", "iron_sword", 3);
         tpSwing("tp_axe_chop", "diamond_axe", 3);
         tpSwing("tp_punch", "air", 2);
-        add(t -> {
+        if (wanted("tp_eat")) add(t -> {
             if (t == 0) {
                 mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT);
                 give("golden_apple");
@@ -153,7 +180,7 @@ public final class ClientSmoke {
             if (t == 15) mc.options.keyUse.setDown(false);
             return t > 40;
         });
-        add(t -> {
+        if (wanted("tp_sneak")) add(t -> {
             if (t == 0) {
                 give("air");
                 mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT);
@@ -164,7 +191,7 @@ public final class ClientSmoke {
             return t > 20;
         });
         // water: treading, then swimming
-        add(t -> {
+        if (wanted("tp_tread_water")) add(t -> {
             if (t == 0) {
                 mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT);
                 cmd("tp @s 10 -62 0 0 10");
@@ -186,7 +213,7 @@ public final class ClientSmoke {
             return t > 60;
         });
         // a ladder
-        add(t -> {
+        if (wanted("tp_climb_a")) add(t -> {
             if (t == 0) {
                 mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
                 cmd("tp @s -3 -60 0 90 0");
@@ -205,11 +232,57 @@ public final class ClientSmoke {
             return t > 40;
         });
 
+        tpSwing("tp_place_block", "oak_planks", 3);
+
+        // ---- emotes: third person from the front, and what your arms do in first person
+        for (com.lifelikemotion.client.emote.Emote em : com.lifelikemotion.client.emote.Emote.values()) {
+            String n = em.name().toLowerCase();
+            if (wanted("emote_" + n)) add(t -> {
+                if (t == 0) {
+                    give("air");
+                    cmd("tp @s 0 -60 -12 0 10");
+                    mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT);
+                }
+                if (t == 5) com.lifelikemotion.client.emote.Emotes.play(em);
+                if (t == 19) shot("emote_" + n);
+                if (t == 20) mc.options.setCameraType(CameraType.FIRST_PERSON);
+                if (t == 26 && em != com.lifelikemotion.client.emote.Emote.BOW && em != com.lifelikemotion.client.emote.Emote.SIT) shot("emote_" + n + "_first_person");
+                if (t == 27) com.lifelikemotion.client.emote.Emotes.stop();
+                return t > 34;
+            });
+        }
+        if (wanted("emote_wheel")) add(t -> {
+            if (t == 0) mc.setScreen(new com.lifelikemotion.client.emote.EmoteWheelScreen());
+            if (t == 10) shot("emote_wheel");
+            if (t == 11) mc.setScreen(null);
+            return t > 14;
+        });
+
+        // ---- mobs
+        if (wanted("mobs")) add(t -> {
+            if (t == 0) {
+                mc.options.setCameraType(CameraType.FIRST_PERSON);
+                cmd("kill @e[type=item]");
+                cmd("tp @s 0 -60 -20 0 15");
+                String[] mobs = {"pig", "cow", "sheep", "chicken", "wolf", "zombie", "skeleton", "creeper", "villager", "spider"};
+                for (int i = 0; i < mobs.length; i++) {
+                    double x = -6 + (i % 5) * 3, z = -14 + (i / 5) * 3.5;
+                    String tag = mobs[i].equals("wolf") ? ",Owner:[I;1,2,3,4],Tame:1b" : "";
+                    cmd(String.format("summon %s %.1f -60 %.1f {NoAI:1b,Rotation:[180f,0f],PersistenceRequired:1b%s}", mobs[i], x, z, tag));
+                }
+            }
+            if (t == 40) shot("mobs_a");
+            if (t == 52) shot("mobs_b");
+            if (t == 53) cmd("kill @e[type=!player]");
+            return t > 58;
+        });
+
         // ---- 3D items: on the ground, in the hand, and flat in the inventory
-        add(t -> {
+        if (wanted("items3d_ground")) add(t -> {
             if (t == 0) {
                 mc.options.setCameraType(CameraType.FIRST_PERSON);
                 give("air");
+                cmd("tp @s 0 -60 0 0 45");
                 String[] items = {"diamond_sword", "iron_pickaxe", "golden_axe", "bread", "apple", "cooked_beef", "diamond", "iron_ingot",
                         "stick", "torch", "carrot", "emerald", "book", "feather", "bone", "ender_pearl"};
                 for (int i = 0; i < items.length; i++) {
@@ -222,7 +295,7 @@ public final class ClientSmoke {
             if (t == 31) pitch = 10f;
             return t > 40;
         });
-        add(t -> {
+        if (wanted("items3d_held_third_person")) add(t -> {
             if (t == 0) {
                 mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT);
                 give("diamond_sword");
@@ -230,7 +303,7 @@ public final class ClientSmoke {
             if (t == 10) shot("items3d_held_third_person");
             return t > 14;
         });
-        add(t -> {
+        if (wanted("items3d_inventory_flat")) add(t -> {
             if (t == 0) {
                 mc.options.setCameraType(CameraType.FIRST_PERSON);
                 String[] hot = {"diamond_sword", "iron_pickaxe", "bread", "apple", "torch", "diamond", "stick", "bow", "cooked_beef"};
@@ -254,6 +327,7 @@ public final class ClientSmoke {
 
     /** First person: hold an item, maybe swing it (a shot a few ticks into the swing). */
     static void fp(String name, String item, Motion.Action action, int at) {
+        if (!wanted(name)) return;
         Minecraft mc = Minecraft.getInstance();
         add(t -> {
             if (t == 0) {
@@ -268,13 +342,16 @@ public final class ClientSmoke {
                 Motion.pending = action;
                 mc.player.swing(InteractionHand.MAIN_HAND);
             }
-            if (t == 20 + at) shot(name);
+            if (t == 21) com.lifelikemotion.client.fp.FirstPersonAnimator.testSwing = at / 6f;
+            if (t == 26) shot(name);
+            if (t == 27) com.lifelikemotion.client.fp.FirstPersonAnimator.testSwing = null;
             return t > 34;
         });
     }
 
     /** Hold the use key (eat, drink, draw a bow) and take a shot partway. */
     static void use(String name, String item, int at) {
+        if (!wanted(name)) return;
         Minecraft mc = Minecraft.getInstance();
         add(t -> {
             if (t == 0) {
@@ -289,6 +366,7 @@ public final class ClientSmoke {
     }
 
     static void tpSwing(String name, String item, int at) {
+        if (!wanted(name)) return;
         Minecraft mc = Minecraft.getInstance();
         add(t -> {
             if (t == 0) {
@@ -299,13 +377,16 @@ public final class ClientSmoke {
                 Motion.pending = Motion.Action.ATTACK;
                 mc.player.swing(InteractionHand.MAIN_HAND);
             }
-            if (t == 12 + at) shot(name);
+            if (t == 13) com.lifelikemotion.client.body.BodyAnimator.testAttack = at / 6f;
+            if (t == 18) shot(name);
+            if (t == 19) com.lifelikemotion.client.body.BodyAnimator.testAttack = null;
             return t > 24;
         });
     }
 
     /** Walk / run / jump for a while and take a shot. */
     static void move(String name, String item, boolean forward, boolean sprint, boolean jump, int at, CameraType cam) {
+        if (!wanted(name)) return;
         Minecraft mc = Minecraft.getInstance();
         add(t -> {
             if (t == 0) {
@@ -344,6 +425,7 @@ public final class ClientSmoke {
 
     static void shot(String name) {
         Minecraft mc = Minecraft.getInstance();
+        if (BASELINE) name = "baseline_" + name;
         String file = String.format("%03d_%s.png", ++shotNo, name);
         Screenshot.grab(mc.gameDirectory, file, mc.getMainRenderTarget(), c -> {});
     }

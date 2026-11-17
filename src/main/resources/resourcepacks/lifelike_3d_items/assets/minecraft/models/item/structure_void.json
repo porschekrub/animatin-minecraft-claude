@@ -1,1 +1,1 @@
-{"loader":"forge:separate_transforms","base":{"parent":"lifelikemotion:item3d/structure_void"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/structure_void"}}}}
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/structure_void"},"base":{"parent":"lifelikemotion:item3d/structure_void"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/structure_void"}}}}

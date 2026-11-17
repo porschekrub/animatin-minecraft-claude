@@ -1,1 +1,1 @@
-{"loader":"forge:separate_transforms","base":{"parent":"lifelikemotion:item3d/iron_hoe"},"perspectives":{"gui":{"parent":"minecraft:item/handheld","textures":{"layer0":"minecraft:item/iron_hoe"}}}}
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/iron_hoe"},"base":{"parent":"lifelikemotion:item3d/iron_hoe"},"perspectives":{"gui":{"parent":"minecraft:item/handheld","textures":{"layer0":"minecraft:item/iron_hoe"}}}}

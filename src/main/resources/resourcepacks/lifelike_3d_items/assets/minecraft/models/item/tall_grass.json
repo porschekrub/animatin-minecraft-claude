@@ -1,1 +1,1 @@
-{"loader":"forge:separate_transforms","base":{"parent":"lifelikemotion:item3d/tall_grass"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:block/tall_grass_top"}}}}
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:block/tall_grass_top"},"base":{"parent":"lifelikemotion:item3d/tall_grass"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:block/tall_grass_top"}}}}

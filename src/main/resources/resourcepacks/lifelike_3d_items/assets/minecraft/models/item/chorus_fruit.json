@@ -1,1 +1,1 @@
-{"loader":"forge:separate_transforms","base":{"parent":"lifelikemotion:item3d/chorus_fruit"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/chorus_fruit"}}}}
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/chorus_fruit"},"base":{"parent":"lifelikemotion:item3d/chorus_fruit"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/chorus_fruit"}}}}

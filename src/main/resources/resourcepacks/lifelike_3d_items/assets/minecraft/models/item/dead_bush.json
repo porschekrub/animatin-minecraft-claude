@@ -1,1 +1,1 @@
-{"loader":"forge:separate_transforms","base":{"parent":"lifelikemotion:item3d/dead_bush"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:block/dead_bush"}}}}
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:block/dead_bush"},"base":{"parent":"lifelikemotion:item3d/dead_bush"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:block/dead_bush"}}}}

@@ -1,1 +1,1 @@
-{"loader":"forge:separate_transforms","base":{"parent":"lifelikemotion:item3d/glistering_melon_slice"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/glistering_melon_slice"}}}}
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/glistering_melon_slice"},"base":{"parent":"lifelikemotion:item3d/glistering_melon_slice"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/glistering_melon_slice"}}}}

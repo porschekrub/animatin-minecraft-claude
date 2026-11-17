@@ -1,1 +1,1 @@
-{"loader":"forge:separate_transforms","base":{"parent":"lifelikemotion:item3d/sea_pickle"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/sea_pickle"}}}}
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/sea_pickle"},"base":{"parent":"lifelikemotion:item3d/sea_pickle"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/sea_pickle"}}}}

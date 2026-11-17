@@ -34,6 +34,8 @@ minecraft {
         client {
             // CI client test: opens the world "smoke", poses the player through every animation and takes screenshots
             property 'lifelikemotion.clientsmoke', System.getenv('LM_CLIENTSMOKE') ?: 'false'
+            property 'lifelikemotion.baseline', System.getenv('LM_BASELINE') ?: 'false'
+            property 'lifelikemotion.only', System.getenv('LM_ONLY') ?: ''
             if (System.getenv('LM_CLIENTSMOKE')) {
                 args '--quickPlaySingleplayer', 'smoke', '--width', '960', '--height', '540'
             }

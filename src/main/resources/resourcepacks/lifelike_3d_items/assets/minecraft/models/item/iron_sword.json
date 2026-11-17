@@ -1,1 +1,1 @@
-{"loader":"forge:separate_transforms","base":{"parent":"lifelikemotion:item3d/iron_sword"},"perspectives":{"gui":{"parent":"minecraft:item/handheld","textures":{"layer0":"minecraft:item/iron_sword"}}}}
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/iron_sword"},"base":{"parent":"lifelikemotion:item3d/iron_sword"},"perspectives":{"gui":{"parent":"minecraft:item/handheld","textures":{"layer0":"minecraft:item/iron_sword"}}}}

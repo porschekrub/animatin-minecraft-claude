@@ -1,1 +1,1 @@
-{"loader":"forge:separate_transforms","base":{"parent":"lifelikemotion:item3d/clock_21"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/clock_21"}}}}
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/clock_21"},"base":{"parent":"lifelikemotion:item3d/clock_21"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/clock_21"}}}}

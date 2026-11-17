@@ -1,1 +1,1 @@
-{"loader":"forge:separate_transforms","base":{"parent":"lifelikemotion:item3d/ladder"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:block/ladder"}}}}
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:block/ladder"},"base":{"parent":"lifelikemotion:item3d/ladder"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:block/ladder"}}}}

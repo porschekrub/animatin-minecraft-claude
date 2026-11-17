@@ -1,1 +1,1 @@
-{"loader":"forge:separate_transforms","base":{"parent":"lifelikemotion:item3d/oxeye_daisy"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:block/oxeye_daisy"}}}}
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:block/oxeye_daisy"},"base":{"parent":"lifelikemotion:item3d/oxeye_daisy"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:block/oxeye_daisy"}}}}

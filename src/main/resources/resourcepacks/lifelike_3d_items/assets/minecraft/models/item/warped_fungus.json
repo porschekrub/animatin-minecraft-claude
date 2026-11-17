@@ -1,1 +1,1 @@
-{"loader":"forge:separate_transforms","base":{"parent":"lifelikemotion:item3d/warped_fungus"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:block/warped_fungus"}}}}
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:block/warped_fungus"},"base":{"parent":"lifelikemotion:item3d/warped_fungus"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:block/warped_fungus"}}}}

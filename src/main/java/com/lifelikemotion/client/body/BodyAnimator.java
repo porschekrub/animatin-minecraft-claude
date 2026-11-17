@@ -32,21 +32,46 @@ public final class BodyAnimator {
     }
 
     static final Map<LivingEntity, State> STATES = new WeakHashMap<>();
+    /** client test: holds the local player's swing at this point so a screenshot catches it */
+    public static Float testAttack;
 
     /** Puts back the offsets this class moves (the game does not reset all of them itself). */
     public static void reset(HumanoidModel<?> m, LivingEntity e, float age) {
+        if (e instanceof net.minecraft.world.entity.Mob) {
+            m.head.zRot = 0;
+            m.body.zRot = 0;
+            return;
+        }
         if (!(e instanceof Player)) return;
-        m.head.x = 0; m.head.z = 0; m.head.zRot = 0;
-        m.body.x = 0; m.body.z = 0; m.body.zRot = 0;
-        m.rightArm.x = -5; m.rightArm.z = 0;
-        m.leftArm.x = 5; m.leftArm.z = 0;
-        m.rightLeg.x = -1.9f; m.leftLeg.x = 1.9f;
-        m.rightLeg.zRot = 0; m.leftLeg.zRot = 0;
+        // every part back to where the model was built with it: nothing this class moved can pile up frame to frame
+        for (ModelPart part : new ModelPart[]{m.head, m.body, m.rightArm, m.leftArm, m.rightLeg, m.leftLeg}) {
+            net.minecraft.client.model.geom.PartPose i = part.getInitialPose();
+            part.x = i.x;
+            part.y = i.y;
+            part.z = i.z;
+            part.zRot = i.zRot;
+        }
     }
 
     public static void apply(HumanoidModel<?> m, LivingEntity e, float limbSwing, float limbAmount, float age, float headYaw, float headPitch) {
+        if (e instanceof net.minecraft.world.entity.Mob) {
+            MobAnimator.humanoid(m, e, limbSwing, limbAmount, age);
+            return;
+        }
         // age 0: the first-person arm (or a statue) - left alone
-        if (age == 0 || !(e instanceof Player p) || !LMConfig.BODY_ENABLED.get()) return;
+        if (age == 0 || !(e instanceof Player p)) return;
+        var emote = com.lifelikemotion.client.emote.Emotes.of(p);
+        if (emote != null && !p.isPassenger() && !p.isSleeping()) {
+            try {
+                if (LMConfig.BODY_ENABLED.get()) animate(m, p, limbSwing, limbAmount, age);
+                com.lifelikemotion.client.emote.EmotePoses.body(m, p, emote, age - p.tickCount);
+            } catch (Throwable t) {
+                // never break player rendering
+            }
+            m.hat.copyFrom(m.head);
+            return;
+        }
+        if (!LMConfig.BODY_ENABLED.get()) return;
         if (p != Minecraft.getInstance().player && !LMConfig.BODY_OTHER_PLAYERS.get()) return;
         if (p.isSleeping() || p.isFallFlying() || p.isSpectator() || p.isAutoSpinAttack()) return;
         try {
@@ -85,6 +110,7 @@ public final class BodyAnimator {
         st.climb += ((climbing ? 1 : 0) - st.climb) * f;
         st.sprint += ((p.isSprinting() && !water ? 1 : 0) - st.sprint) * f;
         st.swim += ((swimming ? 1 : 0) - st.swim) * f;
+        if (testAttack != null && p == Minecraft.getInstance().player) m.attackTime = testAttack;
         boolean swingingNow = m.attackTime > 0;
         if (swingingNow && !st.wasSwinging) st.swings++;
         st.wasSwinging = swingingNow;
@@ -259,6 +285,15 @@ public final class BodyAnimator {
                 arm.yRot = s * -0.25f * jab;
                 arm.zRot = 0;
                 twist = s * -0.45f * jab * I;
+            }
+            case BLOCK, FOOD, DRINK, LIGHT, OTHER -> {
+                // reaching out to put something down
+                float b = Mth.sin(t * Mth.PI) * I;
+                arm.xRot = arm.xRot * (1 - b) - 1.35f * b;
+                arm.yRot = s * -0.2f * b;
+                arm.zRot = 0;
+                m.body.xRot += 0.12f * b;
+                twist = s * -0.2f * b;
             }
             default -> {
                 return; // the game's own swing

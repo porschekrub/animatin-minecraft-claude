@@ -22,6 +22,7 @@ public class LifelikeMotion {
     public LifelikeMotion() {
         var bus = FMLJavaModLoadingContext.get().getModEventBus();
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, LMConfig.SPEC);
+        com.lifelikemotion.net.LMNetwork.register();
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> com.lifelikemotion.client.ClientInit.init(bus));
         if (Boolean.getBoolean("lifelikemotion.smoketest"))
             net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.server.ServerStartedEvent e) -> {
