@@ -79,77 +79,68 @@ public final class FirstPersonAnimator {
             if (kind == ItemKind.SPECIAL || (using && !eating) || p.isAutoSpinAttack()) {
                 ((ItemInHandRendererInvoker) mc.getEntityRenderDispatcher().getItemInHandRenderer()).lm$renderArmWithItem(
                         p, partial, e.getInterpolatedPitch(), hand, swingProgress, stack, e.getEquipProgress(), ps, e.getMultiBufferSource(), e.getPackedLight());
-            } else if (kind == ItemKind.EMPTY) {
-                if (!p.isInvisible()) emptyArm(ps, e.getMultiBufferSource(), e.getPackedLight(), p, right, swingProgress, e.getEquipProgress());
             } else {
-                held(ps, e.getMultiBufferSource(), e.getPackedLight(), p, right, stack, kind, swingProgress, e.getEquipProgress(), eating, partial);
+                // our own swing-in when the item changes; the game's attack-cooldown dip only as a light settle
+                float equip = Motion.equip(hand == InteractionHand.MAIN_HAND, partial);
+                ps.translate(0, -0.1f * e.getEquipProgress() * (1 - equip), 0);
+                if (kind == ItemKind.EMPTY) {
+                    if (!p.isInvisible()) emptyArm(ps, e.getMultiBufferSource(), e.getPackedLight(), p, right, swingProgress, equip);
+                } else held(ps, e.getMultiBufferSource(), e.getPackedLight(), p, right, stack, kind, swingProgress, equip, eating, partial);
             }
         } finally {
             ps.popPose();
         }
     }
 
+    /** client test: plays this clip instead of the one the item would choose */
+    public static Clip testClip;
+
     // ------------------------------------------------------------------ the whole rig: sway, bob, run, jump, land
+    /** Moves everything in this hand by how you move: all of it pivots about the hand, so nothing swings off screen. */
     static void rig(PoseStack ps, LocalPlayer p, float s, ItemKind kind, boolean using, float partial) {
         float bobK = (float) (double) LMConfig.FP_BOB.get();
         float t = Motion.ticks + partial;
         float sprint = Motion.lerp(Motion.sprintO, Motion.sprint, partial);
         float walk = Motion.lerp(Motion.walkO, Motion.walk, partial);
         float air = Motion.lerp(Motion.airO, Motion.air, partial);
-        float land = Motion.lerp(Motion.landO, Motion.land, partial);
         float sneak = Motion.lerp(Motion.sneakO, Motion.sneak, partial);
         float water = Motion.lerp(Motion.waterO, Motion.water, partial);
         float aim = using ? 0.35f : 1; // aiming a bow or eating: steadier
-        // looking around: the hands trail the camera (rotate about the eye, then a little slide)
-        ps.mulPose(Axis.YP.rotationDegrees(Motion.lagYaw * 0.55f * aim));
-        ps.mulPose(Axis.XP.rotationDegrees(Motion.lagPitch * 0.45f * aim));
-        ps.translate(-Motion.lagYaw * 0.0025f * aim, Motion.lagPitch * 0.002f * aim, 0);
-        // walking: a figure of eight; sprinting: bigger, and tools are held lower and pump with each step
         float phase = Mth.lerp(partial, p.walkDistO, p.walkDist) * Mth.PI;
-        float amt = walk * bobK * (1 + sprint * 0.7f) * aim;
-        ps.translate(Mth.sin(phase) * 0.022f * amt, -Math.abs(Mth.cos(phase)) * 0.032f * amt, 0);
-        if (sprint > 0.01f && !using) {
-            float k = sprint * bobK;
-            ps.translate(s * 0.03f * k, -0.035f * k, 0.02f * k);
-            around(ps, s, () -> {
-                ps.mulPose(Axis.XP.rotationDegrees((kind.tool() ? 12 : 7) * k + Mth.sin(phase) * 6 * k));
-                ps.mulPose(Axis.ZP.rotationDegrees(s * 8 * k));
-            });
-        }
-        // in the air the hands trail the jump; landing dips them
-        ps.translate(0, -air * 0.075f * bobK, 0);
-        ps.translate(0, -land * 0.11f * bobK, land * 0.03f * bobK);
-        if (land > 0.01f) around(ps, s, () -> ps.mulPose(Axis.XP.rotationDegrees(land * 9 * bobK)));
-        // sneaking: low and close; in water: floaty
-        ps.translate(0, -0.04f * sneak, 0.03f * sneak);
-        if (water > 0.01f) {
-            ps.translate(Mth.sin(t * 0.07f) * 0.015f * water, Mth.sin(t * 0.1f) * 0.02f * water, 0);
-            around(ps, s, () -> ps.mulPose(Axis.ZP.rotationDegrees(s * Mth.sin(t * 0.08f) * 3 * water)));
-        }
-        // breathing
-        ps.translate(0, Mth.sin(t * 0.075f) * 0.006f * bobK, 0);
+        float amt = walk * bobK * (1 + sprint * 0.5f) * aim;
+        float ly = Motion.lagYaw * aim, lp = Motion.lagPitch * aim;
+        // slides: trailing the camera, a soft figure of eight when walking, the jump, the landing spring, sneaking
+        ps.translate(-ly * 0.0016f + Mth.sin(phase) * 0.010f * amt + s * 0.02f * sprint * bobK,
+                lp * 0.0014f - Math.abs(Mth.cos(phase)) * 0.016f * amt - air * 0.03f * bobK + Motion.landPos * bobK
+                        - 0.012f * sprint * bobK - 0.02f * sneak + Mth.sin(t * 0.075f) * 0.004f * bobK
+                        + Mth.sin(t * 0.1f) * 0.012f * water,
+                0.015f * sprint * bobK + 0.02f * sneak);
+        // turns: about the hand
+        float yaw = ly * 0.35f - s * 5 * sprint * bobK;
+        float pitch = lp * 0.3f + Math.abs(Mth.cos(phase)) * 1.2f * amt + air * 4 * bobK - Motion.landPos * 60 * bobK
+                + (3 + Mth.sin(phase) * 3) * sprint * bobK + Mth.sin(t * 0.075f + 1) * 0.5f * bobK;
+        float roll = ly * 0.25f + Mth.sin(phase) * 1.6f * amt - s * 5 * sprint * bobK + s * Mth.sin(t * 0.08f) * 3 * water;
+        Clip.apply(ps, new float[]{0, 0, 0, pitch, s * yaw, s * roll}, s, 1, 0.56f, -0.52f, -0.72f);
     }
 
     // ------------------------------------------------------------------ an empty hand: jab punches
     static void emptyArm(PoseStack ps, MultiBufferSource buf, int light, AbstractClientPlayer p, boolean right, float sw, float equip) {
         float s = right ? 1 : -1;
         float k = (float) (double) LMConfig.FP_SWING.get();
-        ps.translate(0, equip * -0.6f, 0);
+        equip(ps, s, equip, 0.64f, -0.6f, -0.72f);
         if (sw > 0) {
-            if (Motion.action == Motion.Action.USE) {
-                float b = Mth.sin(sw * Mth.PI);
-                ps.translate(-s * 0.05f * b * k, 0.04f * b * k, -0.18f * b * k);
-            } else {
-                // straight out fast, back slower
-                float jab = sw < 0.3f ? Mth.sin(sw / 0.3f * Mth.HALF_PI) : 1 - ease((sw - 0.3f) / 0.7f);
-                ps.translate(-s * 0.16f * jab * k, 0.08f * jab * k, -0.42f * jab * k);
-                pivotArm(ps, s, () -> {
-                    ps.mulPose(Axis.YP.rotationDegrees(s * 14 * jab * k));
-                    ps.mulPose(Axis.XP.rotationDegrees(-12 * jab * k));
-                });
-            }
+            Clip c = testClip != null ? testClip : Motion.action == Motion.Action.USE ? Clips.PLACE : Clips.PUNCH;
+            Clip.apply(ps, c.sample(sw), s, k, 0.64f, -0.6f, -0.72f);
         }
         vanillaArm(ps, buf, light, p, right);
+    }
+
+    /** Switching to an item: it swings up into the hand from below, turning as it comes (instead of a straight drop). */
+    static void equip(PoseStack ps, float s, float equip, float px, float py, float pz) {
+        if (equip <= 0.001f) return;
+        float e = equip * equip * (3 - 2 * equip);
+        ps.translate(s * 0.08f * e, -0.6f * equip, 0.05f * e);
+        Clip.apply(ps, new float[]{0, 0, 0, 30 * e, -12 * e, -20 * e}, s, 1, px, py, pz);
     }
 
     // ------------------------------------------------------------------ an item in the hand
@@ -158,9 +149,13 @@ public final class FirstPersonAnimator {
         float s = right ? 1 : -1;
         float k = (float) (double) LMConfig.FP_SWING.get();
         if (eating) eat(ps, p, s, stack, kind, partial);
-        // the hand's place (the game's own)
-        ps.translate(s * 0.56f, -0.52f + equip * -0.6f, -0.72f);
-        if (!eating && sw > 0) swing(ps, s, kind, sw, k);
+        // the hand's place (the game's own), then the switch-in
+        equip(ps, s, equip, 0.56f, -0.52f, -0.72f);
+        ps.translate(s * 0.56f, -0.52f, -0.72f);
+        if (!eating && sw > 0) {
+            Clip c = testClip != null ? testClip : clipFor(kind);
+            Clip.apply(ps, c.sample(sw), s, kind == ItemKind.PICKAXE && Motion.action != Motion.Action.MINE ? k * 0.8f : k, 0, 0, 0);
+        }
         if (eating && kind == ItemKind.DRINK) {
             // a drink is tipped up to the lips
             float m = toMouth(p, stack, partial);
@@ -169,12 +164,11 @@ public final class FirstPersonAnimator {
         }
         if (kind == ItemKind.LIGHT) {
             // a lantern / torch swings on the hand as you turn
-            ps.mulPose(Axis.ZP.rotationDegrees(Motion.lagYaw * 1.1f));
-            ps.mulPose(Axis.XP.rotationDegrees(Motion.lagPitch * 0.9f));
+            ps.mulPose(Axis.ZP.rotationDegrees(Motion.lagYaw * 0.9f));
+            ps.mulPose(Axis.XP.rotationDegrees(Motion.lagPitch * 0.7f));
         }
         if (LMConfig.FP_ARMS_WITH_ITEMS.get() && !p.isInvisible()) {
             ps.pushPose();
-            // tools are gripped at the end of the handle; small things (torches, food, bottles) from underneath
             float[] g = kind.tool() || kind == ItemKind.BLOCK ? TOOL_GRIP : SMALL_GRIP;
             ps.translate(s * g[0], g[1], g[2]);
             ps.translate(s * -0.56f, 0.52f, 0.72f);
@@ -185,77 +179,24 @@ public final class FirstPersonAnimator {
                 right ? ItemDisplayContext.FIRST_PERSON_RIGHT_HAND : ItemDisplayContext.FIRST_PERSON_LEFT_HAND, !right, ps, buf, light);
     }
 
-    /**
-     * One swing, by what is held and what it is for. The motion is a wind-up (the first ~20%), a fast strike and a
-     * slower recovery: "theta" goes 0 → -1 (wound up) → +1 (follow-through) → 0.
-     */
-    static void swing(PoseStack ps, float s, ItemKind kind, float sw, float k) {
+    /** Which swing, by what is held and what it is for. Swords run a three-hit combo. */
+    static Clip clipFor(ItemKind kind) {
         Motion.Action a = Motion.action;
-        if (a == Motion.Action.USE) {
-            // putting something down / using it: a push forward
-            float b = Mth.sin(sw * Mth.PI) * k;
-            ps.translate(-s * 0.04f * b, 0.03f * b, -0.2f * b);
-            ps.mulPose(Axis.XP.rotationDegrees(14 * b));
-            return;
-        }
-        float wind = sw < 0.2f ? 0.2f : 0.18f;
-        float theta = sw < wind ? -ease(sw / wind)
-                : sw < 0.5f ? -1 + 2 * easeOut((sw - wind) / (0.5f - wind))
-                : 1 - ease((sw - 0.5f) / 0.5f);
-        float up = Math.max(-theta, 0) * k, dn = Math.max(theta, 0) * k;
-        switch (kind) {
-            case SWORD -> {
-                if (a == Motion.Action.MINE) {
-                    chop(ps, up * 0.5f, dn * 0.6f);
-                    return;
-                }
-                // a slash across the screen; every other one comes back the other way
-                boolean back = (Motion.swingCount & 1) == 0;
-                if (!back) {
-                    // raised up on the sword side, then cut across the middle of the screen, the blade laid flat
-                    ps.translate(s * 0.06f * up - s * 0.3f * dn, 0.14f * up - 0.02f * dn, 0.05f * up - 0.12f * dn);
-                    ps.mulPose(Axis.YP.rotationDegrees(s * (15 * up - 35 * dn)));
-                    ps.mulPose(Axis.ZP.rotationDegrees(s * (25 * up + 40 * dn)));
-                    ps.mulPose(Axis.XP.rotationDegrees(-30 * up + 5 * dn));
-                } else {
-                    // backhand: wound up low across the body, then swept back out and up to the right
-                    ps.translate(-s * 0.3f * up + s * 0.02f * dn, -0.03f * up + 0.07f * dn, -0.08f * up - 0.08f * dn);
-                    ps.mulPose(Axis.YP.rotationDegrees(s * (-40 * up + 10 * dn)));
-                    ps.mulPose(Axis.ZP.rotationDegrees(s * (35 * up - 25 * dn)));
-                    ps.mulPose(Axis.XP.rotationDegrees(10 * up - 15 * dn));
-                }
-            }
-            case AXE -> chop(ps, up, dn);
-            case PICKAXE, HOE -> {
-                if (a == Motion.Action.MINE) {
-                    // short, quick strikes into the block
-                    ps.translate(0, 0.08f * up - 0.04f * dn, -0.12f * dn);
-                    ps.mulPose(Axis.XP.rotationDegrees(-30 * up + 32 * dn));
-                    ps.mulPose(Axis.ZP.rotationDegrees(s * 6 * dn));
-                } else chop(ps, up, dn);
-            }
-            case SHOVEL -> {
-                // a scoop: pulled back, then thrust forward and tipped up
-                ps.translate(-s * 0.05f * dn, -0.06f * up + 0.06f * dn, 0.08f * up - 0.28f * dn);
-                ps.mulPose(Axis.XP.rotationDegrees(15 * up - 25 * dn));
-            }
-            case THROWABLE -> {
-                ps.translate(0, 0.12f * up + 0.05f * dn, 0.12f * up - 0.3f * dn);
-                ps.mulPose(Axis.XP.rotationDegrees(-40 * up + 30 * dn));
-            }
-            default -> {
-                // a block, food, a torch: a firm bump forward
-                ps.translate(-s * 0.08f * dn, 0.06f * up - 0.05f * dn, 0.04f * up - 0.24f * dn);
-                ps.mulPose(Axis.XP.rotationDegrees(-15 * up + 22 * dn));
-                ps.mulPose(Axis.YP.rotationDegrees(s * 12 * dn));
-            }
-        }
-    }
-
-    /** raised high, then brought down hard */
-    static void chop(PoseStack ps, float up, float dn) {
-        ps.translate(0, 0.14f * up - 0.05f * dn, -0.02f * up - 0.14f * dn);
-        ps.mulPose(Axis.XP.rotationDegrees(-35 * up + 35 * dn));
+        if (a == Motion.Action.USE) return kind == ItemKind.THROWABLE ? Clips.THROW : Clips.PLACE;
+        return switch (kind) {
+            case SWORD -> a == Motion.Action.MINE ? Clips.MINE : switch (Math.floorMod(Motion.swingCount, 3)) {
+                case 0 -> Clips.SLASH_A;
+                case 1 -> Clips.SLASH_B;
+                default -> Clips.STAB;
+            };
+            case AXE -> Clips.CHOP;
+            case PICKAXE -> a == Motion.Action.MINE ? Clips.MINE : Clips.CHOP;
+            case SHOVEL -> Clips.DIG;
+            case HOE -> Clips.TILL;
+            case THROWABLE -> Clips.THROW;
+            case ROD -> Clips.CHOP;
+            default -> Clips.SWAT;
+        };
     }
 
     /** bringing food or a drink to the mouth, chewing / sipping */
@@ -264,8 +205,9 @@ public final class FirstPersonAnimator {
         float f1 = f / stack.getUseDuration();
         float f3 = 1 - (float) Math.pow(f1, 27);
         if (f1 < 0.8f) {
-            float bob = kind == ItemKind.DRINK ? Mth.sin(f * 0.5f) * 0.03f : Math.abs(Mth.cos(f / 4f * Mth.PI) * 0.1f);
+            float bob = kind == ItemKind.DRINK ? Mth.sin(f * 0.5f) * 0.02f : Math.abs(Mth.cos(f / 4f * Mth.PI) * 0.08f);
             ps.translate(0, bob, 0);
+            if (kind != ItemKind.DRINK) ps.mulPose(Axis.ZP.rotationDegrees(Mth.sin(f * 0.8f) * 4));
         }
         ps.translate(f3 * 0.6f * s, f3 * -0.5f, 0);
         ps.mulPose(Axis.YP.rotationDegrees(s * f3 * 90));

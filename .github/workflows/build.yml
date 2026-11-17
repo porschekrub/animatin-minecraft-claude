@@ -94,7 +94,7 @@ jobs:
           for try in 1 2 3; do
             rm -f $M/logs/latest.log
             timeout 2400 xvfb-run -a -s "-screen 0 1280x800x24" $PMC --main-dir $PWD/pmc-main start --mc-dir $M forge:1.20.1 -u Dev --join-world smoke --resolution 960x540 \
-                --jvm-arg=-Dlifelikemotion.clientsmoke=true,-Dlifelikemotion.only=fp_sword+tp_sword+emote_wave+mobs+items3d,-Xmx3G > prod-client.log 2>&1 || true
+                --jvm-arg=-Dlifelikemotion.clientsmoke=true,-Dlifelikemotion.only=fp_sword+strip_chop+tp_sword+emote_wave+mobs+items3d,-Xmx3G > prod-client.log 2>&1 || true
             [ -f $M/logs/latest.log ] && break
             echo "the game did not start (downloads?), trying again"; sleep 30
           done

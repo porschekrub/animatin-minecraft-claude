@@ -25,6 +25,17 @@ public final class Motion {
     static boolean wasGround = true;
     static double lastVy;
     public static long ticks;
+    /** ticks since the item in each hand changed (for the swing-in), capped */
+    static final int EQUIP_TICKS = 7;
+    static int equipMain = EQUIP_TICKS, equipMainO = EQUIP_TICKS, equipOff = EQUIP_TICKS, equipOffO = EQUIP_TICKS;
+    static net.minecraft.world.item.ItemStack lastMain = net.minecraft.world.item.ItemStack.EMPTY, lastOff = net.minecraft.world.item.ItemStack.EMPTY;
+
+    /** 1 just after switching to a new item, 0 once it is in the hand */
+    public static float equip(boolean mainHand, float partial) {
+        float t = mainHand ? lerp(equipMainO, equipMain, partial) : lerp(equipOffO, equipOff, partial);
+        float x = Mth.clamp(t / EQUIP_TICKS, 0, 1);
+        return 1 - (1 - (1 - x) * (1 - x) * (1 - x));
+    }
 
     static void onClientTick(TickEvent.ClientTickEvent e) {
         if (e.phase != TickEvent.Phase.END) return;
@@ -43,10 +54,24 @@ public final class Motion {
         walk += ((ground ? speed : 0) - walk) * 0.25f;
         // + rising, - falling (lags a little, so the hands trail behind the jump)
         air += ((ground || inWater ? 0 : Mth.clamp(vy * 2.5f, -1, 1)) - air) * 0.3f;
-        if (ground && !wasGround && !inWater) land = Math.max(land, Mth.clamp((float) -lastVy * 1.4f, 0.12f, 1));
-        else land *= 0.75f;
+        if (ground && !wasGround && !inWater) {
+            land = Math.max(land, Mth.clamp((float) -lastVy * 1.4f, 0.12f, 1));
+            landKick -= Mth.clamp((float) -lastVy * 1.1f, 0.15f, 1.2f);
+        } else land *= 0.75f;
+        // taking off: a small lift
+        if (!ground && wasGround && vy > 0.2f && !inWater) landKick += 0.35f;
         wasGround = ground;
         lastVy = vy;
+        // switching what's in a hand: the swing-in starts over
+        net.minecraft.world.item.ItemStack main = p.getMainHandItem(), off = p.getOffhandItem();
+        if (!net.minecraft.world.item.ItemStack.isSameItem(main, lastMain)) equipMain = 0;
+        if (!net.minecraft.world.item.ItemStack.isSameItem(off, lastOff)) equipOff = 0;
+        lastMain = main.copy();
+        lastOff = off.copy();
+        equipMainO = equipMain;
+        equipOffO = equipOff;
+        equipMain = Math.min(equipMain + 1, EQUIP_TICKS);
+        equipOff = Math.min(equipOff + 1, EQUIP_TICKS);
         // a new swing started this tick
         if (p.swinging && p.swingTime == 0) {
             swingCount++;
@@ -67,6 +92,9 @@ public final class Motion {
 
     // ------------------------------------------------------------ per frame: hands lag behind when you look around
     public static float lagYaw, lagPitch, velYaw, velPitch;
+    /** the hands' landing spring: an offset (blocks) that dips and bounces back */
+    public static float landPos, landVel;
+    static float landKick;
     static float lastYaw = Float.NaN, lastPitch;
     static long lastNanos;
 
@@ -88,7 +116,12 @@ public final class Motion {
         float tYaw = Mth.clamp(-dYaw / dt * 0.035f, -14, 14) * swayK;
         float tPitch = Mth.clamp(-dPitch / dt * 0.03f, -10, 10) * swayK;
         // a damped spring: overshoots a little and settles, so the item feels like it has weight
-        float k = 90, d = 13;
+        // landing / jumping: a springy dip that settles
+        landVel += landKick;
+        landKick = 0;
+        landVel += (-landPos * 160 - landVel * 13) * dt;
+        landPos += landVel * dt;
+        float k = 60, d = 11;
         velYaw += ((tYaw - lagYaw) * k - velYaw * d) * dt;
         velPitch += ((tPitch - lagPitch) * k - velPitch * d) * dt;
         lagYaw += velYaw * dt;

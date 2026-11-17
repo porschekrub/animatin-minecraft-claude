@@ -118,6 +118,27 @@ public final class ClientSmoke {
         // ---- first person
         fp("fp_empty_idle", "air", null, 0);
         fp("fp_punch", "air", Motion.Action.ATTACK, 2);
+        // every swing, frozen at eight points in time (for tuning the keyframes)
+        String[] clipItems = {"iron_sword", "iron_sword", "iron_sword", "diamond_axe", "diamond_pickaxe", "iron_shovel", "iron_hoe", "air", "oak_planks", "snowball", "bread"};
+        for (int c = 0; c < com.lifelikemotion.client.fp.Clips.ALL.length; c++) {
+            com.lifelikemotion.client.fp.Clip clip = com.lifelikemotion.client.fp.Clips.ALL[c];
+            String cn = com.lifelikemotion.client.fp.Clips.NAMES[c], item = clipItems[c];
+            if (wanted("strip_" + cn)) add(t -> {
+                if (t == 0) {
+                    mc.options.setCameraType(CameraType.FIRST_PERSON);
+                    give(item);
+                    com.lifelikemotion.client.fp.FirstPersonAnimator.testClip = clip;
+                }
+                int i = (t - 12) / 3;
+                if (t >= 12 && (t - 12) % 3 == 0 && i < 8) com.lifelikemotion.client.fp.FirstPersonAnimator.testSwing = 0.06f + i * 0.12f;
+                if (t >= 14 && (t - 14) % 3 == 0 && (t - 14) / 3 < 8) shot(String.format("strip_%s_%d", cn, (t - 14) / 3));
+                if (t == 40) {
+                    com.lifelikemotion.client.fp.FirstPersonAnimator.testSwing = null;
+                    com.lifelikemotion.client.fp.FirstPersonAnimator.testClip = null;
+                }
+                return t > 42;
+            });
+        }
         fp("fp_sword_idle", "iron_sword", null, 0);
         fp("fp_sword_slash_a_windup", "iron_sword", Motion.Action.ATTACK, 1);
         fp("fp_sword_slash_b_windup", "iron_sword", Motion.Action.ATTACK, 1);

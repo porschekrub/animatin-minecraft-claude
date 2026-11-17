@@ -1,14 +1,21 @@
 package com.lifelikemotion.client.emote;
 
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Mth;
 import org.lwjgl.glfw.GLFW;
 
-/** The emote wheel: point the mouse at one and click (or let go of the key). */
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * The emote wheel: the game's own buttons in a ring, no darkening of the world behind. Point the mouse at one and
+ * click (or let go of the key), or press 1-8.
+ */
 public class EmoteWheelScreen extends Screen {
     int hovered = -1;
+    final List<Button> buttons = new ArrayList<>();
 
     public EmoteWheelScreen() {
         super(Component.translatable("screen.lifelikemotion.emotes"));
@@ -20,10 +27,31 @@ public class EmoteWheelScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics g, int mx, int my, float partial) {
+    protected void init() {
+        buttons.clear();
         Emote[] all = Emote.values();
         int cx = width / 2, cy = height / 2;
         int r = Math.min(width, height) / 3;
+        for (int i = 0; i < all.length; i++) {
+            double a = -Math.PI / 2 + i * Math.PI * 2 / all.length;
+            int x = cx + (int) (Math.cos(a) * r), y = cy + (int) (Math.sin(a) * r);
+            Emote em = all[i];
+            Button b = Button.builder(Component.literal((i + 1) + "  ").append(Component.translatable(em.key())), bb -> choose(em))
+                    .bounds(x - 45, y - 10, 90, 20).build();
+            buttons.add(b);
+            addRenderableWidget(b);
+        }
+    }
+
+    @Override
+    public void renderBackground(GuiGraphics g) {
+        // (no dark overlay: the world stays as bright as it is)
+    }
+
+    @Override
+    public void render(GuiGraphics g, int mx, int my, float partial) {
+        Emote[] all = Emote.values();
+        int cx = width / 2, cy = height / 2;
         double dx = mx - cx, dy = my - cy;
         hovered = -1;
         if (dx * dx + dy * dy > 18 * 18) {
@@ -31,32 +59,16 @@ public class EmoteWheelScreen extends Screen {
             if (a < 0) a += Math.PI * 2;
             hovered = (int) (a / (Math.PI * 2 / all.length)) % all.length;
         }
-        g.fill(0, 0, width, height, 0x60000000);
-        for (int i = 0; i < all.length; i++) {
-            double a = -Math.PI / 2 + i * Math.PI * 2 / all.length;
-            int x = cx + (int) (Math.cos(a) * r), y = cy + (int) (Math.sin(a) * r);
-            Component name = Component.translatable(all[i].key());
-            int w = font.width(name) + 16;
-            boolean h = i == hovered;
-            g.fill(x - w / 2, y - 11, x + w / 2, y + 11, h ? 0xE0F0B040 : 0xB0202020);
-            g.renderOutline(x - w / 2, y - 11, w, 22, h ? 0xFFFFFFFF : 0x80FFFFFF);
-            g.drawCenteredString(font, name, x, y - 4, h ? 0x202020 : 0xFFFFFF);
-        }
+        // the pointed-at button lights up like a hovered one
+        for (int i = 0; i < buttons.size(); i++) buttons.get(i).setFocused(i == hovered);
         g.drawCenteredString(font, title, cx, cy - 4, 0xFFFFFF);
-        // a little pointer from the middle toward the mouse
-        if (hovered >= 0) {
-            double len = Math.min(Math.sqrt(dx * dx + dy * dy), r * 0.6);
-            for (int k = 14; k < len; k += 3) {
-                int px = cx + (int) (dx / Math.sqrt(dx * dx + dy * dy) * k), py = cy + (int) (dy / Math.sqrt(dx * dx + dy * dy) * k);
-                g.fill(px - 1, py - 1, px + 1, py + 1, 0xC0FFFFFF);
-            }
-        }
         super.render(g, mx, my, partial);
     }
 
     @Override
     public boolean mouseClicked(double mx, double my, int button) {
-        pick();
+        if (super.mouseClicked(mx, my, button)) return true;
+        if (hovered >= 0) choose(Emote.values()[hovered]);
         return true;
     }
 
@@ -64,7 +76,7 @@ public class EmoteWheelScreen extends Screen {
     public boolean keyReleased(int key, int scan, int mods) {
         // let go of the key while pointing at one: that one (a quick tap leaves the wheel open to click)
         if (Emotes.KEY.matches(key, scan) && hovered >= 0) {
-            pick();
+            choose(Emote.values()[hovered]);
             return true;
         }
         return super.keyReleased(key, scan, mods);
@@ -72,18 +84,15 @@ public class EmoteWheelScreen extends Screen {
 
     @Override
     public boolean keyPressed(int key, int scan, int mods) {
-        // 1-8 pick directly
         if (key >= GLFW.GLFW_KEY_1 && key < GLFW.GLFW_KEY_1 + Emote.values().length) {
-            hovered = key - GLFW.GLFW_KEY_1;
-            pick();
+            choose(Emote.values()[key - GLFW.GLFW_KEY_1]);
             return true;
         }
         return super.keyPressed(key, scan, mods);
     }
 
-    void pick() {
-        Emote e = hovered >= 0 ? Emote.values()[Mth.clamp(hovered, 0, Emote.values().length - 1)] : null;
+    void choose(Emote e) {
         onClose();
-        if (e != null) Emotes.play(e);
+        Emotes.play(e);
     }
 }
