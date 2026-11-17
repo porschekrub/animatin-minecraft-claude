@@ -32,7 +32,7 @@ public final class ClientSmoke {
     /** -Dlifelikemotion.baseline=true: the same shots with this mod's animations off, to compare with the game's own */
     static final boolean BASELINE = Boolean.getBoolean("lifelikemotion.baseline");
     /** -Dlifelikemotion.only=fp_sword,fp_torch: only the shots starting with these (for quick local checks) */
-    static final String[] ONLY = System.getProperty("lifelikemotion.only", "").isBlank() ? null : System.getProperty("lifelikemotion.only").split(",");
+    static final String[] ONLY = System.getProperty("lifelikemotion.only", "").isBlank() ? null : System.getProperty("lifelikemotion.only").split("[,+]");
 
     static boolean wanted(String name) {
         if (ONLY == null) return true;

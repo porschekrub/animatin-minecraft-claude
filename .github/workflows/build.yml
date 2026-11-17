@@ -75,13 +75,42 @@ jobs:
           tail -n 60 client-latest.log || tail -n 80 client.log
           python3 tools/check_log.py client-latest.log "CLIENT SMOKE OK"
 
+      - name: Client test on a real Forge install (the built jar, as players get it)
+        if: always()
+        run: |
+          curl -s -H "Authorization: Bearer ${{ github.token }}" https://api.github.com/repos/theorzr/portablemc/releases/latest > pmc-release.json
+          U=$(python3 -c "
+          import json; a=json.load(open('pmc-release.json')).get('assets', [])
+          ok=[x['browser_download_url'] for x in a if 'linux' in x['name'].lower() and 'x86_64' in x['name'] and x['name'].endswith('.tar.gz')]
+          print(ok[0] if ok else '')")
+          mkdir -p pmc && for try in 1 2 3 4; do curl -sL "$U" | tar xz -C pmc && break; echo "portablemc download failed, trying again"; sleep 20; done
+          PMC=$(find $PWD/pmc -type f -name portablemc | head -1); chmod +x $PMC
+          M=$PWD/mc; rm -rf $M; mkdir -p $M/mods $M/saves $M/config
+          cp build/libs/*.jar $M/mods/
+          cp -r run/world $M/saves/smoke && rm -f $M/saves/smoke/session.lock
+          cp run/options.txt $M/options.txt
+          printf "earlyWindowControl = false\n" > $M/config/fml.toml
+          export LIBGL_ALWAYS_SOFTWARE=1
+          for try in 1 2 3; do
+            rm -f $M/logs/latest.log
+            timeout 2400 xvfb-run -a -s "-screen 0 1280x800x24" $PMC --main-dir $PWD/pmc-main start --mc-dir $M forge:1.20.1 -u Dev --join-world smoke --resolution 960x540 \
+                --jvm-arg=-Dlifelikemotion.clientsmoke=true,-Dlifelikemotion.only=fp_sword+tp_sword+emote_wave+mobs+items3d,-Xmx3G > prod-client.log 2>&1 || true
+            [ -f $M/logs/latest.log ] && break
+            echo "the game did not start (downloads?), trying again"; sleep 30
+          done
+          cp $M/logs/latest.log prod-client-latest.log || true
+          mkdir -p run/screenshots-prod && cp -r $M/screenshots/* run/screenshots-prod/ 2>/dev/null || true
+          tail -n 40 prod-client-latest.log || tail -n 60 prod-client.log
+          python3 tools/check_log.py prod-client-latest.log "CLIENT SMOKE OK"
+
       - name: Publish logs and screenshots to the ci-logs branch
         if: always()
         run: |
           set +e
           D=/tmp/ci-logs
           mkdir -p $D
-          cp build.log smoke.log client.log client-latest.log server-latest.log $D/ 2>/dev/null
+          cp build.log smoke.log client.log client-latest.log server-latest.log prod-client.log prod-client-latest.log $D/ 2>/dev/null
+          python3 tools/shots.py run/screenshots-prod $D/screenshots-prod
           cp -r run/crash-reports $D/ 2>/dev/null
           python3 tools/shots.py run/screenshots $D/screenshots
           echo "${{ github.sha }} ${{ job.status }}" > $D/STATUS
