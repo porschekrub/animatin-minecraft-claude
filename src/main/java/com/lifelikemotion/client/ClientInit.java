@@ -30,6 +30,7 @@ public final class ClientInit {
         if (Boolean.getBoolean("lifelikemotion.clientsmoke")) {
             LifelikeMotion.LOG.info("client test mode");
             bus.register(ClientSmoke.class);
+            if (Boolean.getBoolean("lifelikemotion.promo")) bus.addListener(Promo::onOverlay);
         }
     }
 }

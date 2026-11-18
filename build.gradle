@@ -36,8 +36,10 @@ minecraft {
             property 'lifelikemotion.clientsmoke', System.getenv('LM_CLIENTSMOKE') ?: 'false'
             property 'lifelikemotion.baseline', System.getenv('LM_BASELINE') ?: 'false'
             property 'lifelikemotion.only', System.getenv('LM_ONLY') ?: ''
+            property 'lifelikemotion.promo', System.getenv('LM_PROMO') ?: 'false'
             if (System.getenv('LM_CLIENTSMOKE')) {
-                args '--quickPlaySingleplayer', 'smoke', '--width', '960', '--height', '540'
+                def size = (System.getenv('LM_SIZE') ?: '960x540').split('x')
+                args '--quickPlaySingleplayer', 'smoke', '--width', size[0], '--height', size[1]
             }
         }
         server {

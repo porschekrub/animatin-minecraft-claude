@@ -31,6 +31,8 @@ public final class ClientSmoke {
     static final List<Step> STEPS = new ArrayList<>();
     /** -Dlifelikemotion.baseline=true: the same shots with this mod's animations off, to compare with the game's own */
     static final boolean BASELINE = Boolean.getBoolean("lifelikemotion.baseline");
+    /** -Dlifelikemotion.promo=true: the pictures for the mod's page instead of the tests (see {@link Promo}) */
+    static final boolean PROMO = Boolean.getBoolean("lifelikemotion.promo");
     /** -Dlifelikemotion.only=fp_sword,fp_torch: only the shots starting with these (for quick local checks) */
     static final String[] ONLY = System.getProperty("lifelikemotion.only", "").isBlank() ? null : System.getProperty("lifelikemotion.only").split("[,+]");
 
@@ -54,6 +56,7 @@ public final class ClientSmoke {
             built = true;
             build();
         }
+        if (PROMO) mc.getToasts().clear();
         try {
             if (yaw != null) {
                 mc.player.setYRot(yaw);
@@ -98,6 +101,11 @@ public final class ClientSmoke {
             }
             return t > 140 && mc.getOverlay() == null;
         });
+        if (PROMO) {
+            Promo.build();
+            finish();
+            return;
+        }
         add(t -> {
             if (t == 0) {
                 cmd("gamemode creative");
@@ -493,6 +501,11 @@ public final class ClientSmoke {
             return t > 26;
         });
 
+        finish();
+    }
+
+    static void finish() {
+        Minecraft mc = Minecraft.getInstance();
         add(t -> {
             if (t == 0) {
                 LifelikeMotion.LOG.info("[client smoke] took {} screenshots", shotNo);

@@ -1,6 +1,7 @@
 modLoader="javafml"
 loaderVersion="${loader_version_range}"
 license="${mod_license}"
+issueTrackerURL="https://github.com/porschekrub/animatin-minecraft-claude/issues"
 
 [[mods]]
 modId="${mod_id}"
@@ -9,6 +10,7 @@ displayName="${mod_name}"
 authors="${mod_authors}"
 description='''${mod_description}'''
 logoFile="lifelikemotion_logo.png"
+displayURL="https://github.com/porschekrub/animatin-minecraft-claude"
 # client-side only: servers do not need it, and players without it can still join
 displayTest="IGNORE_ALL_VERSION"
 
