@@ -9,5 +9,6 @@
   "emote.lifelikemotion.bow": "Bow",
   "emote.lifelikemotion.facepalm": "Facepalm",
   "emote.lifelikemotion.dance": "Dance",
-  "emote.lifelikemotion.sit": "Sit"
+  "emote.lifelikemotion.sit": "Sit",
+  "key.lifelikemotion.inspect": "Inspect held item"
 }

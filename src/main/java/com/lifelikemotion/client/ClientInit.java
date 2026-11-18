@@ -17,12 +17,14 @@ public final class ClientInit {
                 () -> new ConfigScreenHandler.ConfigScreenFactory((mc, parent) -> new LMConfigScreen(parent)));
         modBus.addListener(Packs::addFinders);
         modBus.addListener(com.lifelikemotion.client.emote.Emotes::registerKeys);
+        modBus.addListener(com.lifelikemotion.client.fp.Flourish::registerKeys);
         var bus = MinecraftForge.EVENT_BUS;
         bus.addListener(Packs::onScreenInit);
         bus.addListener(Motion::onClientTick);
         bus.addListener(Motion::onInteraction);
         bus.addListener(FirstPersonAnimator::onRenderHand);
         bus.addListener(com.lifelikemotion.client.emote.Emotes::onClientTick);
+        bus.addListener(com.lifelikemotion.client.fp.Flourish::onClientTick);
         if (Boolean.getBoolean("lifelikemotion.clientsmoke")) {
             LifelikeMotion.LOG.info("client test mode");
             bus.register(ClientSmoke.class);

@@ -91,6 +91,8 @@ public final class ClientSmoke {
                     com.lifelikemotion.config.LMConfig.FP_ENABLED.set(true);
                     com.lifelikemotion.config.LMConfig.BODY_ENABLED.set(true);
                     com.lifelikemotion.config.LMConfig.MOBS_ENABLED.set(true);
+                    // (the test stands still a lot: no show-offs of their own in the middle of other shots)
+                    com.lifelikemotion.config.LMConfig.FP_IDLE_SHOW.set(false);
                     Packs.enableNow();
                 }
             }
@@ -118,6 +120,86 @@ public final class ClientSmoke {
         // ---- first person
         fp("fp_empty_idle", "air", null, 0);
         fp("fp_punch", "air", Motion.Action.ATTACK, 2);
+        // every show-off move, frozen at eight points in time, with an item it belongs to
+        String[][] showItems = {{"sword_twirl_wipe", "iron_sword"}, {"sword_flip", "diamond_sword"}, {"tool_toss", "iron_axe"},
+                {"tool_shoulder", "diamond_pickaxe"}, {"tool_twirl", "iron_pickaxe"}, {"shovel_spin", "iron_shovel"}, {"rod_flick", "fishing_rod"},
+                {"small_toss", "oak_planks"}, {"turn_over", "bread"}, {"juggle", "snowball"}, {"light_raise", "lantern"},
+                {"hand_flex", "air"}, {"hand_crack", "air"}, {"bow_pluck", "bow"}, {"shield_brace", "shield"}, {"trident_spin", "trident"}};
+        for (String[] si : showItems) {
+            com.lifelikemotion.client.fp.Flourishes.Move mv = null;
+            for (var m : com.lifelikemotion.client.fp.Flourishes.ALL) if (m.name().equals(si[0])) mv = m;
+            final var move = mv;
+            if (move != null && wanted("show_" + si[0])) add(t -> {
+                if (t == 0) {
+                    mc.options.setCameraType(CameraType.FIRST_PERSON);
+                    give(si[1]);
+                }
+                int i = (t - 12) / 3;
+                if (t >= 12 && (t - 12) % 3 == 0 && i < 8) {
+                    com.lifelikemotion.client.fp.Flourish.testMove = move;
+                    com.lifelikemotion.client.fp.Flourish.testTime = 0.06f + i * 0.125f;
+                }
+                if (t >= 14 && (t - 14) % 3 == 0 && (t - 14) / 3 < 8) shot(String.format("show_%s_%d", si[0], (t - 14) / 3));
+                if (t == 40) com.lifelikemotion.client.fp.Flourish.testMove = null;
+                return t > 42;
+            });
+        }
+        // (tuning: candidate carry poses, held still)
+        Object[][] tune = {
+                {"iron_sword", new float[]{-0.06f, -0.06f, 0, 30, 30, 18}}, {"iron_sword", new float[]{-0.02f, -0.04f, 0, 20, 20, 30}},
+                {"iron_sword", new float[]{0.02f, -0.02f, 0.04f, -20, 10, 40}}, {"iron_sword", new float[]{-0.1f, -0.02f, -0.02f, 40, 45, 10}},
+                {"diamond_axe", new float[]{0.02f, 0.10f, 0.05f, -55, -10, -10}}, {"diamond_axe", new float[]{-0.04f, 0.14f, 0.02f, -70, 0, -25}},
+                {"diamond_axe", new float[]{0, 0.06f, 0.08f, -40, -20, -30}}, {"diamond_axe", new float[]{-0.08f, 0.04f, 0.0f, -30, 15, -15}},
+                {"diamond_axe", new float[]{0.04f, 0.18f, 0.10f, -80, -10, -10}}, {"diamond_axe", new float[]{-0.06f, 0.0f, 0.02f, 15, 25, 25}}};
+        for (int ti = 0; ti < tune.length; ti++) {
+            String it = (String) tune[ti][0];
+            float[] pose = (float[]) tune[ti][1];
+            int n = ti;
+            if (wanted("tune_pose")) add(t -> {
+                if (t == 0) {
+                    mc.options.setCameraType(CameraType.FIRST_PERSON);
+                    give(it);
+                    com.lifelikemotion.client.fp.Stance.testPose = pose;
+                }
+                if (t == 12) shot("tune_pose_" + n);
+                if (t == 13) com.lifelikemotion.client.fp.Stance.testPose = null;
+                return t > 14;
+            });
+        }
+        // (tuning: where spins turn about)
+        float[][] pivots = {{0, 0, 0}, {0, 0.15f, 0}, {0.05f, 0.2f, 0}, {0.08f, 0.25f, 0.05f}, {0, 0.3f, 0}};
+        for (int pi = 0; pi < pivots.length; pi++) {
+            float[] pv = pivots[pi];
+            int n = pi;
+            if (wanted("tune_pivot")) add(t -> {
+                if (t == 0) {
+                    mc.options.setCameraType(CameraType.FIRST_PERSON);
+                    give("iron_sword");
+                    com.lifelikemotion.client.fp.Flourish.pivotX = pv[0];
+                    com.lifelikemotion.client.fp.Flourish.pivotY = pv[1];
+                    com.lifelikemotion.client.fp.Flourish.pivotZ = pv[2];
+                    com.lifelikemotion.client.fp.Flourish.testMove = com.lifelikemotion.client.fp.Flourishes.SWORD_TWIRL_WIPE;
+                }
+                for (int k = 0; k < 4; k++) {
+                    if (t == 8 + k * 3) com.lifelikemotion.client.fp.Flourish.testTime = 0.16f + k * 0.05f;
+                    if (t == 10 + k * 3) shot("tune_pivot_" + n + "_" + k);
+                }
+                if (t == 24) {
+                    com.lifelikemotion.client.fp.Flourish.testMove = null;
+                    com.lifelikemotion.client.fp.Flourish.pivotX = null;
+                    com.lifelikemotion.client.fp.Flourish.pivotY = null;
+                    com.lifelikemotion.client.fp.Flourish.pivotZ = null;
+                }
+                return t > 25;
+            });
+        }
+        // carrying: standing, walking and running with each kind of item
+        String[] carry = {"iron_sword", "diamond_axe", "oak_planks", "bread", "torch", "lantern", "air", "bow"};
+        for (String it : carry) {
+            move("carry_" + it + "_idle", it, false, false, false, 12, CameraType.FIRST_PERSON);
+            move("carry_" + it + "_walk", it, true, false, false, 16, CameraType.FIRST_PERSON);
+            move("carry_" + it + "_run", it, true, true, false, 16, CameraType.FIRST_PERSON);
+        }
         // every swing, frozen at eight points in time (for tuning the keyframes)
         String[] clipItems = {"iron_sword", "iron_sword", "iron_sword", "diamond_axe", "diamond_pickaxe", "iron_shovel", "iron_hoe", "air", "oak_planks", "snowball", "bread"};
         for (int c = 0; c < com.lifelikemotion.client.fp.Clips.ALL.length; c++) {

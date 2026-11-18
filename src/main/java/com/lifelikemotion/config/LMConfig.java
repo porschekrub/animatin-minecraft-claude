@@ -11,6 +11,7 @@ public final class LMConfig {
     // first person
     public static final ForgeConfigSpec.BooleanValue FP_ENABLED;
     public static final ForgeConfigSpec.BooleanValue FP_ARMS_WITH_ITEMS;
+    public static final ForgeConfigSpec.BooleanValue FP_IDLE_SHOW;
     public static final ForgeConfigSpec.DoubleValue FP_SWAY;
     public static final ForgeConfigSpec.DoubleValue FP_BOB;
     public static final ForgeConfigSpec.DoubleValue FP_SWING;
@@ -29,6 +30,8 @@ public final class LMConfig {
         b.comment("First person: your arms, what they hold and how they move").push("firstPerson");
         FP_ENABLED = b.comment("Custom first-person animations (off = the game's own)").define("enabled", true);
         FP_ARMS_WITH_ITEMS = b.comment("Show your arm holding the item").define("showArmWithItem", false);
+        FP_IDLE_SHOW = b.comment("Show off what you hold (twirls, tosses...) when you stand still for a moment; the inspect key (I) always works")
+                .define("idleShowOff", true);
         FP_SWAY = b.comment("How much your hands lag behind when you look around and move").defineInRange("sway", 1.0, 0.0, 2.0);
         FP_BOB = b.comment("How much your hands bob when you walk, run and jump").defineInRange("bob", 1.0, 0.0, 2.0);
         FP_SWING = b.comment("How big swings, chops and punches are").defineInRange("swing", 1.0, 0.25, 2.0);

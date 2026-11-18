@@ -76,6 +76,12 @@ public final class FirstPersonAnimator {
         ps.pushPose();
         try {
             rig(ps, p, s, kind, using, partial);
+            if (!using && !p.isAutoSpinAttack()) {
+                // how it's carried (standing / walking / running), and a show-off move when standing still
+                float px = kind == ItemKind.EMPTY ? 0.64f : 0.56f, py = kind == ItemKind.EMPTY ? -0.6f : -0.52f;
+                Stance.apply(ps, p, kind, s, partial, px, py, -0.72f);
+                if (hand == InteractionHand.MAIN_HAND) Flourish.apply(ps, s, partial, px, py, -0.72f);
+            }
             if (kind == ItemKind.SPECIAL || (using && !eating) || p.isAutoSpinAttack()) {
                 ((ItemInHandRendererInvoker) mc.getEntityRenderDispatcher().getItemInHandRenderer()).lm$renderArmWithItem(
                         p, partial, e.getInterpolatedPitch(), hand, swingProgress, stack, e.getEquipProgress(), ps, e.getMultiBufferSource(), e.getPackedLight());
@@ -110,16 +116,16 @@ public final class FirstPersonAnimator {
         float amt = walk * bobK * (1 + sprint * 0.5f) * aim;
         float ly = Motion.lagYaw * aim, lp = Motion.lagPitch * aim;
         // slides: trailing the camera, a soft figure of eight when walking, the jump, the landing spring, sneaking
-        ps.translate(-ly * 0.0016f + Mth.sin(phase) * 0.010f * amt + s * 0.02f * sprint * bobK,
+        ps.translate(-ly * 0.0016f + Mth.sin(phase) * 0.010f * amt,
                 lp * 0.0014f - Math.abs(Mth.cos(phase)) * 0.016f * amt - air * 0.03f * bobK + Motion.landPos * bobK
-                        - 0.012f * sprint * bobK - 0.02f * sneak + Mth.sin(t * 0.075f) * 0.004f * bobK
+                        - 0.02f * sneak + Mth.sin(t * 0.075f) * 0.004f * bobK
                         + Mth.sin(t * 0.1f) * 0.012f * water,
-                0.015f * sprint * bobK + 0.02f * sneak);
+                0.02f * sneak);
         // turns: about the hand
-        float yaw = ly * 0.35f - s * 5 * sprint * bobK;
+        float yaw = ly * 0.35f;
         float pitch = lp * 0.3f + Math.abs(Mth.cos(phase)) * 1.2f * amt + air * 4 * bobK - Motion.landPos * 60 * bobK
-                + (3 + Mth.sin(phase) * 3) * sprint * bobK + Mth.sin(t * 0.075f + 1) * 0.5f * bobK;
-        float roll = ly * 0.25f + Mth.sin(phase) * 1.6f * amt - s * 5 * sprint * bobK + s * Mth.sin(t * 0.08f) * 3 * water;
+                + Mth.sin(t * 0.075f + 1) * 0.5f * bobK;
+        float roll = ly * 0.25f + Mth.sin(phase) * 1.6f * amt + s * Mth.sin(t * 0.08f) * 3 * water;
         Clip.apply(ps, new float[]{0, 0, 0, pitch, s * yaw, s * roll}, s, 1, 0.56f, -0.52f, -0.72f);
     }
 

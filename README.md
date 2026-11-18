@@ -8,6 +8,10 @@ Everything you do gets an animation.
 - **Weighty first person** – your arm holds the item; sword slashes alternate forehand / backhand, axes chop overhead,
   pickaxes strike, shovels scoop, empty hands jab. The hands lag when you turn, bob and pump when you walk and sprint,
   trail your jumps and dip when you land; lanterns and torches swing.
+- **Every item has its own stance** – how it's held standing, walking and running: tools go over the shoulder when you
+  run, a sword is held up and ready, a torch or lantern is held out to light the way, fists pump. Stand still for a
+  moment and you show off what you hold: sword twirls and blade wipes, axe and tool tosses, spins, juggling a snowball,
+  turning food over to look at it, raising a lantern, cracking your knuckles. Press **I** to do it any time.
 - **Lively bodies** – breathing, a torso that twists and bounces with each step, leaning into a sprint, knees up on a
   jump and flailing on a fall, a squash on landing, paddling and kicking in water, a flutter kick when swimming, hand over
   hand up ladders, flinching when hurt, food to the mouth, big readable swings.

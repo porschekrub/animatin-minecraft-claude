@@ -17,6 +17,8 @@ public final class Motion {
 
     public enum Action { ATTACK, MINE, USE }
 
+    /** swinging, mining or using something (smoothed, 0..1) */
+    public static float busy, busyO;
     public static float sprint, sprintO, air, airO, land, landO, sneak, sneakO, water, waterO, walk, walkO;
     /** counts swings: odd and even slashes go opposite ways */
     public static int swingCount;
@@ -43,6 +45,9 @@ public final class Motion {
         LocalPlayer p = mc.player;
         if (p == null || mc.isPaused()) return;
         ticks++;
+        busyO = busy;
+        boolean isBusy = p.swinging || p.isUsingItem() || mc.gameMode != null && mc.gameMode.isDestroying();
+        busy += ((isBusy ? 1 : 0) - busy) * (isBusy ? 0.6f : 0.15f);
         sprintO = sprint; airO = air; landO = land; sneakO = sneak; waterO = water; walkO = walk;
         boolean ground = p.onGround() || p.getAbilities().flying || p.isPassenger() || p.onClimbable();
         boolean inWater = p.isInWater() || p.isSwimming();

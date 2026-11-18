@@ -24,6 +24,7 @@ public class LMConfigScreen extends Screen {
     static final Row[] ROWS = {
             new Row("First person", "Custom animations", "Your own swings, sway and bob (off: the game's)", LMConfig.FP_ENABLED),
             new Row(null, "Arm holds the item", "Show your arm holding what you carry", LMConfig.FP_ARMS_WITH_ITEMS),
+            new Row(null, "Show off when still", "Twirls, tosses and looks when you stand still (key I any time)", LMConfig.FP_IDLE_SHOW),
             new Row(null, "Sway", "How much your hands lag when you look around", LMConfig.FP_SWAY),
             new Row(null, "Bob", "How much your hands bob when you walk, run and jump", LMConfig.FP_BOB),
             new Row(null, "Swing size", "How big slashes, chops and punches are", LMConfig.FP_SWING),
