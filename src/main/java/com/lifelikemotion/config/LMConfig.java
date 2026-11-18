@@ -12,6 +12,8 @@ public final class LMConfig {
     public static final ForgeConfigSpec.BooleanValue FP_ENABLED;
     public static final ForgeConfigSpec.BooleanValue FP_ARMS_WITH_ITEMS;
     public static final ForgeConfigSpec.BooleanValue FP_IDLE_SHOW;
+    public static final ForgeConfigSpec.BooleanValue FP_PHYSICS, FP_USE_ANIMS, FP_REACTIONS, FP_WORLD_ACTIONS;
+    public static final ForgeConfigSpec.DoubleValue FP_SPEED;
     public static final ForgeConfigSpec.DoubleValue FP_SWAY;
     public static final ForgeConfigSpec.DoubleValue FP_BOB;
     public static final ForgeConfigSpec.DoubleValue FP_SWING;
@@ -32,6 +34,15 @@ public final class LMConfig {
         FP_ARMS_WITH_ITEMS = b.comment("Show your arm holding the item").define("showArmWithItem", false);
         FP_IDLE_SHOW = b.comment("Show off what you hold (twirls, tosses...) when you stand still for a moment; the inspect key (I) always works")
                 .define("idleShowOff", true);
+        FP_PHYSICS = b.comment("Physics for held things: inertia, floating when falling, cloth fluttering, lanterns swinging, liquids sloshing")
+                .define("physics", true);
+        FP_USE_ANIMS = b.comment("Own animations for using things: pouring and scooping buckets, striking flint, shears, bone meal, casting a rod...")
+                .define("useAnimations", true);
+        FP_REACTIONS = b.comment("Reactions: flinching when hit, patting out fire").define("reactions", true);
+        FP_WORLD_ACTIONS = b.comment("Your hands swim, climb ladders, open chests and doors, press buttons, hold reins, row, stretch, toss dropped items")
+                .define("worldActions", true);
+        FP_SPEED = b.comment("Speed of show-off moves and other animations (swings go faster above 100%, never slower than the game's own)")
+                .defineInRange("speed", 1.0, 0.5, 2.0);
         FP_SWAY = b.comment("How much your hands lag behind when you look around and move").defineInRange("sway", 1.0, 0.0, 2.0);
         FP_BOB = b.comment("How much your hands bob when you walk, run and jump").defineInRange("bob", 1.0, 0.0, 2.0);
         FP_SWING = b.comment("How big swings, chops and punches are").defineInRange("swing", 1.0, 0.25, 2.0);

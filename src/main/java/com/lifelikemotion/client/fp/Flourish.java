@@ -99,7 +99,7 @@ public final class Flourish {
         boolean busy = p.swinging || p.isUsingItem() || mc.gameMode != null && mc.gameMode.isDestroying() || mc.screen != null;
         // ends: you moved, swung, used it, or it's not in your hand any more
         if (playing != null && stopAt < 0) {
-            boolean over = Motion.ticks - start > playing.ticks();
+            boolean over = Motion.ticks - start > ticks(playing);
             if (over) playing = null;
             else if ((moving && !manualRun) || busy || main.getItem() != playingItem) stopAt = Motion.ticks;
         }
@@ -107,7 +107,7 @@ public final class Flourish {
         // flint and steel: sparks off each strike
         if (playing == Flourishes.FLINT_STRIKE && stopAt < 0)
             for (float at : Flourishes.FLINT_SPARKS)
-                if (Motion.ticks - start == Math.round(at * playing.ticks())) sparks(p);
+                if (Motion.ticks - start == Math.round(at * ticks(playing))) sparks(p);
         still = moving || busy ? 0 : still + 1;
         if (still == 0) nextAt = 50;
         boolean auto = LMConfig.FP_IDLE_SHOW.get() && still >= nextAt;
@@ -119,7 +119,7 @@ public final class Flourish {
                 start = Motion.ticks;
                 stopAt = -1;
                 manualRun = manual;
-                nextAt = still + playing.ticks() + 100 + p.getRandom().nextInt(140);
+                nextAt = still + ticks(playing) + 100 + p.getRandom().nextInt(140);
             }
         }
     }
@@ -140,6 +140,10 @@ public final class Flourish {
         lvl.playLocalSound(x, y, z, net.minecraft.sounds.SoundEvents.FLINTANDSTEEL_USE, net.minecraft.sounds.SoundSource.PLAYERS, 0.35f, 1.3f, false);
     }
 
+    static int ticks(Flourishes.Move m) {
+        return Math.max(1, Math.round(m.ticks() / (float) (double) LMConfig.FP_SPEED.get()));
+    }
+
     static boolean manualRun;
     static final int FADE = 5;
 
@@ -147,7 +151,7 @@ public final class Flourish {
     public static void apply(PoseStack ps, float s, float partial, float px, float py, float pz) {
         Flourishes.Move m = testMove != null ? testMove : playing;
         if (m == null) return;
-        float u = testMove != null ? testTime : (Motion.ticks - start + partial) / m.ticks();
+        float u = testMove != null ? testTime : (Motion.ticks - start + partial) / ticks(m);
         float w = 1;
         if (testMove == null && stopAt >= 0) w = Math.max(0, 1 - (Motion.ticks - stopAt + partial) / FADE);
         w = w * w * (3 - 2 * w);

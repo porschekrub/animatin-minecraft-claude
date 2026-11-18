@@ -202,8 +202,81 @@ public final class ClientSmoke {
             move("carry_" + it + "_walk", it, true, false, false, 16, CameraType.FIRST_PERSON);
             move("carry_" + it + "_run", it, true, true, false, 16, CameraType.FIRST_PERSON);
         }
+        // swimming, climbing, reins, rowing, on fire: with empty hands and with a sword
+        for (String act : new String[]{"swim", "climb", "reins", "row", "fire"}) {
+            for (String it : new String[]{"air", "iron_sword"}) {
+                if (wanted("act_" + act)) add(t -> {
+                    if (t == 0) {
+                        mc.options.setCameraType(CameraType.FIRST_PERSON);
+                        give(it);
+                        com.lifelikemotion.client.fp.Activities.testActivity = act;
+                    }
+                    if (act.equals("climb") && t >= 10) com.lifelikemotion.client.fp.Activities.climbY = (t - 10) * 0.1;
+                    if (t == 18) shot("act_" + act + "_" + it + "_a");
+                    if (t == 22) shot("act_" + act + "_" + it + "_b");
+                    if (t == 23) com.lifelikemotion.client.fp.Activities.testActivity = null;
+                    return t > 30;
+                });
+            }
+        }
+        // one-shots: waking up stretch, a dropped-item toss
+        if (wanted("shot_stretch")) add(t -> {
+            if (t == 0) {
+                give("air");
+                com.lifelikemotion.client.fp.Activities.play(0, com.lifelikemotion.client.fp.Activities.STRETCH, 40);
+                com.lifelikemotion.client.fp.Activities.play(1, com.lifelikemotion.client.fp.Activities.STRETCH, 40);
+            }
+            if (t == 16) shot("shot_stretch");
+            return t > 44;
+        });
+        // physics: falling with a box, a bed, a lantern (mid-fall, and just after landing); a lantern after a sprint stops
+        for (String it : new String[]{"oak_planks", "white_bed", "lantern", "water_bucket"}) {
+            final boolean[] landed = {false};
+            final int[] landT = {-1};
+            if (wanted("phys_fall")) add(t -> {
+                if (t == 0) {
+                    mc.options.setCameraType(CameraType.FIRST_PERSON);
+                    give(it);
+                    cmd("tp @s 0 -44 -12 0 10");
+                    landed[0] = false;
+                    landT[0] = -1;
+                }
+                if (t == 14) shot("phys_fall_" + it + "_falling");
+                if (t > 14 && landT[0] < 0 && mc.player.onGround()) landT[0] = t;
+                if (landT[0] > 0 && t == landT[0] + 2) shot("phys_fall_" + it + "_landed");
+                return landT[0] > 0 && t > landT[0] + 10 || t > 120;
+            });
+        }
+        for (String it : new String[]{"lantern", "white_banner"}) {
+            if (wanted("phys_run")) add(t -> {
+                if (t == 0) {
+                    mc.options.setCameraType(CameraType.FIRST_PERSON);
+                    give(it);
+                    cmd("tp @s 0 -60 -14 0 10");
+                }
+                if (t == 6) {
+                    mc.options.keyUp.setDown(true);
+                    mc.options.keySprint.setDown(true);
+                    mc.player.setSprinting(true);
+                }
+                if (t == 20) shot("phys_run_" + it + "_running");
+                if (t == 21) {
+                    mc.options.keyUp.setDown(false);
+                    mc.options.keySprint.setDown(false);
+                    mc.player.setSprinting(false);
+                }
+                if (t == 25) shot("phys_run_" + it + "_stopped");
+                if (t == 29) shot("phys_run_" + it + "_settling");
+                return t > 40;
+            });
+        }
+        // eating and drinking in their own ways
+        use("eat_soup", "mushroom_stew", 18);
+        use("eat_carrot", "carrot", 16);
+        use("eat_milk", "milk_bucket", 18);
         // every swing, frozen at eight points in time (for tuning the keyframes)
-        String[] clipItems = {"iron_sword", "iron_sword", "iron_sword", "diamond_axe", "diamond_pickaxe", "iron_shovel", "iron_hoe", "air", "oak_planks", "snowball", "bread"};
+        String[] clipItems = {"iron_sword", "iron_sword", "iron_sword", "diamond_axe", "diamond_pickaxe", "iron_shovel", "iron_hoe", "air", "oak_planks", "snowball", "bread",
+                "water_bucket", "bucket", "flint_and_steel", "shears", "bone_meal", "iron_axe", "iron_shovel", "fishing_rod", "fishing_rod", "air", "air", "air", "iron_sword"};
         for (int c = 0; c < com.lifelikemotion.client.fp.Clips.ALL.length; c++) {
             com.lifelikemotion.client.fp.Clip clip = com.lifelikemotion.client.fp.Clips.ALL[c];
             String cn = com.lifelikemotion.client.fp.Clips.NAMES[c], item = clipItems[c];

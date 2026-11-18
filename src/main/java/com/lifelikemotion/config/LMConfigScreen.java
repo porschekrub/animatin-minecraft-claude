@@ -19,38 +19,56 @@ public class LMConfigScreen extends Screen {
         this.parent = parent;
     }
 
-    record Row(String section, String label, String tip, Object value) {}
+    /** col: which of the three columns; section: a heading above this row */
+    record Row(int col, String section, String label, String tip, Object value) {}
 
     static final Row[] ROWS = {
-            new Row("First person", "Custom animations", "Your own swings, sway and bob (off: the game's)", LMConfig.FP_ENABLED),
-            new Row(null, "Arm holds the item", "Show your arm holding what you carry", LMConfig.FP_ARMS_WITH_ITEMS),
-            new Row(null, "Show off when still", "Twirls, tosses and looks when you stand still (key I any time)", LMConfig.FP_IDLE_SHOW),
-            new Row(null, "Sway", "How much your hands lag when you look around", LMConfig.FP_SWAY),
-            new Row(null, "Bob", "How much your hands bob when you walk, run and jump", LMConfig.FP_BOB),
-            new Row(null, "Swing size", "How big slashes, chops and punches are", LMConfig.FP_SWING),
-            new Row("Body", "Body animations", "Lively movement in third person", LMConfig.BODY_ENABLED),
-            new Row(null, "Other players too", "Animate other players as well", LMConfig.BODY_OTHER_PLAYERS),
-            new Row(null, "Strength", "How strong the body animations are", LMConfig.BODY_INTENSITY),
-            new Row("Mobs", "Mob animations", "Livelier mobs", LMConfig.MOBS_ENABLED),
-            new Row(null, "Strength", "How strong the mob animations are", LMConfig.MOBS_INTENSITY),
+            new Row(0, "First person", "Custom animations", "Your own swings, sway and bob (off: the game's)", LMConfig.FP_ENABLED),
+            new Row(0, null, "Arm holds the item", "Show your arm holding what you carry", LMConfig.FP_ARMS_WITH_ITEMS),
+            new Row(0, null, "Show off when still", "Twirls, tosses and looks when you stand still (key I any time)", LMConfig.FP_IDLE_SHOW),
+            new Row(0, null, "Physics", "Inertia, floating when falling, cloth, swinging lanterns, sloshing liquids", LMConfig.FP_PHYSICS),
+            new Row(0, null, "Use animations", "Pouring, scooping, striking flint, shears, bone meal, casting a rod...", LMConfig.FP_USE_ANIMS),
+            new Row(0, null, "Reactions", "Flinching when hit, patting out fire", LMConfig.FP_REACTIONS),
+            new Row(1, "First person (more)", "World actions", "Swimming, climbing, opening, buttons, reins, rowing, stretching, tossing", LMConfig.FP_WORLD_ACTIONS),
+            new Row(1, null, "Speed", "Speed of show-offs and other animations", LMConfig.FP_SPEED),
+            new Row(1, null, "Sway", "How much your hands lag when you look around", LMConfig.FP_SWAY),
+            new Row(1, null, "Bob", "How much your hands bob when you walk, run and jump", LMConfig.FP_BOB),
+            new Row(1, null, "Swing size", "How big slashes, chops and punches are", LMConfig.FP_SWING),
+            new Row(2, "Body", "Body animations", "Lively movement in third person", LMConfig.BODY_ENABLED),
+            new Row(2, null, "Other players too", "Animate other players as well", LMConfig.BODY_OTHER_PLAYERS),
+            new Row(2, null, "Strength", "How strong the body animations are", LMConfig.BODY_INTENSITY),
+            new Row(2, "Mobs", "Mob animations", "Livelier mobs", LMConfig.MOBS_ENABLED),
+            new Row(2, null, "Strength", "How strong the mob animations are", LMConfig.MOBS_INTENSITY),
     };
+
+    static final int COL_W = 150, GAP = 6, TOP = 30, ROW_H = 21, HEAD = 12;
+
+    int colX(int col) {
+        return width / 2 - (3 * COL_W + 2 * GAP) / 2 + col * (COL_W + GAP);
+    }
+
+    /** where each row (and each heading) goes: [rowIndex] = y; headings get their own space */
+    int[] layout(java.util.List<int[]> headings) {
+        int[] y = new int[ROWS.length];
+        int[] cy = {TOP, TOP, TOP};
+        for (int i = 0; i < ROWS.length; i++) {
+            Row r = ROWS[i];
+            if (r.section() != null) {
+                if (cy[r.col()] > TOP) cy[r.col()] += 4;
+                if (headings != null) headings.add(new int[]{r.col(), cy[r.col()], i});
+                cy[r.col()] += HEAD;
+            }
+            y[i] = cy[r.col()];
+            cy[r.col()] += ROW_H;
+        }
+        return y;
+    }
 
     @Override
     protected void init() {
-        int colW = 150, gap = 10;
-        int left = width / 2 - colW - gap / 2, right = width / 2 + gap / 2;
-        int top = 34, rowH = 22;
-        // two columns: first person on the left, body and mobs on the right
-        int[] y = {top + 12, top + 12};
-        int col = 0;
-        for (Row r : ROWS) {
-            if (r.section() != null && !r.section().equals("First person")) {
-                if (col == 1) y[1] += 14; // room for the "Mobs" heading
-                col = 1;
-            }
-            addRenderableWidget((net.minecraft.client.gui.components.AbstractWidget) widget(r, col == 0 ? left : right, y[col], colW));
-            y[col] += rowH;
-        }
+        int[] y = layout(null);
+        for (int i = 0; i < ROWS.length; i++)
+            addRenderableWidget((net.minecraft.client.gui.components.AbstractWidget) widget(ROWS[i], colX(ROWS[i].col()), y[i], COL_W));
         addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, b -> onClose()).bounds(width / 2 - 100, height - 28, 200, 20).build());
     }
 
@@ -65,20 +83,20 @@ public class LMConfigScreen extends Screen {
             return btn;
         }
         ForgeConfigSpec.DoubleValue d = (ForgeConfigSpec.DoubleValue) r.value();
-        double max = 2.0;
-        AbstractSliderButton s = new AbstractSliderButton(x, y, w, 20, Component.empty(), d.get() / max) {
+        double max = 2.0, min = d == LMConfig.FP_SPEED ? 0.5 : d == LMConfig.FP_SWING ? 0.25 : 0;
+        AbstractSliderButton s = new AbstractSliderButton(x, y, w, 20, Component.empty(), (d.get() - min) / (max - min)) {
             {
                 updateMessage();
             }
 
             @Override
             protected void updateMessage() {
-                setMessage(Component.literal(r.label() + ": " + Math.round(value * max * 100) + "%"));
+                setMessage(Component.literal(r.label() + ": " + Math.round((min + value * (max - min)) * 100) + "%"));
             }
 
             @Override
             protected void applyValue() {
-                d.set(Mth.clamp(Math.round(value * max * 20) / 20.0, 0, max));
+                d.set(Mth.clamp(Math.round((min + value * (max - min)) * 20) / 20.0, min, max));
                 LMConfig.SPEC.save();
             }
         };
@@ -94,10 +112,9 @@ public class LMConfigScreen extends Screen {
     public void render(GuiGraphics g, int mx, int my, float partial) {
         renderBackground(g);
         g.drawCenteredString(font, title, width / 2, 12, 0xFFFFFF);
-        int colW = 150, gap = 10;
-        g.drawString(font, "First person", width / 2 - colW - gap / 2, 34, 0xFFD27F);
-        g.drawString(font, "Body", width / 2 + gap / 2, 34, 0xFFD27F);
-        g.drawString(font, "Mobs", width / 2 + gap / 2, 34 + 12 + 3 * 22 + 2, 0xFFD27F);
+        java.util.List<int[]> heads = new java.util.ArrayList<>();
+        layout(heads);
+        for (int[] h : heads) g.drawString(font, ROWS[h[2]].section(), colX(h[0]), h[1] + 2, 0xFFD27F);
         g.drawCenteredString(font, Component.literal("3D items: Options → Resource Packs → \"Lifelike 3D Items\""), width / 2, height - 44, 0xA0A0A0);
         super.render(g, mx, my, partial);
     }

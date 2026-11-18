@@ -14,6 +14,16 @@ Everything you do gets an animation.
   turning food over to look at it, raising a lantern, cracking your knuckles. Some items have a move of their own: checking a compass, reading a book, sloshing a
   bucket, striking flint and steel (with sparks), peeking through a spyglass, holding up a totem, tossing an egg.
   Press **I** to do it any time.
+- **Using things** – buckets are tipped out or dipped to scoop, flint and steel is struck (sparks), shears snip, bone
+  meal and seeds are shaken out, a hoe tills (soil flies), an axe shaves a log, a shovel presses a path, a rod is cast
+  and reeled in. Soup is slurped from the bowl, carrots nibbled, milk chugged. A bow held drawn too long trembles; a
+  shield is knocked back when it blocks.
+- **Working the world** – your hand reaches out to open chests, doors and gates, pokes buttons and pulls levers. Both
+  hands swim, climb ladders hand over hand, hold the reins or row a boat. You stretch when you wake up, toss what you
+  drop, flinch when hit and pat at yourself when on fire.
+- **Physics** – held things have weight: they lag and swing on when you start and stop, float up off your palm when you
+  fall and land back with a thump (heavier things harder), lanterns swing like pendulums, cloth (beds, banners, wool)
+  flutters, liquids slosh, and under water everything moves slow.
 - **Lively bodies** – breathing, a torso that twists and bounces with each step, leaning into a sprint, knees up on a
   jump and flailing on a fall, a squash on landing, paddling and kicking in water, a flutter kick when swimming, hand over
   hand up ladders, flinching when hurt, food to the mouth, big readable swings.

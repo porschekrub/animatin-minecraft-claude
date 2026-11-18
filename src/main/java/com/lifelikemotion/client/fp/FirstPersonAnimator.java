@@ -63,24 +63,34 @@ public final class FirstPersonAnimator {
             }
             return;
         }
-        // an empty off hand is not drawn (as in the game)
-        if (kind == ItemKind.EMPTY && hand == InteractionHand.OFF_HAND) {
+        // an empty off hand is not drawn (as in the game), unless both hands are busy (swimming, climbing, reins...)
+        if (kind == ItemKind.EMPTY && hand == InteractionHand.OFF_HAND && (!Activities.bothArms(partial) || p.isInvisible())) {
             e.setCanceled(true);
             return;
         }
         PoseStack ps = e.getPoseStack();
         float swingProgress = testSwing != null && hand == InteractionHand.MAIN_HAND ? testSwing : e.getSwingProgress();
+        // faster than the game's own swing if asked (never slower: the swing would be cut short)
+        float speed = (float) (double) LMConfig.FP_SPEED.get();
+        if (speed > 1 && swingProgress > 0) swingProgress = Math.min(1, swingProgress * speed);
         boolean using = p.isUsingItem() && p.getUseItemRemainingTicks() > 0 && p.getUsedItemHand() == hand;
         boolean eating = using && (kind == ItemKind.FOOD || kind == ItemKind.DRINK);
         e.setCanceled(true);
         ps.pushPose();
         try {
             rig(ps, p, s, kind, using, partial);
+            float px = kind == ItemKind.EMPTY ? 0.64f : 0.56f, py = kind == ItemKind.EMPTY ? -0.6f : -0.52f;
+            boolean mainHand = hand == InteractionHand.MAIN_HAND;
+            if (!p.isAutoSpinAttack()) {
+                // physics (inertia, floating, flutter, pendulum, slosh), then what you're doing with the world
+                float[] ph = ItemPhysics.pose(mainHand, partial);
+                Clip.apply(ps, new float[]{ph[0] * s, ph[1], ph[2], ph[3], ph[4] * s, ph[5] * s}, s, 1, px, py, -0.72f);
+                Clip.apply(ps, Activities.pose(p, mainHand, s, kind, partial), s, 1, px, py, -0.72f);
+            }
             if (!using && !p.isAutoSpinAttack()) {
                 // how it's carried (standing / walking / running), and a show-off move when standing still
-                float px = kind == ItemKind.EMPTY ? 0.64f : 0.56f, py = kind == ItemKind.EMPTY ? -0.6f : -0.52f;
                 Stance.apply(ps, p, kind, s, partial, px, py, -0.72f);
-                if (hand == InteractionHand.MAIN_HAND) Flourish.apply(ps, s, partial, px, py, -0.72f);
+                if (mainHand) Flourish.apply(ps, s, partial, px, py, -0.72f);
             }
             if (kind == ItemKind.SPECIAL || (using && !eating) || p.isAutoSpinAttack()) {
                 ((ItemInHandRendererInvoker) mc.getEntityRenderDispatcher().getItemInHandRenderer()).lm$renderArmWithItem(
@@ -135,7 +145,8 @@ public final class FirstPersonAnimator {
         float k = (float) (double) LMConfig.FP_SWING.get();
         equip(ps, s, equip, 0.64f, -0.6f, -0.72f);
         if (sw > 0) {
-            Clip c = testClip != null ? testClip : Motion.action == Motion.Action.USE ? Clips.PLACE : Clips.PUNCH;
+            Clip own = actionClip(Motion.action);
+            Clip c = testClip != null ? testClip : own != null ? own : Motion.action == Motion.Action.USE ? Clips.PLACE : Clips.PUNCH;
             Clip.apply(ps, c.sample(sw), s, k, 0.64f, -0.6f, -0.72f);
         }
         vanillaArm(ps, buf, light, p, right);
@@ -162,13 +173,16 @@ public final class FirstPersonAnimator {
             Clip c = testClip != null ? testClip : clipFor(kind);
             Clip.apply(ps, c.sample(sw), s, kind == ItemKind.PICKAXE && Motion.action != Motion.Action.MINE ? k * 0.8f : k, 0, 0, 0);
         }
-        if (eating && kind == ItemKind.DRINK) {
-            // a drink is tipped up to the lips
+        if (eating && (kind == ItemKind.DRINK || soup(stack))) {
+            // a drink is tipped up to the lips; a bucket of milk much further; soup is lifted and slurped
             float m = toMouth(p, stack, partial);
-            ps.translate(0, 0.06f * m, 0);
-            ps.mulPose(Axis.XP.rotationDegrees(-28 * m));
+            boolean bucket = stack.getItem() instanceof net.minecraft.world.item.MilkBucketItem;
+            float tip = bucket ? -50 : soup(stack) ? -20 : -28;
+            ps.translate(0, (bucket ? 0.12f : 0.06f) * m, 0);
+            ps.mulPose(Axis.XP.rotationDegrees(tip * m));
+            if (soup(stack)) ps.translate(0, Mth.sin((Motion.ticks + partial) * 0.6f) * 0.012f * m, 0);
         }
-        if (kind == ItemKind.LIGHT) {
+        if (kind == ItemKind.LIGHT && !ItemPhysics.hanging(hand(p, right)) || kind == ItemKind.LIGHT && !LMConfig.FP_PHYSICS.get()) {
             // a lantern / torch swings on the hand as you turn
             ps.mulPose(Axis.ZP.rotationDegrees(Motion.lagYaw * 0.9f));
             ps.mulPose(Axis.XP.rotationDegrees(Motion.lagPitch * 0.7f));
@@ -185,9 +199,31 @@ public final class FirstPersonAnimator {
                 right ? ItemDisplayContext.FIRST_PERSON_RIGHT_HAND : ItemDisplayContext.FIRST_PERSON_LEFT_HAND, !right, ps, buf, light);
     }
 
+    /** The swings that belong to an action rather than to what is held (pouring, opening a door...), or null. */
+    static Clip actionClip(Motion.Action a) {
+        return switch (a) {
+            case POUR -> Clips.POUR;
+            case SCOOP -> Clips.SCOOP;
+            case STRIKE -> Clips.STRIKE;
+            case SNIP -> Clips.SNIP;
+            case SPRINKLE -> Clips.SPRINKLE;
+            case TILL -> Clips.TILL;
+            case STRIP -> Clips.STRIP;
+            case FLATTEN -> Clips.FLATTEN;
+            case CAST -> Clips.CAST;
+            case REEL -> Clips.REEL;
+            case OPEN -> Clips.OPEN;
+            case PRESS -> Clips.PRESS;
+            case PULL -> Clips.PULL;
+            default -> null;
+        };
+    }
+
     /** Which swing, by what is held and what it is for. Swords run a three-hit combo. */
     static Clip clipFor(ItemKind kind) {
         Motion.Action a = Motion.action;
+        Clip own = actionClip(a);
+        if (own != null) return own;
         if (a == Motion.Action.USE) return kind == ItemKind.THROWABLE ? Clips.THROW : Clips.PLACE;
         return switch (kind) {
             case SWORD -> a == Motion.Action.MINE ? Clips.MINE : switch (Math.floorMod(Motion.swingCount, 3)) {
@@ -211,14 +247,33 @@ public final class FirstPersonAnimator {
         float f1 = f / stack.getUseDuration();
         float f3 = 1 - (float) Math.pow(f1, 27);
         if (f1 < 0.8f) {
-            float bob = kind == ItemKind.DRINK ? Mth.sin(f * 0.5f) * 0.02f : Math.abs(Mth.cos(f / 4f * Mth.PI) * 0.08f);
-            ps.translate(0, bob, 0);
-            if (kind != ItemKind.DRINK) ps.mulPose(Axis.ZP.rotationDegrees(Mth.sin(f * 0.8f) * 4));
+            boolean drink = kind == ItemKind.DRINK || soup(stack);
+            float bob = drink ? Mth.sin(f * 0.5f) * 0.02f
+                    : nibble(stack) ? Math.abs(Mth.cos(f / 2f * Mth.PI)) * 0.05f
+                    : Math.abs(Mth.cos(f / 4f * Mth.PI) * 0.08f);
+            ps.translate(0, bob, nibble(stack) ? -Math.abs(Mth.cos(f / 2f * Mth.PI)) * 0.03f : 0);
+            if (!drink) ps.mulPose(Axis.ZP.rotationDegrees(Mth.sin(f * (nibble(stack) ? 1.6f : 0.8f)) * 4));
         }
         ps.translate(f3 * 0.6f * s, f3 * -0.5f, 0);
         ps.mulPose(Axis.YP.rotationDegrees(s * f3 * 90));
         ps.mulPose(Axis.XP.rotationDegrees(f3 * 10));
         ps.mulPose(Axis.ZP.rotationDegrees(s * f3 * 30));
+    }
+
+    static boolean hand(AbstractClientPlayer p, boolean right) {
+        return right == (p.getMainArm() == HumanoidArm.RIGHT);
+    }
+
+    /** bowls of soup and stew are drunk from, not chewed */
+    static boolean soup(ItemStack s) {
+        return s.getItem() instanceof net.minecraft.world.item.BowlFoodItem || s.getItem() instanceof net.minecraft.world.item.SuspiciousStewItem;
+    }
+
+    /** small crunchy things are nibbled quickly */
+    static boolean nibble(ItemStack s) {
+        return s.is(net.minecraft.world.item.Items.CARROT) || s.is(net.minecraft.world.item.Items.GOLDEN_CARROT) || s.is(net.minecraft.world.item.Items.BEETROOT)
+                || s.is(net.minecraft.world.item.Items.DRIED_KELP) || s.is(net.minecraft.world.item.Items.COOKIE) || s.is(net.minecraft.world.item.Items.SWEET_BERRIES)
+                || s.is(net.minecraft.world.item.Items.GLOW_BERRIES) || s.is(net.minecraft.world.item.Items.MELON_SLICE) || s.is(net.minecraft.world.item.Items.POTATO);
     }
 
     /** how far food or a drink has come up to the mouth (0..1) */

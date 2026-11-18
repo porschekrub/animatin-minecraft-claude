@@ -25,6 +25,8 @@ public final class ClientInit {
         bus.addListener(FirstPersonAnimator::onRenderHand);
         bus.addListener(com.lifelikemotion.client.emote.Emotes::onClientTick);
         bus.addListener(com.lifelikemotion.client.fp.Flourish::onClientTick);
+        bus.addListener(com.lifelikemotion.client.fp.ItemPhysics::onClientTick);
+        bus.addListener(com.lifelikemotion.client.fp.Activities::onClientTick);
         if (Boolean.getBoolean("lifelikemotion.clientsmoke")) {
             LifelikeMotion.LOG.info("client test mode");
             bus.register(ClientSmoke.class);

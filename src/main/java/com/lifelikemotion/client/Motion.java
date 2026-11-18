@@ -15,7 +15,14 @@ import net.minecraftforge.event.TickEvent;
 public final class Motion {
     private Motion() {}
 
-    public enum Action { ATTACK, MINE, USE }
+    /**
+     * What a swing is for. USE is putting something down; the rest are using a particular thing (pouring a bucket,
+     * striking flint...) or working something in the world (opening a chest or door, pressing a button, pulling a lever).
+     */
+    public enum Action { ATTACK, MINE, USE, OPEN, PRESS, PULL, POUR, SCOOP, STRIKE, SNIP, SPRINKLE, TILL, STRIP, FLATTEN, CAST, REEL }
+
+    /** where the thing being used was aimed (for sparks, soil...) */
+    public static net.minecraft.world.phys.Vec3 usedAt;
 
     /** swinging, mining or using something (smoothed, 0..1) */
     public static float busy, busyO;
@@ -81,14 +88,52 @@ public final class Motion {
         if (p.swinging && p.swingTime == 0) {
             swingCount++;
             action = mc.gameMode != null && mc.gameMode.isDestroying() ? Action.MINE : pending;
+            com.lifelikemotion.client.fp.UseEffects.onSwing(p, action, usedAt);
         }
         if (mc.gameMode != null && mc.gameMode.isDestroying()) action = Action.MINE;
     }
 
     static void onInteraction(InputEvent.InteractionKeyMappingTriggered e) {
         Minecraft mc = Minecraft.getInstance();
-        if (e.isAttack()) pending = mc.hitResult != null && mc.hitResult.getType() == HitResult.Type.BLOCK ? Action.MINE : Action.ATTACK;
-        else if (e.isUseItem()) pending = Action.USE;
+        LocalPlayer p = mc.player;
+        if (p == null) return;
+        net.minecraft.world.item.ItemStack held = p.getItemInHand(e.getHand());
+        if (e.isAttack()) {
+            pending = mc.hitResult != null && mc.hitResult.getType() == HitResult.Type.BLOCK ? Action.MINE : Action.ATTACK;
+            if (held.getItem() instanceof net.minecraft.world.item.ShearsItem && com.lifelikemotion.config.LMConfig.FP_USE_ANIMS.get()) pending = Action.SNIP;
+        } else if (e.isUseItem()) pending = useAction(mc, p, held);
+    }
+
+    /** What right-clicking will do: work a block in the world, use the held thing in its own way, or put it down. */
+    static Action useAction(Minecraft mc, LocalPlayer p, net.minecraft.world.item.ItemStack held) {
+        net.minecraft.world.item.Item i = held.getItem();
+        boolean onBlock = mc.hitResult instanceof net.minecraft.world.phys.BlockHitResult bh && bh.getType() == HitResult.Type.BLOCK;
+        usedAt = mc.hitResult != null ? mc.hitResult.getLocation() : null;
+        if (onBlock && !p.isSecondaryUseActive() && com.lifelikemotion.config.LMConfig.FP_WORLD_ACTIONS.get()) {
+            var pos = ((net.minecraft.world.phys.BlockHitResult) mc.hitResult).getBlockPos();
+            var state = mc.level.getBlockState(pos);
+            var b = state.getBlock();
+            if (b instanceof net.minecraft.world.level.block.ButtonBlock) return Action.PRESS;
+            if (b instanceof net.minecraft.world.level.block.LeverBlock) return Action.PULL;
+            if (b instanceof net.minecraft.world.level.block.DoorBlock || b instanceof net.minecraft.world.level.block.TrapDoorBlock
+                    || b instanceof net.minecraft.world.level.block.FenceGateBlock || state.getMenuProvider(mc.level, pos) != null
+                    || b instanceof net.minecraft.world.level.block.ChestBlock || b instanceof net.minecraft.world.level.block.EnderChestBlock
+                    || b instanceof net.minecraft.world.level.block.ShulkerBoxBlock || b instanceof net.minecraft.world.level.block.BarrelBlock)
+                return Action.OPEN;
+        }
+        if (!com.lifelikemotion.config.LMConfig.FP_USE_ANIMS.get()) return Action.USE;
+        if (i instanceof net.minecraft.world.item.BucketItem bucket)
+            return bucket.getFluid() == net.minecraft.world.level.material.Fluids.EMPTY ? Action.SCOOP : Action.POUR;
+        if (i instanceof net.minecraft.world.item.FlintAndSteelItem || i instanceof net.minecraft.world.item.FireChargeItem && onBlock) return Action.STRIKE;
+        if (i instanceof net.minecraft.world.item.ShearsItem) return Action.SNIP;
+        if (i instanceof net.minecraft.world.item.BoneMealItem || i instanceof net.minecraft.world.item.ItemNameBlockItem
+                && ((net.minecraft.world.item.ItemNameBlockItem) i).getBlock() instanceof net.minecraft.world.level.block.BushBlock)
+            return Action.SPRINKLE;
+        if (onBlock && i instanceof net.minecraft.world.item.HoeItem) return Action.TILL;
+        if (onBlock && i instanceof net.minecraft.world.item.AxeItem) return Action.STRIP;
+        if (onBlock && i instanceof net.minecraft.world.item.ShovelItem) return Action.FLATTEN;
+        if (i instanceof net.minecraft.world.item.FishingRodItem) return p.fishing == null ? Action.CAST : Action.REEL;
+        return Action.USE;
     }
 
     public static float lerp(float o, float n, float partial) {

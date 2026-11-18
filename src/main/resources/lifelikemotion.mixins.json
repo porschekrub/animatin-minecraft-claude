@@ -13,7 +13,8 @@
     "WolfModelMixin",
     "CreeperModelMixin",
     "SpiderModelMixin",
-    "VillagerModelMixin"
+    "VillagerModelMixin",
+    "LivingEntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1

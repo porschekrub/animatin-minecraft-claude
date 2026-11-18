@@ -96,6 +96,108 @@ public final class Clips {
             0.40f, -0.08f, 0, -0.2f, 18, -10, 8,
             1.00f, 0, 0, 0, 0, 0, 0);
 
-    public static final Clip[] ALL = {SLASH_A, SLASH_B, STAB, CHOP, MINE, DIG, TILL, PUNCH, PLACE, THROW, SWAT};
-    public static final String[] NAMES = {"slash_a", "slash_b", "stab", "chop", "mine", "dig", "till", "punch", "place", "throw", "swat"};
+
+    // ---------------------------------------------------------------- using things
+    /** a full bucket: held out and tipped right over, then righted */
+    public static final Clip POUR = Clip.of(
+            0.00f, 0, 0, 0, 0, 0, 0,
+            0.20f, -0.04f, 0.04f, -0.10f, 10, 6, 0,
+            0.42f, -0.06f, 0.02f, -0.14f, 75, 10, -10,
+            0.60f, -0.06f, 0.02f, -0.14f, 80, 10, -12,
+            1.00f, 0, 0, 0, 0, 0, 0);
+    /** an empty bucket: dipped down and forward, scooped up */
+    public static final Clip SCOOP = Clip.of(
+            0.00f, 0, 0, 0, 0, 0, 0,
+            0.25f, -0.03f, -0.10f, -0.14f, 40, 0, 0,
+            0.45f, -0.03f, -0.06f, -0.18f, 50, 0, 0,
+            0.65f, -0.02f, 0.06f, -0.06f, -20, 0, 0,
+            1.00f, 0, 0, 0, 0, 0, 0);
+    /** flint and steel: two quick strikes */
+    public static final Clip STRIKE = Clip.of(
+            0.00f, 0, 0, 0, 0, 0, 0,
+            0.15f, -0.08f, 0.07f, -0.10f, -16, 10, 0,
+            0.28f, -0.09f, -0.01f, -0.14f, 32, 10, 0,
+            0.40f, -0.08f, 0.07f, -0.10f, -16, 10, 0,
+            0.52f, -0.09f, -0.01f, -0.14f, 32, 10, 0,
+            1.00f, 0, 0, 0, 0, 0, 0);
+    /** shears: pushed in, two quick snips */
+    public static final Clip SNIP = Clip.of(
+            0.00f, 0, 0, 0, 0, 0, 0,
+            0.20f, -0.06f, 0.02f, -0.16f, 8, 8, 0,
+            0.30f, -0.06f, 0.02f, -0.16f, 8, 8, 28,
+            0.40f, -0.06f, 0.02f, -0.16f, 8, 8, -8,
+            0.50f, -0.06f, 0.02f, -0.16f, 8, 8, 28,
+            0.60f, -0.06f, 0.02f, -0.16f, 8, 8, -4,
+            1.00f, 0, 0, 0, 0, 0, 0);
+    /** bone meal and seeds: held out over the spot and shaken out */
+    public static final Clip SPRINKLE = Clip.of(
+            0.00f, 0, 0, 0, 0, 0, 0,
+            0.20f, -0.08f, 0.04f, -0.16f, 40, 10, 0,
+            0.30f, -0.04f, 0.07f, -0.16f, 52, 10, 22,
+            0.40f, -0.12f, 0.04f, -0.16f, 44, 10, -22,
+            0.50f, -0.04f, 0.07f, -0.16f, 52, 10, 22,
+            0.60f, -0.10f, 0.04f, -0.16f, 44, 10, -14,
+            1.00f, 0, 0, 0, 0, 0, 0);
+    /** an axe drawn along a log, shaving the bark off */
+    public static final Clip STRIP = Clip.of(
+            0.00f, 0, 0, 0, 0, 0, 0,
+            0.20f, 0.04f, 0.06f, -0.06f, 10, -16, -6,
+            0.50f, -0.16f, -0.02f, -0.14f, 22, 20, 10,
+            0.62f, -0.17f, -0.03f, -0.14f, 24, 22, 10,
+            1.00f, 0, 0, 0, 0, 0, 0);
+    /** a shovel pressed flat into the ground */
+    public static final Clip FLATTEN = Clip.of(
+            0.00f, 0, 0, 0, 0, 0, 0,
+            0.22f, -0.02f, 0.06f, -0.04f, -12, 0, 0,
+            0.45f, -0.04f, -0.03f, -0.14f, 28, 0, 0,
+            0.58f, -0.04f, -0.02f, -0.14f, 26, 0, 0,
+            1.00f, 0, 0, 0, 0, 0, 0);
+    /** a fishing rod: drawn back over the shoulder, whipped forward */
+    public static final Clip CAST = Clip.of(
+            0.00f, 0, 0, 0, 0, 0, 0,
+            0.25f, 0.04f, 0.10f, 0.08f, -50, -6, -8,
+            0.45f, -0.04f, 0.02f, -0.12f, 34, 6, 4,
+            0.58f, -0.04f, 0.00f, -0.12f, 30, 6, 4,
+            1.00f, 0, 0, 0, 0, 0, 0);
+    /** a fishing rod: yanked up and back to pull the line in */
+    public static final Clip REEL = Clip.of(
+            0.00f, 0, 0, 0, 0, 0, 0,
+            0.20f, 0, -0.03f, -0.04f, 12, 0, 0,
+            0.42f, 0.03f, 0.10f, 0.08f, -40, -4, -6,
+            0.60f, 0.03f, 0.09f, 0.07f, -36, -4, -6,
+            1.00f, 0, 0, 0, 0, 0, 0);
+
+    // ---------------------------------------------------------------- working the world
+    /** a chest, door or gate: reach out, take hold, pull it open */
+    public static final Clip OPEN = Clip.of(
+            0.00f, 0, 0, 0, 0, 0, 0,
+            0.30f, -0.22f, 0.18f, -0.42f, -16, 24, 20,
+            0.42f, -0.22f, 0.18f, -0.42f, -16, 24, 34,
+            0.65f, -0.04f, 0.06f, -0.06f, 4, 8, 10,
+            1.00f, 0, 0, 0, 0, 0, 0);
+    /** a button: one finger out, a firm poke */
+    public static final Clip PRESS = Clip.of(
+            0.00f, 0, 0, 0, 0, 0, 0,
+            0.25f, -0.24f, 0.20f, -0.30f, -10, 16, 0,
+            0.38f, -0.26f, 0.20f, -0.48f, -10, 16, 0,
+            0.50f, -0.24f, 0.20f, -0.34f, -10, 16, 0,
+            1.00f, 0, 0, 0, 0, 0, 0);
+    /** a lever: reach, grip, pull it down toward you */
+    public static final Clip PULL = Clip.of(
+            0.00f, 0, 0, 0, 0, 0, 0,
+            0.25f, -0.22f, 0.26f, -0.40f, -20, 16, 0,
+            0.50f, -0.12f, -0.02f, -0.12f, 20, 12, 0,
+            0.62f, -0.12f, -0.03f, -0.11f, 22, 12, 0,
+            1.00f, 0, 0, 0, 0, 0, 0);
+    /** dropping something: a little toss forward */
+    public static final Clip TOSS = Clip.of(
+            0.00f, 0, 0, 0, 0, 0, 0,
+            0.20f, 0.02f, -0.04f, 0.04f, 10, 0, 0,
+            0.42f, -0.06f, 0.10f, -0.20f, -26, 10, 0,
+            1.00f, 0, 0, 0, 0, 0, 0);
+
+    public static final Clip[] ALL = {SLASH_A, SLASH_B, STAB, CHOP, MINE, DIG, TILL, PUNCH, PLACE, THROW, SWAT,
+            POUR, SCOOP, STRIKE, SNIP, SPRINKLE, STRIP, FLATTEN, CAST, REEL, OPEN, PRESS, PULL, TOSS};
+    public static final String[] NAMES = {"slash_a", "slash_b", "stab", "chop", "mine", "dig", "till", "punch", "place", "throw", "swat",
+            "pour", "scoop", "strike", "snip", "sprinkle", "strip", "flatten", "cast", "reel", "open", "press", "pull", "toss"};
 }
