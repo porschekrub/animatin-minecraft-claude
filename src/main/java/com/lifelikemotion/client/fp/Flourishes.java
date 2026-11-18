@@ -176,6 +176,87 @@ public final class Flourishes {
             0.68f, -0.12f, 0.08f, -0.03f, -6, 6, 718,
             1.00f, 0, 0, 0, 0, 0, 720), 50);
 
+
+    // ---------------------------------------------------------------- one item each
+    /** a compass brought up close and turned a little this way and that, finding north */
+    public static final Move COMPASS_LOOK = new Move("compass_look", Clip.of(
+            0.00f, 0, 0, 0, 0, 0, 0,
+            0.20f, -0.28f, 0.16f, 0.0f, -20, 58, 0,
+            0.36f, -0.28f, 0.16f, 0.0f, -20, 50, -4,
+            0.52f, -0.29f, 0.16f, 0.0f, -20, 64, 4,
+            0.68f, -0.28f, 0.16f, 0.0f, -20, 57, 0,
+            0.82f, -0.20f, 0.11f, 0.0f, -14, 40, 0,
+            1.00f, 0, 0, 0, 0, 0, 0), 64);
+    /** a book held up in front to read, pages flicked over three times */
+    public static final Move BOOK_READ = new Move("book_read", Clip.of(
+            0.00f, 0, 0, 0, 0, 0, 0,
+            0.18f, -0.30f, 0.14f, 0.02f, -14, 62, 0,
+            0.34f, -0.30f, 0.14f, 0.02f, -14, 62, 0,
+            0.38f, -0.30f, 0.15f, 0.02f, -14, 76, -22,
+            0.43f, -0.30f, 0.14f, 0.02f, -14, 62, 0,
+            0.53f, -0.30f, 0.14f, 0.02f, -14, 62, 0,
+            0.57f, -0.30f, 0.15f, 0.02f, -14, 76, -22,
+            0.62f, -0.30f, 0.14f, 0.02f, -14, 62, 0,
+            0.70f, -0.30f, 0.14f, 0.02f, -14, 62, 0,
+            0.74f, -0.30f, 0.15f, 0.02f, -14, 76, -22,
+            0.79f, -0.30f, 0.14f, 0.02f, -14, 62, 0,
+            1.00f, 0, 0, 0, 0, 0, 0), 90);
+    /** a full bucket lifted and given a few shakes to hear it slosh */
+    public static final Move BUCKET_SHAKE = new Move("bucket_shake", Clip.of(
+            0.00f, 0, 0, 0, 0, 0, 0,
+            0.18f, -0.08f, 0.08f, 0, -6, 10, 0,
+            0.26f, -0.15f, 0.10f, 0, -6, 10, -24,
+            0.34f, -0.01f, 0.10f, 0, -6, 10, 24,
+            0.42f, -0.15f, 0.10f, 0, -6, 10, -24,
+            0.50f, -0.01f, 0.10f, 0, -6, 10, 24,
+            0.58f, -0.13f, 0.09f, 0, -6, 10, -14,
+            0.66f, -0.05f, 0.09f, 0, -6, 10, 7,
+            0.76f, -0.08f, 0.07f, 0, -5, 8, 0,
+            1.00f, 0, 0, 0, 0, 0, 0), 48);
+    /** flint and steel struck twice (sparks fly from each strike) */
+    public static final Move FLINT_STRIKE = new Move("flint_strike", Clip.of(
+            0.00f, 0, 0, 0, 0, 0, 0,
+            0.22f, -0.12f, 0.08f, -0.06f, -14, 14, 0,
+            0.32f, -0.14f, -0.01f, -0.10f, 34, 14, 0,
+            0.40f, -0.12f, 0.09f, -0.06f, -16, 14, 0,
+            0.52f, -0.14f, -0.01f, -0.10f, 34, 14, 0,
+            0.60f, -0.12f, 0.08f, -0.06f, -14, 14, 0,
+            0.76f, -0.10f, 0.06f, -0.04f, -8, 10, 0,
+            1.00f, 0, 0, 0, 0, 0, 0), 44);
+    /** the times (0..1) of the flint's strikes, for the sparks */
+    public static final float[] FLINT_SPARKS = {0.32f, 0.52f};
+    /** a spyglass lifted toward the eye for a look around, then lowered */
+    public static final Move SPYGLASS_PEEK = new Move("spyglass_peek", Clip.of(
+            0.00f, 0, 0, 0, 0, 0, 0,
+            0.22f, -0.30f, 0.28f, 0.16f, -8, 22, 0,
+            0.38f, -0.30f, 0.28f, 0.16f, -8, 16, 0,
+            0.54f, -0.30f, 0.28f, 0.16f, -8, 28, 0,
+            0.70f, -0.30f, 0.28f, 0.16f, -8, 22, 0,
+            0.84f, -0.20f, 0.18f, 0.10f, -6, 15, 0,
+            1.00f, 0, 0, 0, 0, 0, 0), 66);
+    /** a totem held up high, swaying, as if showing it off */
+    public static final Move TOTEM_RAISE = new Move("totem_raise", Clip.of(
+            0.00f, 0, 0, 0, 0, 0, 0,
+            0.20f, -0.14f, 0.40f, -0.12f, -15, 8, 0,
+            0.34f, -0.14f, 0.43f, -0.12f, -15, 8, 7,
+            0.48f, -0.14f, 0.41f, -0.12f, -15, 8, -7,
+            0.62f, -0.14f, 0.43f, -0.12f, -15, 8, 5,
+            0.76f, -0.12f, 0.36f, -0.10f, -12, 6, 0,
+            1.00f, 0, 0, 0, 0, 0, 0), 64);
+    /** an egg tossed high with a slow turn, caught gently, a careful wobble */
+    public static final Move EGG_TOSS = new Move("egg_toss", Clip.of(
+            0.00f, 0, 0, 0, 0, 0, 0,
+            0.14f, 0, -0.04f, 0, 6, 0, 0,
+            0.32f, -0.06f, 0.30f, -0.03f, -60, 0, 0,
+            0.44f, -0.07f, 0.38f, -0.03f, -110, 0, 0,
+            0.58f, -0.04f, 0.14f, -0.01f, -170, 0, 0,
+            0.66f, 0, -0.06f, 0.01f, -180, 0, 0,
+            0.74f, 0, -0.02f, 0, -180, 0, 9,
+            0.82f, 0, -0.02f, 0, -180, 0, -7,
+            0.90f, 0, 0, 0, -180, 0, 3,
+            1.00f, 0, 0, 0, -180, 0, 0), 54);
+
     public static final Move[] ALL = {SWORD_TWIRL_WIPE, SWORD_FLIP, TOOL_TOSS, TOOL_SHOULDER, TOOL_TWIRL, SHOVEL_SPIN, ROD_FLICK,
-            SMALL_TOSS, TURN_OVER, JUGGLE, LIGHT_RAISE, HAND_FLEX, HAND_CRACK, BOW_PLUCK, SHIELD_BRACE, TRIDENT_SPIN};
+            SMALL_TOSS, TURN_OVER, JUGGLE, LIGHT_RAISE, HAND_FLEX, HAND_CRACK, BOW_PLUCK, SHIELD_BRACE, TRIDENT_SPIN,
+            COMPASS_LOOK, BOOK_READ, BUCKET_SHAKE, FLINT_STRIKE, SPYGLASS_PEEK, TOTEM_RAISE, EGG_TOSS};
 }

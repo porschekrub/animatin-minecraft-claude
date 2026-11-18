@@ -124,7 +124,9 @@ public final class ClientSmoke {
         String[][] showItems = {{"sword_twirl_wipe", "iron_sword"}, {"sword_flip", "diamond_sword"}, {"tool_toss", "iron_axe"},
                 {"tool_shoulder", "diamond_pickaxe"}, {"tool_twirl", "iron_pickaxe"}, {"shovel_spin", "iron_shovel"}, {"rod_flick", "fishing_rod"},
                 {"small_toss", "oak_planks"}, {"turn_over", "bread"}, {"juggle", "snowball"}, {"light_raise", "lantern"},
-                {"hand_flex", "air"}, {"hand_crack", "air"}, {"bow_pluck", "bow"}, {"shield_brace", "shield"}, {"trident_spin", "trident"}};
+                {"hand_flex", "air"}, {"hand_crack", "air"}, {"bow_pluck", "bow"}, {"shield_brace", "shield"}, {"trident_spin", "trident"},
+                {"compass_look", "compass"}, {"book_read", "book"}, {"bucket_shake", "water_bucket"}, {"flint_strike", "flint_and_steel"},
+                {"spyglass_peek", "spyglass"}, {"totem_raise", "totem_of_undying"}, {"egg_toss", "egg"}};
         for (String[] si : showItems) {
             com.lifelikemotion.client.fp.Flourishes.Move mv = null;
             for (var m : com.lifelikemotion.client.fp.Flourishes.ALL) if (m.name().equals(si[0])) mv = m;

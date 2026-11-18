@@ -57,6 +57,18 @@ public final class Flourish {
         if (i instanceof BowItem || i instanceof CrossbowItem) return new Flourishes.Move[]{Flourishes.BOW_PLUCK};
         if (i instanceof ShieldItem) return new Flourishes.Move[]{Flourishes.SHIELD_BRACE};
         if (i instanceof TridentItem) return new Flourishes.Move[]{Flourishes.TRIDENT_SPIN};
+        // the items with a move of their own
+        if (i instanceof CompassItem || s.is(Items.RECOVERY_COMPASS)) return new Flourishes.Move[]{Flourishes.COMPASS_LOOK};
+        if (i instanceof BookItem || i instanceof WritableBookItem || i instanceof WrittenBookItem || i instanceof EnchantedBookItem
+                || s.is(Items.KNOWLEDGE_BOOK))
+            return new Flourishes.Move[]{Flourishes.BOOK_READ};
+        if (i instanceof BucketItem b && b.getFluid() != net.minecraft.world.level.material.Fluids.EMPTY || i instanceof MilkBucketItem
+                || i instanceof SolidBucketItem)
+            return new Flourishes.Move[]{Flourishes.BUCKET_SHAKE};
+        if (i instanceof FlintAndSteelItem) return new Flourishes.Move[]{Flourishes.FLINT_STRIKE};
+        if (i instanceof SpyglassItem) return new Flourishes.Move[]{Flourishes.SPYGLASS_PEEK};
+        if (s.is(Items.TOTEM_OF_UNDYING)) return new Flourishes.Move[]{Flourishes.TOTEM_RAISE};
+        if (i instanceof EggItem) return new Flourishes.Move[]{Flourishes.EGG_TOSS};
         return switch (ItemKind.of(s)) {
             case SWORD -> new Flourishes.Move[]{Flourishes.SWORD_TWIRL_WIPE, Flourishes.SWORD_FLIP};
             case AXE -> new Flourishes.Move[]{Flourishes.TOOL_TOSS, Flourishes.TOOL_SHOULDER};
@@ -92,6 +104,10 @@ public final class Flourish {
             else if ((moving && !manualRun) || busy || main.getItem() != playingItem) stopAt = Motion.ticks;
         }
         if (playing != null && stopAt >= 0 && Motion.ticks - stopAt > FADE) playing = null;
+        // flint and steel: sparks off each strike
+        if (playing == Flourishes.FLINT_STRIKE && stopAt < 0)
+            for (float at : Flourishes.FLINT_SPARKS)
+                if (Motion.ticks - start == Math.round(at * playing.ticks())) sparks(p);
         still = moving || busy ? 0 : still + 1;
         if (still == 0) nextAt = 50;
         boolean auto = LMConfig.FP_IDLE_SHOW.get() && still >= nextAt;
@@ -106,6 +122,22 @@ public final class Flourish {
                 nextAt = still + playing.ticks() + 100 + p.getRandom().nextInt(140);
             }
         }
+    }
+
+    /** a few sparks just in front of you, a little to the hand's side */
+    static void sparks(LocalPlayer p) {
+        var look = p.getLookAngle();
+        double yaw = Math.toRadians(p.getYRot());
+        double side = p.getMainArm() == net.minecraft.world.entity.HumanoidArm.RIGHT ? 1 : -1;
+        double rx = -Math.cos(yaw) * side, rz = -Math.sin(yaw) * side;
+        double x = p.getX() + look.x * 0.55 + rx * 0.18, y = p.getEyeY() + look.y * 0.55 - 0.12, z = p.getZ() + look.z * 0.55 + rz * 0.18;
+        var lvl = p.level();
+        for (int k = 0; k < 5; k++) {
+            var r = p.getRandom();
+            lvl.addParticle(k < 3 ? net.minecraft.core.particles.ParticleTypes.ELECTRIC_SPARK : net.minecraft.core.particles.ParticleTypes.SMALL_FLAME,
+                    x, y, z, (r.nextDouble() - 0.5) * 0.06, r.nextDouble() * 0.04, (r.nextDouble() - 0.5) * 0.06);
+        }
+        lvl.playLocalSound(x, y, z, net.minecraft.sounds.SoundEvents.FLINTANDSTEEL_USE, net.minecraft.sounds.SoundSource.PLAYERS, 0.35f, 1.3f, false);
     }
 
     static boolean manualRun;

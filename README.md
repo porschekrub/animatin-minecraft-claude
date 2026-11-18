@@ -11,7 +11,9 @@ Everything you do gets an animation.
 - **Every item has its own stance** – how it's held standing, walking and running: tools go over the shoulder when you
   run, a sword is held up and ready, a torch or lantern is held out to light the way, fists pump. Stand still for a
   moment and you show off what you hold: sword twirls and blade wipes, axe and tool tosses, spins, juggling a snowball,
-  turning food over to look at it, raising a lantern, cracking your knuckles. Press **I** to do it any time.
+  turning food over to look at it, raising a lantern, cracking your knuckles. Some items have a move of their own: checking a compass, reading a book, sloshing a
+  bucket, striking flint and steel (with sparks), peeking through a spyglass, holding up a totem, tossing an egg.
+  Press **I** to do it any time.
 - **Lively bodies** – breathing, a torso that twists and bounces with each step, leaning into a sprint, knees up on a
   jump and flailing on a fall, a squash on landing, paddling and kicking in water, a flutter kick when swimming, hand over
   hand up ladders, flinching when hurt, food to the mouth, big readable swings.
