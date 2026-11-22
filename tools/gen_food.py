@@ -44,7 +44,7 @@ class Food:
     def __init__(self, name):
         self.name = name
 
-    def build(self, shape, glow=lambda c: False, scale=1.0):
+    def build(self, shape, glow=lambda c: False, scale=1.0, layer_light=True):
         """shape(x, y, z) -> (r, g, b) or None, sampled at voxel centres"""
         grid = {}
         for ix in range(N):
@@ -58,7 +58,7 @@ class Food:
         # hidden voxels are kept so the boxes can run straight through the inside
         lit = {}
         for (ix, iy, iz), c in grid.items():
-            k = 0.8 + 0.34 * round((iy + 1) / N * 6) / 6
+            k = 0.8 + 0.34 * round((iy + 1) / N * 6) / 6 if layer_light else 1.0
             lit[(ix, iy, iz)] = (shade(c, k), glow(c))
         # one swatch per colour
         colours = sorted({v for v in lit.values()})
@@ -403,6 +403,248 @@ def rabbit_meat(meat, cooked):
     return f, None
 
 
+# ---------------------------------------------------------------- batch 3: gems, ores, ingots
+def facet(c, nx, ny, nz):
+    """a facet's colour from which way it faces: light from above-left-front, a white glint on the brightest"""
+    k = 0.55 + 0.45 * max(0.0, (-0.45 * nx + 0.75 * ny + 0.5 * nz))
+    out = shade(c, 0.7 + 0.6 * k)
+    return mix(out, (255, 255, 255), 0.45) if k > 0.95 else out
+
+
+def cut_gem(c, glow_core=None):
+    """a brilliant cut: a crown (flat table, sloped facets) over a pointed pavilion"""
+    def f(x, y, z):
+        dx, dz = x - 8, z - 8
+        r = math.hypot(dx, dz)
+        ang = math.atan2(dz, dx)
+        sector = round(ang / (math.pi / 4)) * (math.pi / 4)  # eight facets around
+        rr = r * math.cos(ang - sector)
+        top, girdle, bottom = 11.0, 8.0, 2.2
+        if girdle <= y <= top:
+            lim = 5.4 - (y - girdle) * 0.9
+            if rr < lim:
+                if y > top - STEP:
+                    return facet(c, 0, 1, 0)
+                return facet(c, math.cos(sector) * 0.7, 0.7, math.sin(sector) * 0.7)
+        if bottom <= y < girdle:
+            lim = 5.4 * (y - bottom) / (girdle - bottom)
+            if rr < lim:
+                if glow_core and rr < lim * 0.35:
+                    return glow_core
+                return facet(shade(c, 0.85), math.cos(sector) * 0.7, -0.7, math.sin(sector) * 0.7)
+        return None
+    return f, (lambda col: glow_core is not None and col == glow_core)
+
+
+def big_gem(c, core):
+    """a clean cut: a flat table on top, four broad crown facets, a deep four-sided pavilion, a glowing heart"""
+    def f(x, y, z):
+        dx, dz = x - 8, z - 8
+        m = abs(dx) + abs(dz) * 0.9
+        top, girdle, bottom = 11.6, 8.4, 2.0
+        if girdle <= y <= top:
+            lim = 5.6 - (y - girdle) * 0.95
+            if m < lim:
+                if y > top - 0.6:
+                    return facet(c, 0, 1, 0)
+                return facet(c, math.copysign(0.6, dx), 0.75, math.copysign(0.6, dz))
+        if bottom <= y < girdle:
+            lim = 5.6 * (y - bottom) / (girdle - bottom)
+            if m < lim:
+                if m < lim * 0.3 and y > 5:
+                    return core
+                return facet(shade(c, 0.85), math.copysign(0.6, dx), -0.6, math.copysign(0.6, dz))
+        return None
+    return f, (lambda col: col == core)
+
+
+def emerald_cut(c):
+    """a step-cut emerald: an octagonal slab with bevelled steps"""
+    def f(x, y, z):
+        ax, ay, az = abs(x - 8), abs(y - 8), abs(z - 8)
+        if az > 2.2 or ax > 3.6 or ay > 5.4 or ax + ay > 7.6:
+            return None
+        step = az > 1.4 or ax > 3.0 or ay > 4.8 or ax + ay > 7.0
+        n = (math.copysign(0.6, x - 8) if ax > 3.0 else 0, math.copysign(0.6, y - 8) if ay > 4.8 else 0, math.copysign(1, z - 8))
+        return facet(shade(c, 0.9) if step else c, *n)
+    return f, None
+
+
+def crystal(c, glowing=True, points=((8, 2, 8, 2.0, 12.0, 0, 0),)):
+    """pointed hexagonal crystals: (x, y, z, radius, length, tilt x, tilt z)"""
+    def f(x, y, z):
+        for (cx, cy, cz, r, ln, tx, tz) in points:
+            ry = y - cy
+            if not 0 <= ry <= ln:
+                continue
+            px, pz = x - cx - tx * ry, z - cz - tz * ry
+            tip = ln * 0.72
+            lim = r if ry < tip else r * (ln - ry) / (ln - tip)
+            if max(abs(px), abs(pz), (abs(px) + abs(pz)) * 0.7) < lim:
+                side = 1 if px + pz > 0 else -1
+                col = facet(c, side * 0.6, 0.5 if ry > tip else 0, -side * 0.4)
+                if abs(px) < lim * 0.35 and abs(pz) < lim * 0.35:
+                    col = mix(col, (255, 255, 255), 0.35)
+                return col
+        return None
+    return f, (lambda col: glowing)
+
+
+def lump(c, spots=None, spot_c=None, rx=4.6, ry=3.8, rz=4.0, rough=0.28, seed=1):
+    """a rough chunk of rock or ore, flecked with metal"""
+    def f(x, y, z):
+        d = ell(x, y, z, 8, 7.6, 8, rx, ry, rz) + rough * (noise(x // 1.5, y // 1.5, z // 1.5, seed) - 0.5)
+        if d < 1:
+            if spots and noise(x // 1, y // 1, z // 1, seed + 5) < spots:
+                return spot_c
+            n = noise(x // 2, y // 2, z // 2, seed + 9)
+            return shade(c, 0.85 if n < 0.3 else 1.08 if n > 0.75 else 1.0)
+        return None
+    return f, None
+
+
+def ingot(c, stamp=None):
+    """a cast bar: wider at the bottom, a bevelled top, a stamped mark"""
+    def f(x, y, z):
+        h = y - 5
+        if not 0 <= h <= 4.0:
+            return None
+        hx, hz = 6.4 - h * 0.45, 3.4 - h * 0.35
+        if abs(x - 8) > hx or abs(z - 8) > hz:
+            return None
+        if h > 3.4:
+            if stamp and abs(x - 8) < 1.6 and abs(z - 8) < 0.8:
+                return shade(c, 0.7)
+            return mix(c, (255, 255, 255), 0.3)
+        edge = abs(x - 8) > hx - 0.6 or abs(z - 8) > hz - 0.6
+        return facet(c, math.copysign(0.7, x - 8) if abs(x - 8) > hx - 0.6 else 0, 0.3, math.copysign(0.7, z - 8) if abs(z - 8) > hz - 0.6 else 0.6) if edge else c
+    return f, None
+
+
+def nugget(c):
+    def f(x, y, z):
+        d = ell(x, y, z, 8, 6.4, 8, 2.8, 2.0, 2.4) + 0.3 * (noise(x // 1, y // 1, z // 1, 41) - 0.5)
+        if d < 1:
+            return mix(c, (255, 255, 255), 0.4) if y > 7.6 and x < 8 else c
+        return None
+    return f, None
+
+
+def dust(c, glowing=False):
+    """a little heap of powder"""
+    def f(x, y, z):
+        r = math.hypot(x - 8, z - 8)
+        if y > 4 and y - 4 < 3.4 - r * 0.62 + 0.4 * noise(x // 1, 0, z // 1, 43):
+            return shade(c, 0.85 + 0.3 * noise(x // 1, y // 1, z // 1, 47))
+        return None
+    return f, (lambda col: glowing)
+
+
+def orb(c, c2, glowing=True, pupil=None):
+    def f(x, y, z):
+        d = ell(x, y, z, 8, 8, 8, 4.0, 4.0, 4.0)
+        if d < 1:
+            if pupil and ell(x, y, z, 8, 8, 11.6, 1.2, 2.2, 0.8) < 1:
+                return pupil
+            swirl = math.sin(math.atan2(z - 8, x - 8) * 3 + (y - 8) * 0.8) > 0.4
+            col = c2 if swirl else c
+            if ell(x, y, z, 6.8, 9.8, 10.6, 1.0, 1.0, 1.0) < 1:
+                col = mix(col, (255, 255, 255), 0.6)
+            return col
+        return None
+    return f, (lambda col: glowing and col != pupil)
+
+
+def star():
+    def f(x, y, z):
+        dx, dy, dz = x - 8, y - 8, z - 8
+        r = math.hypot(dx, dy)
+        a = math.atan2(dy, dx)
+        arm = 2.0 + 4.6 * max(0.0, math.cos(2.5 * a)) ** 3
+        if r < arm and abs(dz) < 1.6 - r * 0.15:
+            return mix((255, 255, 230), (200, 220, 255), r / 7)
+        if r < 1.8 and abs(dz) < 2.2:
+            return (255, 255, 255)
+        return None
+    return f, (lambda col: True)
+
+
+def rod(c, c2, glowing=False):
+    def f(x, y, z):
+        if 1.0 < y < 15.0 and math.hypot(x - 8, z - 8) < 1.1:
+            return c2 if int(y * 1.2) % 3 == 0 else c
+        return None
+    return f, (lambda col: glowing)
+
+
+def bricks(c, mortar):
+    def f(x, y, z):
+        if 5.0 < y < 9.0 and abs(x - 8) < 5.2 and abs(z - 8) < 2.6:
+            if y > 8.6 or abs(x - 8) > 4.8 or abs(z - 8) > 2.2:
+                return shade(c, 0.85)
+            return c if noise(x // 2, y // 2, z // 2, 53) > 0.2 else shade(c, 0.9)
+        return None
+    return f, None
+
+
+def blob(c, c2=None, glowing=False):
+    def f(x, y, z):
+        d = ell(x, y, z, 8, 7.2, 8, 4.0, 3.4, 4.0)
+        if d < 1:
+            if d < 0.35 and c2:
+                return c2
+            if ell(x, y, z, 6.6, 9.2, 10.2, 1.0, 0.8, 1.0) < 1:
+                return mix(c, (255, 255, 255), 0.6)
+            return c
+        return None
+    return f, (lambda col: glowing)
+
+
+def shard(c, glowing=False):
+    return crystal(c, glowing, ((8, 3, 8, 1.6, 9.0, 0.15, 0.0), (6.6, 3.5, 8.6, 1.0, 6.0, -0.25, 0.1), (9.6, 3.5, 7.4, 1.0, 5.0, 0.35, -0.1)))
+
+
+BATCH3 = {
+    "diamond": lambda: big_gem((110, 240, 230), (220, 255, 255)),
+    "emerald": lambda: emerald_cut((40, 200, 90)),
+    "lapis_lazuli": lambda: lump((40, 70, 190), 0.08, (240, 210, 90), 3.6, 2.8, 3.2, 0.4, 3),
+    "amethyst_shard": lambda: shard((170, 110, 230), True),
+    "quartz": lambda: crystal((240, 236, 230), False, ((8, 3, 8, 1.8, 10.0, 0.1, 0), (6.4, 3.4, 8.4, 1.2, 7.0, -0.25, 0.05))),
+    "echo_shard": lambda: shard((30, 90, 110), True),
+    "prismarine_shard": lambda: shard((100, 180, 160)),
+    "prismarine_crystals": lambda: crystal((180, 240, 220), True, ((7, 4, 8, 1.6, 6, 0, 0), (9.6, 4, 7.6, 1.4, 5, 0.2, 0), (8, 4, 10, 1.2, 4, 0, 0.2))),
+    "coal": lambda: lump((40, 40, 44), 0.05, (90, 90, 100), seed=5),
+    "charcoal": lambda: lump((60, 50, 40), 0.06, (100, 80, 60), seed=7),
+    "flint": lambda: lump((70, 70, 76), None, None, 3.6, 3.4, 2.6, 0.5, 11),
+    "clay_ball": lambda: blob((170, 176, 190)),
+    "raw_iron": lambda: lump((200, 170, 150), 0.12, (230, 230, 235), seed=13),
+    "raw_gold": lambda: lump((230, 180, 60), 0.12, (255, 240, 140), seed=17),
+    "raw_copper": lambda: lump((200, 110, 70), 0.12, (100, 190, 150), seed=19),
+    "iron_ingot": lambda: ingot((216, 218, 224), True),
+    "gold_ingot": lambda: ingot((250, 205, 60), True),
+    "copper_ingot": lambda: ingot((220, 120, 80), True),
+    "netherite_ingot": lambda: ingot((76, 66, 72), True),
+    "netherite_scrap": lambda: lump((90, 70, 70), 0.1, (255, 140, 40), 3.8, 3.0, 3.4, 0.5, 23),
+    "iron_nugget": lambda: nugget((216, 218, 224)),
+    "gold_nugget": lambda: nugget((250, 205, 60)),
+    "redstone": lambda: dust((220, 20, 20), True),
+    "glowstone_dust": lambda: dust((250, 220, 110), True),
+    "gunpowder": lambda: dust((90, 90, 90)),
+    "sugar": lambda: dust((245, 245, 245)),
+    "blaze_powder": lambda: dust((250, 170, 40), True),
+    "bone_meal": lambda: dust((240, 240, 230)),
+    "ender_pearl": lambda: orb((20, 110, 100), (60, 200, 170)),
+    "ender_eye": lambda: orb((40, 140, 90), (120, 220, 120), True, (20, 30, 20)),
+    "heart_of_the_sea": lambda: orb((30, 80, 200), (100, 200, 250)),
+    "nether_star": star,
+    "blaze_rod": lambda: rod((250, 190, 40), (250, 230, 120), True),
+    "brick": lambda: bricks((170, 80, 60), (200, 190, 180)),
+    "nether_brick": lambda: bricks((70, 30, 40), (100, 60, 60)),
+    "slime_ball": lambda: blob((110, 200, 90), (80, 160, 70)),
+    "magma_cream": lambda: blob((220, 120, 40), (250, 200, 60), True),
+}
+FOODS_ONLY = None
+
 GOLD = ((250, 200, 50), (255, 240, 140))
 FOODS = {
     "apple": lambda: apple(),
@@ -452,19 +694,89 @@ FLAT = {"cookie", "pumpkin_pie", "beef", "cooked_beef", "porkchop", "cooked_pork
         "rabbit_stew", "beetroot_soup", "suspicious_stew", "dried_kelp", "rotten_flesh"}
 
 
+def tilt(shape, deg=55):
+    """lying flat -> tipped up toward you by deg degrees (about x, around the middle)"""
+    a = math.radians(deg)
+    ca, sa = math.cos(a), math.sin(a)
+
+    def f(x, y, z):
+        y0, z0 = y - 8, z - 8
+        return shape(x, 8 + y0 * ca + z0 * sa - 2.5, 8 - y0 * sa + z0 * ca)
+    return f
+
+
+FACETED = {"diamond", "emerald", "amethyst_shard", "quartz", "echo_shard", "prismarine_shard", "prismarine_crystals", "iron_ingot",
+           "gold_ingot", "copper_ingot", "netherite_ingot", "nether_star"}
+TILTED = {"iron_ingot", "gold_ingot", "copper_ingot", "netherite_ingot", "redstone", "glowstone_dust", "gunpowder", "sugar",
+          "blaze_powder", "bone_meal", "brick", "nether_brick", "iron_nugget", "gold_nugget"}
+
+
 def stand(shape):
     """lying flat -> standing up facing you (top toward +z)"""
     return lambda x, y, z: shape(x, z, 16 - y)
 
 
+def layered_gem(name, c, core, profile, glow_core=True):
+    """a gem from square layers turned 45 degrees: each side of a layer is one clean, evenly lit facet"""
+    faces_c = {"up": mix(c, (255, 255, 255), 0.45), "down": shade(c, 0.55), "north": shade(c, 0.85), "south": mix(c, (255, 255, 255), 0.2),
+               "east": shade(c, 0.7), "west": c}
+    tex = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    uv = {}
+    for i, (k, col) in enumerate(list(faces_c.items()) + [("core", core)]):
+        for dx in range(2):
+            for dy in range(2):
+                tex.putpixel((i * 2 + dx, dy), col + (255,))
+        uv[k] = [i * 2 + 0.1, 0.1, i * 2 + 1.9, 1.9]
+    els = []
+    for (y0, y1, half) in profile:
+        faces = {k: {"uv": uv[k], "texture": "#t"} for k in faces_c}
+        els.append({"from": [8 - half, y0, 8 - half], "to": [8 + half, y1, 8 + half], "faces": faces, "shade": False,
+                    "rotation": {"angle": 45, "axis": "y", "origin": [8, 8, 8]}})
+    if glow_core:
+        els.append({"from": [7.2, 4.0, 7.2], "to": [8.8, 8.6, 8.8], "faces": {k: {"uv": uv["core"], "texture": "#t"} for k in faces_c},
+                    "forge_data": {"block_light": 15, "sky_light": 15}, "shade": False,
+                    "rotation": {"angle": 45, "axis": "y", "origin": [8, 8, 8]}})
+    tname = f"item/food/{name}"
+    tex.save(os.path.join(PACK, "assets", NS, "textures", tname + ".png"))
+    s_ = 0.55
+    display = {
+        "thirdperson_righthand": {"rotation": [0, 0, 0], "translation": [0, 3, 1], "scale": [0.5] * 3},
+        "thirdperson_lefthand": {"rotation": [0, 0, 0], "translation": [0, 3, 1], "scale": [0.5] * 3},
+        "firstperson_righthand": {"rotation": [10, -70, 15], "translation": [0, 4.6, 0], "scale": [s_] * 3},
+        "firstperson_lefthand": {"rotation": [10, 70, -15], "translation": [0, 4.6, 0], "scale": [s_] * 3},
+        "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.5] * 3},
+        "fixed": {"rotation": [0, 180, 0], "scale": [1, 1, 1]},
+        "head": {"rotation": [0, 180, 0], "translation": [0, 13, 7], "scale": [1, 1, 1]},
+    }
+    with open(os.path.join(PACK, "assets", NS, "models", "item3d", name + ".json"), "w") as f:
+        json.dump({"textures": {"t": f"{NS}:{tname}", "particle": f"{NS}:{tname}"}, "display": display, "elements": els}, f,
+                  separators=(",", ":"))
+    gui = "minecraft:item/" + name
+    with open(os.path.join(PACK, "assets", "minecraft", "models", "item", name + ".json"), "w") as f:
+        json.dump({"loader": "forge:separate_transforms", "textures": {"particle": gui}, "base": {"parent": f"{NS}:item3d/{name}"},
+                   "perspectives": {"gui": {"parent": "minecraft:item/generated", "textures": {"layer0": gui}}}}, f, separators=(",", ":"))
+
+
+# the pavilion narrows to a point below; the crown steps in to a flat table on top
+DIAMOND_PROFILE = [(2.0, 3.2, 0.6), (3.2, 4.4, 1.5), (4.4, 5.6, 2.4), (5.6, 6.8, 3.3), (6.8, 8.0, 4.1), (8.0, 9.0, 4.4),
+                   (9.0, 10.0, 3.7), (10.0, 10.9, 3.0), (10.9, 11.6, 2.2)]
+
 n = 0
-for name, make in FOODS.items():
+for name, make in list(FOODS.items()) + list(BATCH3.items()):
+    if name == "diamond":
+        if not ONLY or name in ONLY:
+            layered_gem("diamond", (110, 240, 230), (230, 255, 255), DIAMOND_PROFILE)
+            n += 1
+        continue
     if ONLY and name not in ONLY:
         continue
     shape, glow = make()
     if name in FLAT:
         shape = stand(shape)
-    els = Food(name).build(shape, glow or (lambda c: False))
+    if name in TILTED:
+        shape = tilt(shape)
+    els = Food(name).build(shape, glow or (lambda c: False), layer_light=name not in FACETED,
+                           scale=0.8 if name == "emerald" else 1.15 if name in ("diamond", "iron_nugget", "gold_nugget") else 1.0)
     n += 1
     print(f"{name}: {els} boxes")
 print("made", n, "foods")

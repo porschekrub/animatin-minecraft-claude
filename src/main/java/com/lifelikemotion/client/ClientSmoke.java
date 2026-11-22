@@ -174,6 +174,27 @@ public final class ClientSmoke {
             if (t == 31) cmd("kill @e[type=item]");
             return t > 34;
         });
+        for (String it : new String[]{"diamond", "emerald", "amethyst_shard", "gold_ingot", "netherite_ingot", "raw_gold", "redstone", "ender_pearl", "nether_star", "blaze_rod", "heart_of_the_sea", "coal"})
+            fp("gem_" + it, it, null, 0);
+        if (wanted("gem_ground")) add(t -> {
+            String[] gems = {"diamond", "emerald", "lapis_lazuli", "amethyst_shard", "quartz", "echo_shard", "prismarine_shard", "prismarine_crystals",
+                    "coal", "charcoal", "flint", "clay_ball", "raw_iron", "raw_gold", "raw_copper", "iron_ingot", "gold_ingot", "copper_ingot",
+                    "netherite_ingot", "netherite_scrap", "iron_nugget", "gold_nugget", "redstone", "glowstone_dust", "gunpowder", "sugar",
+                    "blaze_powder", "bone_meal", "ender_pearl", "ender_eye", "heart_of_the_sea", "nether_star", "blaze_rod", "brick", "nether_brick",
+                    "slime_ball", "magma_cream"};
+            if (t == 0) {
+                mc.options.setCameraType(CameraType.FIRST_PERSON);
+                give("air");
+                cmd("kill @e[type=item]");
+                cmd("tp @s 0 -60 -1 0 55");
+                for (int i = 0; i < gems.length; i++)
+                    cmd(String.format("summon item %.2f -60 %.2f {Item:{id:\"minecraft:%s\",Count:1b},PickupDelay:32767,Age:-32768,NoGravity:1b}",
+                            -2.4 + (i % 8) * 0.7, 0.6 + (i / 8) * 0.7, gems[i]));
+            }
+            if (t == 30) shot("gem_ground");
+            if (t == 31) cmd("kill @e[type=item]");
+            return t > 34;
+        });
         use("food_eat_apple", "apple", 14);
         use("food_eat_stew", "mushroom_stew", 14);
         // every show-off move, frozen at eight points in time, with an item it belongs to
