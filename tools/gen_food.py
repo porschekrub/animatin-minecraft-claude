@@ -17,9 +17,11 @@ import sys
 from PIL import Image
 
 PACK = sys.argv[1]
+JAR = os.environ.get("MC_JAR", "/tmp/mcjar/client.jar")
 ONLY = set(sys.argv[2:])
 NS = "lifelikemotion"
 STEP = 0.5
+TINT = (253, 253, 253)
 N = int(16 / STEP)
 
 
@@ -41,8 +43,11 @@ def noise(x, y, z, seed=0):
 
 
 class Food:
-    def __init__(self, name):
+    def __init__(self, name, gui=None, overrides=None, gui_layers=None):
         self.name = name
+        self.gui = gui
+        self.overrides = overrides
+        self.gui_layers = gui_layers
 
     def build(self, shape, glow=lambda c: False, scale=1.0, layer_light=True):
         """shape(x, y, z) -> (r, g, b) or None, sampled at voxel centres"""
@@ -55,26 +60,39 @@ class Food:
                     if c is not None:
                         grid[(ix, iy, iz)] = c
         # light: brighter toward the top (by layer, so whole slices of one material merge into big boxes);
-        # hidden voxels are kept so the boxes can run straight through the inside
+        # hidden voxels are kept so the boxes can run straight through the inside.
+        # A colour can be (r, g, b, alpha) for glass, or TINT for the part the game colours (potions, tipped arrows)
         lit = {}
         for (ix, iy, iz), c in grid.items():
             k = 0.8 + 0.34 * round((iy + 1) / N * 6) / 6 if layer_light else 1.0
-            lit[(ix, iy, iz)] = (shade(c, k), glow(c))
-        # one swatch per colour
+            tint = c == TINT
+            a = c[3] if len(c) == 4 else 255
+            rgb = shade(c[:3], k)
+            lit[(ix, iy, iz)] = (rgb + (a,), glow(c[:3]), tint)
+        clear = {v for v, key in lit.items() if key[0][3] < 255}
+        translucent = bool(clear)
         colours = sorted({v for v in lit.values()})
         tex = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
         uv = {}
         per_row = 64
-        for i, (c, g) in enumerate(colours):
+        for i, key in enumerate(colours):
             px, py = (i % per_row) * 2, (i // per_row) * 2
             if py >= 128:
                 raise RuntimeError(f"{self.name}: too many colours")
             for dx in range(2):
                 for dy in range(2):
-                    tex.putpixel((px + dx, py + dy), c + (255,))
-            s = 16 / 128
-            uv[(c, g)] = [px * s + 0.02, py * s + 0.02, (px + 2) * s - 0.02, (py + 2) * s - 0.02]
-        # greedy merge: rectangles of one colour in each layer (x then z) become one box; only faces that can be seen
+                    tex.putpixel((px + dx, py + dy), key[0])
+            s_ = 16 / 128
+            uv[key] = [px * s_ + 0.02, py * s_ + 0.02, (px + 2) * s_ - 0.02, (py + 2) * s_ - 0.02]
+
+        def blocks(cell, other):
+            """does a neighbour hide this face? empty never does; glass hides only glass"""
+            if other not in grid:
+                return False
+            if other in clear and cell not in clear:
+                return False
+            return True
+
         els = []
         done = set()
         for (ix, iy, iz) in sorted(lit, key=lambda v: (v[1], v[2], v[0])):
@@ -92,12 +110,12 @@ class Food:
             done.update(cells)
             u = uv[key]
             faces = {}
-            def open_(d):
-                return any((a + d[0], b + d[1], c + d[2]) not in grid for (a, b, c) in cells)
             for name, d in (("west", (-1, 0, 0)), ("east", (1, 0, 0)), ("up", (0, 1, 0)), ("down", (0, -1, 0)),
                             ("south", (0, 0, 1)), ("north", (0, 0, -1))):
-                if open_(d):
+                if any(not blocks(cell, (cell[0] + d[0], cell[1] + d[1], cell[2] + d[2])) for cell in cells):
                     faces[name] = {"uv": u, "texture": "#t"}
+                    if key[2]:
+                        faces[name]["tintindex"] = 0
             if not faces:
                 continue
             e = {"from": [ix * STEP, iy * STEP, iz * STEP], "to": [(jx + 1) * STEP, (iy + 1) * STEP, (jz + 1) * STEP],
@@ -105,6 +123,7 @@ class Food:
             if key[1]:
                 e["forge_data"] = {"block_light": 15, "sky_light": 15}
             els.append(e)
+        self.translucent = translucent
         tname = f"item/food/{self.name}"
         tp = os.path.join(PACK, "assets", NS, "textures", tname + ".png")
         os.makedirs(os.path.dirname(tp), exist_ok=True)
@@ -120,12 +139,16 @@ class Food:
             "head": {"rotation": [0, 180, 0], "translation": [0, 13, 7], "scale": [1, 1, 1]},
         }
         model = {"textures": {"t": f"{NS}:{tname}", "particle": f"{NS}:{tname}"}, "display": display, "elements": els}
+        if self.translucent:
+            model["render_type"] = "minecraft:translucent"
         mp = os.path.join(PACK, "assets", NS, "models", "item3d", self.name + ".json")
         with open(mp, "w") as f:
             json.dump(model, f, separators=(",", ":"))
-        gui = "minecraft:item/" + self.name
+        gui = "minecraft:item/" + (self.gui or self.name)
         item = {"loader": "forge:separate_transforms", "textures": {"particle": gui}, "base": {"parent": f"{NS}:item3d/{self.name}"},
-                "perspectives": {"gui": {"parent": "minecraft:item/generated", "textures": {"layer0": gui}}}}
+                "perspectives": {"gui": {"parent": "minecraft:item/generated", "textures": self.gui_layers or {"layer0": gui}}}}
+        if self.overrides:
+            item["overrides"] = self.overrides
         with open(os.path.join(PACK, "assets", "minecraft", "models", "item", self.name + ".json"), "w") as f:
             json.dump(item, f, separators=(",", ":"))
         return len(els)
@@ -645,6 +668,441 @@ BATCH3 = {
 }
 FOODS_ONLY = None
 
+# ---------------------------------------------------------------- batch 4: potions, buckets, books, gear
+GLASS = (200, 235, 245, 110)
+
+
+def bottle(liquid, kind="potion", glowing=False):
+    """a glass bottle (round, splash = squat with a ring, lingering = tall neck) with liquid inside and a cork"""
+    neck_top = {"potion": 12.6, "splash": 11.6, "lingering": 13.6, "empty": 12.6}[kind]
+    ry = 3.4 if kind != "splash" else 3.0
+
+    def f(x, y, z):
+        r = math.hypot(x - 8, z - 8)
+        body = ell(x, y, z, 8, 6.2, 8, 3.8, ry, 3.8)
+        if body < 1:
+            if liquid and body < 0.72 and y < 7.4:
+                return liquid
+            if body > 0.72:
+                if ell(x, y, z, 6.6, 7.6, 11.2, 0.8, 1.2, 0.6) < 1:
+                    return (255, 255, 255, 200)
+                return GLASS
+            return None
+        if 8.6 <= y < neck_top and r < 1.5:
+            if r < 0.9 and liquid and kind == "lingering" and y < 10:
+                return liquid
+            return GLASS if r > 0.9 else None
+        if neck_top <= y < neck_top + 1.4 and r < 1.3:
+            return (170, 120, 70)
+        if kind == "splash" and 9.6 < y < 10.4 and 1.5 <= r < 2.1:
+            return (200, 200, 210)
+        return None
+    return f, (lambda c: glowing and c == liquid[:3])
+
+
+def bucket(fill=None, fill_glow=False, fish=None):
+    """a tin bucket with a rim and a handle; full of something, or with a fish in water"""
+    def f(x, y, z):
+        r = math.hypot(x - 8, z - 8)
+        top_r = 4.6
+        lim = 3.4 + (y - 3) / 8 * (top_r - 3.4)
+        if 3 <= y < 11 and r < lim:
+            if r > lim - 0.7 or y < 3.7:
+                if y > 10.2:
+                    return (230, 232, 238)
+                return (190, 194, 202) if int(y) % 3 else (160, 164, 172)
+            if fill and y > 9.4:
+                if fish and math.hypot(x - 8, z - 8.5) < 1.8 and abs(z - 8) < 1.4 and y > 10.2:
+                    return fish
+                return fill
+            return None
+        # handle: an arc over the top
+        if abs(z - 8) < 0.4:
+            a = math.atan2(y - 10.4, x - 8)
+            d = math.hypot(x - 8, y - 10.4)
+            if 0 < a < math.pi and abs(d - 4.4) < 0.35:
+                return (120, 124, 132)
+        if fish and 11.0 <= y < 12.6 and abs(z - 8) < 0.4 and 6.6 < x < 9.6:
+            return fish
+        return None
+    return f, (lambda c: fill_glow and fill and c == fill[:3])
+
+
+def book(cover, pages=(240, 232, 210), extra=None, rune=None):
+    """a thick book standing up: covers, a spine, page edges; a quill, a ribbon or glowing runes"""
+    def f(x, y, z):
+        if not (3 <= x < 13 and 1.5 <= y < 14.5 and 5.6 <= z < 10.4):
+            if extra == "quill" and 11 <= x < 12 and 9 <= y < 16 and 10.4 <= z < 11.2:
+                return (240, 240, 240) if y > 12 else (60, 60, 60)
+            if extra == "ribbon" and 9.0 <= x < 10.0 and 0.0 <= y < 1.5 and 7.6 <= z < 8.4:
+                return (200, 40, 40)
+            return None
+        if x < 4.0:
+            return shade(cover, 0.8)
+        if z < 6.3 or z >= 9.7:
+            if rune and 6 < x < 11 and 4 < y < 12 and (int(x) + int(y)) % 3 == 0:
+                return rune
+            if 5 < x < 12 and abs(y - 8) < 0.4:
+                return (220, 180, 70)
+            return cover
+        if y < 2.2 or y >= 13.8 or x >= 12.3:
+            return pages if int(y * 2 + z) % 2 else shade(pages, 0.88)
+        return None
+    return f, (lambda c: rune is not None and c == rune)
+
+
+def dial(face, rim, hand_angle, hand=(200, 40, 40), back=(160, 40, 40), night=None):
+    """a round dial facing you: rim, face, a needle (compass) or a hand over a day/night disc (clock)"""
+    a = math.radians(hand_angle)
+
+    def f(x, y, z):
+        dx, dy = x - 8, y - 8
+        r = math.hypot(dx, dy)
+        if r > 5.6 or abs(z - 8) > 1.4:
+            return None
+        if r > 4.8:
+            return rim if z > 7.0 else shade(rim, 0.8)
+        if z < 8.6:
+            if night is not None:
+                # the clock: a day/night disc turned with the time (sun half up, moon half down)
+                t = math.atan2(dy, dx) - a
+                return night[0] if math.sin(t) > 0 else night[1]
+            return face
+        # the needle: a line from the centre (red end toward the angle, grey behind)
+        ax, ay = math.sin(a), math.cos(a)
+        along = dx * ax + dy * ay
+        across = abs(-dx * ay + dy * ax)
+        if z < 9.4 and across < 0.55 - abs(along) * 0.07 and abs(along) < 4.2:
+            return hand if along > 0 else back
+        if z < 9.4 and r < 0.7:
+            return (230, 230, 230)
+        return None
+    return f, (lambda c: False)
+
+
+def coil(c, c2=None, thick=0.7):
+    def f(x, y, z):
+        d = math.hypot(math.hypot(x - 8, z - 8) - 3.4, (y - 7) * 1.2)
+        if d < thick + 0.3:
+            return c2 if c2 and int(math.atan2(z - 8, x - 8) * 4) % 2 else c
+        if 6 < y < 8 and 11 < x < 14 and abs(z - 8) < 0.5:
+            return c
+        return None
+    return f, None
+
+
+def sheet(c, curl=True, marks=None):
+    def f(x, y, z):
+        if not (3 <= x < 13 and 2 <= y < 14):
+            return None
+        zc = 8 + (math.sin((x - 3) / 10 * math.pi) * 1.2 if curl else 0)
+        if abs(z - zc) < 0.4:
+            if marks and (int(y) % 3 == 0) and 4.5 < x < 11.5:
+                return marks
+            return c
+        return None
+    return f, None
+
+
+def feather():
+    def f(x, y, z):
+        if abs(z - 8) > 0.4:
+            return None
+        t = (y - 2) / 12
+        if 0 <= t <= 1 and abs(x - 8 - math.sin(t * 2) * 0.8) < 0.35:
+            return (220, 220, 220)
+        if 0.2 <= t <= 1:
+            w = 2.6 * math.sin((t - 0.2) / 0.8 * math.pi) ** 0.7
+            if abs(x - 8 - math.sin(t * 2) * 0.8) < w:
+                return (245, 245, 245) if int((x + y) * 1.2) % 4 else (215, 215, 220)
+        return None
+    return f, None
+
+
+def arrow(head=(200, 200, 210), glowing=False, tint=False):
+    def f(x, y, z):
+        if abs(z - 8) > 0.45 or abs(x - 8) > 2.4:
+            return None
+        if 2 <= y < 12.4 and abs(x - 8) < 0.45:
+            return (150, 110, 70)
+        if 12.4 <= y < 15.4 and abs(x - 8) < (15.4 - y) * 0.7:
+            return TINT if tint else head
+        if 2 <= y < 5 and abs(x - 8) < 1.8 - (y - 2) * 0.2:
+            return (240, 240, 240)
+        return None
+    return f, (lambda c: glowing and c == head)
+
+
+def bone():
+    def f(x, y, z):
+        if 3 <= y < 13 and math.hypot(x - 8, z - 8) < 0.9:
+            return (236, 230, 214)
+        for (cx, cy) in ((7.0, 2.6), (9.0, 2.6), (7.0, 13.4), (9.0, 13.4)):
+            if ell(x, y, z, cx, cy, 8, 1.3, 1.3, 1.1) < 1:
+                return (236, 230, 214)
+        return None
+    return f, None
+
+
+def stick():
+    def f(x, y, z):
+        if 1 <= y < 15 and math.hypot(x - 8, z - 8) < 0.75:
+            return (130, 95, 55) if int(y) % 4 else (105, 75, 45)
+        if 8 <= y < 10 and 8.5 < x < 10.5 and abs(z - 8) < 0.4:
+            return (110, 80, 48)
+        return None
+    return f, None
+
+
+def totem():
+    def f(x, y, z):
+        if abs(z - 8) > 1.2:
+            return None
+        if ell(x, y, z, 8, 11, 8, 2.6, 2.4, 1.2) < 1:
+            if 9.4 < y < 11 and abs(abs(x - 8) - 1.1) < 0.5:
+                return (40, 200, 90)
+            return (240, 200, 80)
+        if 3 <= y < 9 and abs(x - 8) < 2.2:
+            return (220, 170, 60) if int(y) % 2 else (240, 200, 90)
+        if 6 <= y < 8.6 and 2.6 <= abs(x - 8) < 5.4:
+            return (230, 190, 70)
+        if 1 <= y < 3 and abs(abs(x - 8) - 1.1) < 0.7:
+            return (220, 170, 60)
+        return None
+    return f, (lambda c: c == (40, 200, 90))
+
+
+def ball(c, c2=None, glowing=False, r=3.0):
+    def f(x, y, z):
+        d = ell(x, y, z, 8, 7.5, 8, r, r, r)
+        if d < 1:
+            if ell(x, y, z, 6.8, 8.8, 10.2, 0.9, 0.8, 0.9) < 1:
+                return mix(c, (255, 255, 255), 0.6)
+            if c2 and noise(x // 1, y // 1, z // 1, 61) < 0.2:
+                return c2
+            return c
+        return None
+    return f, (lambda col: glowing)
+
+
+def egg():
+    def f(x, y, z):
+        if ell(x, y, z, 8, 7.4, 8, 2.6, 3.4 if y > 7.4 else 2.8, 2.6) < 1:
+            if noise(x // 1, y // 1, z // 1, 67) < 0.1:
+                return (200, 170, 130)
+            return (240, 226, 196)
+        return None
+    return f, None
+
+
+def rocket():
+    def f(x, y, z):
+        r = math.hypot(x - 8, z - 8)
+        if 2 <= y < 11 and r < 1.8:
+            return (200, 40, 40) if int(y) % 3 else (240, 240, 240)
+        if 11 <= y < 13.4 and r < 1.8 - (y - 11) * 0.7:
+            return (60, 60, 60)
+        if 0 <= y < 2 and r < 0.5:
+            return (150, 150, 150)
+        return None
+    return f, None
+
+
+def name_tag():
+    def f(x, y, z):
+        if abs(z - 8) > 0.5:
+            return None
+        if 3 <= x < 13 and 5 <= y < 11 and not (x < 4.5 and abs(y - 8) > 1.6):
+            if ell(x, y, 8, 4.6, 8, 8, 0.6, 0.6, 1) < 1:
+                return None
+            return (210, 180, 130) if 5 < x < 12 and 6 < y < 10 else (180, 150, 100)
+        if abs(math.hypot(x - 3.2, y - 8) - 1.4) < 0.3:
+            return (150, 150, 150)
+        return None
+    return f, None
+
+
+def saddle():
+    def f(x, y, z):
+        d = ell(x, y, z, 8, 7, 8, 5.2, 3.0, 3.6)
+        if d < 1 and y > 6:
+            if y < 7.2:
+                return (110, 60, 30)
+            return (150, 85, 45) if abs(x - 8) > 1 else (130, 70, 38)
+        if abs(abs(x - 8) - 3.4) < 0.4 and 2 < y < 7 and abs(z - 8) < 0.6:
+            return (90, 50, 25)
+        if abs(abs(x - 8) - 3.4) < 0.9 and 1.4 < y < 2.6 and abs(z - 8) < 0.6:
+            return (190, 190, 200)
+        return None
+    return f, None
+
+
+def hide(c, c2):
+    def f(x, y, z):
+        if abs(z - 8 - math.sin(x * 0.6) * 0.5) > 0.45:
+            return None
+        if ell(x, y, 8, 8, 8, 8, 5.2, 5.6, 1) < 1 + 0.15 * math.sin(math.atan2(y - 8, x - 8) * 5):
+            return c2 if noise(x // 2, y // 2, 0, 71) < 0.2 else c
+        return None
+    return f, None
+
+
+def shell():
+    def f(x, y, z):
+        d = math.hypot(x - 8, y - 7.6)
+        a = math.atan2(y - 7.6, x - 8)
+        if d < 5 and abs(z - 8) < 2.2 - d * 0.25:
+            ring = (d + a * 0.6) % 1.6
+            return (240, 220, 200) if ring > 0.4 else (200, 120, 90)
+        return None
+    return f, None
+
+
+def tear():
+    def f(x, y, z):
+        r = math.hypot(x - 8, z - 8)
+        if 4 <= y < 12 and r < (2.6 * math.sin((y - 4) / 8 * math.pi * 0.85) if y < 10 else 1.8 - (y - 10) * 0.8):
+            return (220, 240, 255) if r < 0.8 else (180, 220, 240)
+        return None
+    return f, (lambda c: True)
+
+
+def ink(c, glowing=False):
+    def f(x, y, z):
+        if ell(x, y, z, 8, 7, 8, 3.4, 3.0, 3.0) < 1:
+            return c if y < 8.4 else shade(c, 1.3)
+        if 3 <= y < 4.2 and abs(x - 8) < 2.4 and abs(z - 8) < 0.8 and int(x) % 2 == 0:
+            return shade(c, 0.8)
+        return None
+    return f, (lambda col: glowing)
+
+
+def honeycomb():
+    def f(x, y, z):
+        if abs(z - 8) > 1.4 or math.hypot(x - 8, y - 8) > 5.2:
+            return None
+        cx, cy = x - 8, y - 8
+        if abs(math.sin(cx * 1.4)) < 0.25 or abs(math.sin((cx * 0.5 + cy * 0.87) * 1.4)) < 0.25:
+            return (220, 150, 30)
+        return (250, 200, 60) if z > 8.6 else (230, 170, 40)
+    return f, None
+
+
+def map_paper(inked=False):
+    def f(x, y, z):
+        if abs(z - 8 - math.sin(x * 0.5) * 0.5) > 0.4 or not (2 <= x < 14 and 2 <= y < 14):
+            return None
+        if x < 2.8 or x >= 13.2:
+            return (200, 170, 120)
+        if inked and noise(x // 2, y // 2, 0, 73) < 0.4:
+            return (120, 170, 90)
+        return (236, 220, 180)
+    return f, None
+
+
+def fire_charge():
+    def f(x, y, z):
+        if ell(x, y, z, 8, 7.5, 8, 3.2, 3.2, 3.2) < 1:
+            n = noise(x // 1, y // 1, z // 1, 79)
+            return (250, 200, 60) if n > 0.6 else (230, 110, 30) if n > 0.25 else (90, 40, 30)
+        return None
+    return f, (lambda c: c != (90, 40, 30))
+
+
+def fish_bucket(fish):
+    return bucket((60, 110, 220, 200), False, fish)
+
+
+BATCH4 = {
+    "potion": lambda: bottle(TINT),
+    "splash_potion": lambda: bottle(TINT, "splash"),
+    "lingering_potion": lambda: bottle(TINT, "lingering"),
+    "glass_bottle": lambda: bottle(None, "empty"),
+    "experience_bottle": lambda: bottle((120, 250, 80), "potion", True),
+    "honey_bottle": lambda: bottle((240, 170, 40), "potion"),
+    "dragon_breath": lambda: bottle((220, 120, 200), "potion", True),
+    "bucket": lambda: bucket(),
+    "water_bucket": lambda: bucket((60, 110, 220, 200)),
+    "lava_bucket": lambda: bucket((250, 120, 30), True),
+    "milk_bucket": lambda: bucket((250, 250, 245)),
+    "powder_snow_bucket": lambda: bucket((240, 246, 255)),
+    "cod_bucket": lambda: fish_bucket((180, 150, 110)),
+    "salmon_bucket": lambda: fish_bucket((200, 70, 60)),
+    "pufferfish_bucket": lambda: fish_bucket((240, 200, 60)),
+    "tropical_fish_bucket": lambda: fish_bucket((250, 130, 40)),
+    "axolotl_bucket": lambda: fish_bucket((240, 150, 190)),
+    "tadpole_bucket": lambda: fish_bucket((80, 60, 40)),
+    "book": lambda: book((140, 70, 40)),
+    "writable_book": lambda: book((110, 80, 50), extra="quill"),
+    "written_book": lambda: book((90, 60, 40), extra="ribbon"),
+    "enchanted_book": lambda: book((110, 40, 120), rune=(220, 140, 255)),
+    "knowledge_book": lambda: book((160, 40, 40), rune=(250, 210, 90)),
+    "name_tag": name_tag,
+    "lead": lambda: coil((170, 130, 90), (140, 100, 70)),
+    "string": lambda: coil((240, 240, 240), None, 0.35),
+    "saddle": saddle,
+    "paper": lambda: sheet((240, 236, 220)),
+    "map": lambda: map_paper(),
+    "feather": feather,
+    "leather": lambda: hide((150, 85, 45), (120, 65, 35)),
+    "rabbit_hide": lambda: hide((200, 160, 120), (170, 130, 95)),
+    "phantom_membrane": lambda: hide((200, 210, 190), (170, 190, 160)),
+    "bone": bone,
+    "stick": stick,
+    "arrow": lambda: arrow(),
+    "spectral_arrow": lambda: arrow((250, 220, 80), True),
+    "tipped_arrow": lambda: arrow(tint=True),
+    "egg": egg,
+    "snowball": lambda: ball((250, 252, 255), (225, 235, 245)),
+    "totem_of_undying": totem,
+    "fire_charge": fire_charge,
+    "firework_rocket": rocket,
+    "ink_sac": lambda: ink((40, 40, 60)),
+    "glow_ink_sac": lambda: ink((60, 200, 190), True),
+    "scute": lambda: hide((80, 170, 60), (60, 140, 50)),
+    "nautilus_shell": shell,
+    "ghast_tear": tear,
+    "honeycomb": honeycomb,
+    "rabbit_foot": lambda: ball((200, 160, 120), (170, 130, 95), r=2.6),
+}
+GUI_LAYERS = {
+    "potion": {"layer0": "minecraft:item/potion_overlay", "layer1": "minecraft:item/potion"},
+    "splash_potion": {"layer0": "minecraft:item/potion_overlay", "layer1": "minecraft:item/splash_potion"},
+    "lingering_potion": {"layer0": "minecraft:item/potion_overlay", "layer1": "minecraft:item/lingering_potion"},
+    "tipped_arrow": {"layer0": "minecraft:item/tipped_arrow_head", "layer1": "minecraft:item/tipped_arrow_base"},
+}
+
+
+def dials():
+    """compass and recovery compass (32 needles each) and clock (64 hands): every state is its own 3D model"""
+    import zipfile as _z
+    made = 0
+    for base, count, face, rim, kind in (("compass", 32, (220, 214, 200), (120, 124, 132), "compass"),
+                                         ("recovery_compass", 32, (30, 50, 60), (60, 90, 110), "compass"),
+                                         ("clock", 64, None, (236, 190, 60), "clock")):
+        for i in range(count):
+            nm = f"{base}_{i:02d}"
+            if kind == "compass":
+                ang = (i - 16) / 32 * 360
+                shape = dial(face, rim, ang, (220, 40, 40) if base == "compass" else (100, 240, 230), (170, 170, 175))
+            else:
+                ang = i / 64 * 360
+                shape = dial(None, rim, ang, night=((120, 190, 250), (30, 40, 90)))
+            fd = Food(nm)
+            fd.build(shape[0], shape[1] or (lambda c: False))
+            made += 1
+        # the item itself: our model of its starting state, the game's own list of states
+        vanilla = json.loads(_z.ZipFile(JAR).read(f"assets/minecraft/models/item/{base}.json"))
+        start = vanilla["textures"]["layer0"].split("/")[-1]
+        item = {"loader": "forge:separate_transforms", "textures": {"particle": f"minecraft:item/{start}"},
+                "base": {"parent": f"{NS}:item3d/{start}"},
+                "perspectives": {"gui": {"parent": "minecraft:item/generated", "textures": {"layer0": f"minecraft:item/{start}"}}},
+                "overrides": vanilla["overrides"]}
+        with open(os.path.join(PACK, "assets", "minecraft", "models", "item", base + ".json"), "w") as f:
+            json.dump(item, f, separators=(",", ":"))
+    return made
+
+
 GOLD = ((250, 200, 50), (255, 240, 140))
 FOODS = {
     "apple": lambda: apple(),
@@ -707,7 +1165,8 @@ def tilt(shape, deg=55):
 
 FACETED = {"diamond", "emerald", "amethyst_shard", "quartz", "echo_shard", "prismarine_shard", "prismarine_crystals", "iron_ingot",
            "gold_ingot", "copper_ingot", "netherite_ingot", "nether_star"}
-TILTED = {"iron_ingot", "gold_ingot", "copper_ingot", "netherite_ingot", "redstone", "glowstone_dust", "gunpowder", "sugar",
+TILTED = {"bucket", "water_bucket", "lava_bucket", "milk_bucket", "powder_snow_bucket", "cod_bucket", "salmon_bucket", "pufferfish_bucket",
+          "tropical_fish_bucket", "axolotl_bucket", "tadpole_bucket", "lead", "string", "saddle", "iron_ingot", "gold_ingot", "copper_ingot", "netherite_ingot", "redstone", "glowstone_dust", "gunpowder", "sugar",
           "blaze_powder", "bone_meal", "brick", "nether_brick", "iron_nugget", "gold_nugget"}
 
 
@@ -762,7 +1221,9 @@ DIAMOND_PROFILE = [(2.0, 3.2, 0.6), (3.2, 4.4, 1.5), (4.4, 5.6, 2.4), (5.6, 6.8,
                    (9.0, 10.0, 3.7), (10.0, 10.9, 3.0), (10.9, 11.6, 2.2)]
 
 n = 0
-for name, make in list(FOODS.items()) + list(BATCH3.items()):
+if not ONLY or "dials" in ONLY:
+    n += dials()
+for name, make in list(FOODS.items()) + list(BATCH3.items()) + list(BATCH4.items()):
     if name == "diamond":
         if not ONLY or name in ONLY:
             layered_gem("diamond", (110, 240, 230), (230, 255, 255), DIAMOND_PROFILE)
@@ -775,8 +1236,8 @@ for name, make in list(FOODS.items()) + list(BATCH3.items()):
         shape = stand(shape)
     if name in TILTED:
         shape = tilt(shape)
-    els = Food(name).build(shape, glow or (lambda c: False), layer_light=name not in FACETED,
-                           scale=0.8 if name == "emerald" else 1.15 if name in ("diamond", "iron_nugget", "gold_nugget") else 1.0)
+    els = Food(name, gui_layers=GUI_LAYERS.get(name)).build(shape, glow or (lambda c: False), layer_light=name not in FACETED,
+                           scale=0.8 if name == "emerald" else 0.75 if "book" in name else 1.15 if name in ("diamond", "iron_nugget", "gold_nugget") else 1.0)
     n += 1
     print(f"{name}: {els} boxes")
 print("made", n, "foods")

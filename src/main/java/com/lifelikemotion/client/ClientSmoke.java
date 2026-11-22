@@ -195,6 +195,57 @@ public final class ClientSmoke {
             if (t == 31) cmd("kill @e[type=item]");
             return t > 34;
         });
+        for (String it : new String[]{"water_bucket", "lava_bucket", "axolotl_bucket", "enchanted_book", "writable_book", "experience_bottle", "totem_of_undying", "feather", "arrow", "lead", "saddle", "egg"})
+            fp("gear_" + it, it, null, 0);
+        // a potion coloured by its effect, and the compass and clock turning as you face around
+        String[][] pots = {{"potion", "healing"}, {"splash_potion", "swiftness"}, {"lingering_potion", "poison"}};
+        for (String[] pt : pots)
+            if (wanted("gear_" + pt[0])) add(t -> {
+                if (t == 0) {
+                    mc.options.setCameraType(CameraType.FIRST_PERSON);
+                    mc.player.getInventory().selected = 0;
+                    cmd("item replace entity @s weapon.mainhand with minecraft:" + pt[0] + "{Potion:\"minecraft:" + pt[1] + "\"}");
+                }
+                if (t == 25) shot("gear_" + pt[0]);
+                return t > 27;
+            });
+        for (String it : new String[]{"compass", "clock"})
+            if (wanted("gear_" + it)) add(t -> {
+                if (t == 0) {
+                    give(it);
+                    cmd("time set 6000");
+                }
+                if (t == 20) shot("gear_" + it + "_a");
+                if (t == 21) {
+                    yaw = 120f;
+                    cmd("time set 15000");
+                }
+                if (t == 40) shot("gear_" + it + "_b");
+                if (t == 41) {
+                    yaw = 0f;
+                    cmd("time set 6000");
+                }
+                return t > 44;
+            });
+        if (wanted("gear_ground")) add(t -> {
+            String[] items = {"potion", "splash_potion", "lingering_potion", "glass_bottle", "experience_bottle", "honey_bottle", "dragon_breath",
+                    "bucket", "water_bucket", "lava_bucket", "milk_bucket", "powder_snow_bucket", "cod_bucket", "tropical_fish_bucket", "book",
+                    "writable_book", "written_book", "enchanted_book", "knowledge_book", "name_tag", "lead", "string", "saddle", "paper", "map",
+                    "feather", "leather", "bone", "stick", "arrow", "spectral_arrow", "egg", "snowball", "totem_of_undying", "fire_charge",
+                    "firework_rocket", "ink_sac", "glow_ink_sac", "nautilus_shell", "ghast_tear", "honeycomb", "compass", "clock", "recovery_compass"};
+            if (t == 0) {
+                mc.options.setCameraType(CameraType.FIRST_PERSON);
+                give("air");
+                cmd("kill @e[type=item]");
+                cmd("tp @s 0 -60 -1 0 55");
+                for (int i = 0; i < items.length; i++)
+                    cmd(String.format("summon item %.2f -60 %.2f {Item:{id:\"minecraft:%s\",Count:1b},PickupDelay:32767,Age:-32768,NoGravity:1b}",
+                            -2.8 + (i % 9) * 0.7, 0.6 + (i / 9) * 0.7, items[i]));
+            }
+            if (t == 30) shot("gear_ground");
+            if (t == 31) cmd("kill @e[type=item]");
+            return t > 34;
+        });
         use("food_eat_apple", "apple", 14);
         use("food_eat_stew", "mushroom_stew", 14);
         // every show-off move, frozen at eight points in time, with an item it belongs to
