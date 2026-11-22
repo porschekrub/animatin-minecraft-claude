@@ -1,0 +1,1 @@
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/fishing_rod"},"base":{"parent":"lifelikemotion:item3d/fishing_rod"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/fishing_rod"}}},"overrides":[{"predicate":{"cast":1},"model":"minecraft:item/fishing_rod_cast"}]}

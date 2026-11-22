@@ -1,1 +1,1 @@
-{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/stone_pickaxe"},"base":{"parent":"lifelikemotion:item3d/stone_pickaxe"},"perspectives":{"gui":{"parent":"minecraft:item/handheld","textures":{"layer0":"minecraft:item/stone_pickaxe"}}}}
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/stone_pickaxe"},"base":{"parent":"lifelikemotion:item3d/stone_pickaxe"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/stone_pickaxe"}}}}

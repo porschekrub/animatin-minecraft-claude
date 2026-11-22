@@ -129,7 +129,7 @@ public final class ClientSmoke {
         fp("fp_empty_idle", "air", null, 0);
         fp("fp_punch", "air", Motion.Action.ATTACK, 2);
         // hand-built models: held, mid-swing, seen from outside, on the ground
-        for (String it : new String[]{"diamond_sword", "iron_pickaxe", "iron_axe", "torch", "iron_sword", "golden_sword", "stone_sword"}) {
+        for (String it : new String[]{"wooden_sword", "stone_sword", "iron_sword", "golden_sword", "diamond_sword", "netherite_sword", "netherite_pickaxe", "diamond_axe", "golden_shovel", "iron_hoe", "torch", "soul_lantern", "fishing_rod", "shears", "flint_and_steel", "bow", "crossbow", "trident", "shield"}) {
             fp("hand_" + it + "_held", it, null, 0);
             fp("hand_" + it + "_swing", it, Motion.Action.ATTACK, 2);
         }
@@ -138,9 +138,9 @@ public final class ClientSmoke {
                 mc.options.setCameraType(CameraType.FIRST_PERSON);
                 give("air");
                 cmd("tp @s 0 -60 0 0 35");
-                String[] items = {"diamond_sword", "iron_pickaxe", "iron_axe", "torch"};
+                String[] items = {"diamond_sword", "netherite_pickaxe", "golden_axe", "torch", "bow", "trident", "shield"};
                 for (int i = 0; i < items.length; i++)
-                    cmd(String.format("summon item %.2f -60 %.2f {Item:{id:\"minecraft:%s\",Count:1b},PickupDelay:32767,Age:-32768}", -1.5 + i, 2.2, items[i]));
+                    cmd(String.format("summon item %.2f -60 %.2f {Item:{id:\"minecraft:%s\",Count:1b},PickupDelay:32767,Age:-32768}", -3.0 + i, 2.6, items[i]));
             }
             if (t == 30) shot("hand_outside_ground");
             if (t == 31) {

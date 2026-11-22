@@ -1,1 +1,1 @@
-{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/diamond_shovel"},"base":{"parent":"lifelikemotion:item3d/diamond_shovel"},"perspectives":{"gui":{"parent":"minecraft:item/handheld","textures":{"layer0":"minecraft:item/diamond_shovel"}}}}
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/diamond_shovel"},"base":{"parent":"lifelikemotion:item3d/diamond_shovel"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/diamond_shovel"}}}}
