@@ -128,6 +128,30 @@ public final class ClientSmoke {
         // ---- first person
         fp("fp_empty_idle", "air", null, 0);
         fp("fp_punch", "air", Motion.Action.ATTACK, 2);
+        // hand-built models: held, mid-swing, seen from outside, on the ground
+        for (String it : new String[]{"diamond_sword", "iron_pickaxe", "iron_axe", "torch", "iron_sword", "golden_sword", "stone_sword"}) {
+            fp("hand_" + it + "_held", it, null, 0);
+            fp("hand_" + it + "_swing", it, Motion.Action.ATTACK, 2);
+        }
+        if (wanted("hand_outside")) add(t -> {
+            if (t == 0) {
+                mc.options.setCameraType(CameraType.FIRST_PERSON);
+                give("air");
+                cmd("tp @s 0 -60 0 0 35");
+                String[] items = {"diamond_sword", "iron_pickaxe", "iron_axe", "torch"};
+                for (int i = 0; i < items.length; i++)
+                    cmd(String.format("summon item %.2f -60 %.2f {Item:{id:\"minecraft:%s\",Count:1b},PickupDelay:32767,Age:-32768}", -1.5 + i, 2.2, items[i]));
+            }
+            if (t == 30) shot("hand_outside_ground");
+            if (t == 31) {
+                cmd("kill @e[type=item]");
+                give("diamond_sword");
+                mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT);
+            }
+            if (t == 42) shot("hand_outside_third_person");
+            if (t == 43) mc.options.setCameraType(CameraType.FIRST_PERSON);
+            return t > 46;
+        });
         // every show-off move, frozen at eight points in time, with an item it belongs to
         String[][] showItems = {{"sword_twirl_wipe", "iron_sword"}, {"sword_flip", "diamond_sword"}, {"tool_toss", "iron_axe"},
                 {"tool_shoulder", "diamond_pickaxe"}, {"tool_twirl", "iron_pickaxe"}, {"shovel_spin", "iron_shovel"}, {"rod_flick", "fishing_rod"},
