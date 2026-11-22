@@ -65,6 +65,19 @@ final class Promo {
         still("promo_book", "book", () -> pose(Flourishes.BOOK_READ, 0.3f), 10f);
         still("promo_compass", "compass", () -> pose(Flourishes.COMPASS_LOOK, 0.45f), 10f);
         still("promo_pour", "water_bucket", () -> swing(Clips.POUR, 0.5f), 25f);
+        // at night: the runes, embers and gems glow
+        add(t -> {
+            if (t == 0) cmd("time set 18000");
+            return t > 4;
+        });
+        still("promo_night_diamond_sword", "diamond_sword", () -> pose(Flourishes.SWORD_TWIRL_WIPE, 0.6f), 8f);
+        still("promo_night_netherite_sword", "netherite_sword", () -> swing(Clips.SLASH_A, 0.3f), 8f);
+        still("promo_night_netherite_pickaxe", "netherite_pickaxe", () -> pose(Flourishes.TOOL_SHOULDER, 0.4f), 8f);
+        still("promo_night_soul_lantern", "soul_lantern", () -> pose(Flourishes.LIGHT_RAISE, 0.45f), 6f);
+        add(t -> {
+            if (t == 0) cmd("time set 1500");
+            return t > 4;
+        });
         add(t -> {
             if (t == 0) {
                 give("air");

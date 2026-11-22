@@ -27,6 +27,7 @@ public final class ClientInit {
         bus.addListener(com.lifelikemotion.client.fp.Flourish::onClientTick);
         bus.addListener(com.lifelikemotion.client.fp.ItemPhysics::onClientTick);
         bus.addListener(com.lifelikemotion.client.fp.Activities::onClientTick);
+        bus.addListener(com.lifelikemotion.client.fp.ItemAura::onClientTick);
         if (Boolean.getBoolean("lifelikemotion.clientsmoke")) {
             LifelikeMotion.LOG.info("client test mode");
             bus.register(ClientSmoke.class);

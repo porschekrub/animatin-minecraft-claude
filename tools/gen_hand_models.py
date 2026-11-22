@@ -21,7 +21,8 @@ from PIL import Image
 PACK = sys.argv[1]
 ONLY = set(sys.argv[2:])
 NS = "lifelikemotion"
-TEX = 64
+TEX = 128
+RES = 2  # texture pixels per design pixel: regions are painted at double detail
 
 TIERS = ["wooden", "stone", "iron", "golden", "diamond", "netherite"]
 METAL = {"wooden": (150, 108, 60), "stone": (128, 128, 128), "iron": (224, 226, 230), "golden": (252, 214, 74),
@@ -53,7 +54,10 @@ class Painter:
         self.x = self.y = self.row = 0
         self.rng = random.Random(seed)
 
-    def region(self, w, h, paint):
+    def region(self, w, h, paint, bevel=True):
+        """paints w x h design pixels at RES detail; bevelled: a lit top-left rim, a dark bottom-right rim and a
+        thin dark outline, so every face of every part reads as a carved, shaded piece"""
+        w, h = w * RES, h * RES
         if self.x + w > TEX:
             self.x, self.y, self.row = 0, self.y + self.row, 0
         x, y = self.x, self.y
@@ -62,6 +66,15 @@ class Painter:
         for j in range(h):
             for i in range(w):
                 c = paint(i, j, w, h, self.rng)
+                if bevel:
+                    # rims only along the sides, so long parts built from several boxes don't look banded
+                    if i == 0 or i == w - 1:
+                        c = shade(c, 0.68)
+                    elif i == 1:
+                        c = mix(c, (255, 255, 255), 0.22)
+                    elif i == w - 2:
+                        c = shade(c, 0.8)
+                    c = shade(c, 1.04 - 0.08 * (j / h))
                 self.img.putpixel((x + i, y + j), c + (255,))
         s = 16 / TEX
         return [x * s, y * s, (x + w) * s, (y + h) * s]
@@ -144,7 +157,8 @@ class Model:
 
     def style(self, key, paint, w=8, h=8):
         if key not in self.cache:
-            self.cache[key] = self.p.region(w, h, paint)
+            # glowing parts stay pure light, no bevel
+            self.cache[key] = self.p.region(w, h, paint, bevel=not key.startswith(("rune", "bladerune", "glow", "flame", "core", "glass", "fw", "spark", "line", "string")))
         return self.cache[key]
 
     def box(self, frm, to, uv, side=None, end=None, rot=None, glow=False):
@@ -256,17 +270,23 @@ def sword(tier):
     grip = m.style("grip", wrap(LEATHER, WRAP), 4, 8)
     legendary = tier in LEGENDARY
     w = 1.25 if legendary else 1.0
-    m.box((8 - w, 4, 7.3), (8 + w, 17, 8.7), blade, side=edg)
-    m.box((8 - w - 0.9, 4.4, 7.65), (8 - w, 16.2, 8.35), edg)
-    m.box((8 + w, 4.4, 7.65), (8 + w + 0.9, 16.2, 8.35), edg)
+    fuller = m.style("fuller", flat(shade(METAL[tier], 0.55), 0.05), 2, 16)
+    # the blade tapers in steps toward a long point; the edges are thin, bright bevels on both sides
+    segs = [(4.0, 8.0, w), (8.0, 12.0, w - 0.1), (12.0, 15.5, w - 0.25), (15.5, 17.6, w - 0.5), (17.6, 19.0, w - 0.8)]
+    for y0, y1, hw in segs:
+        m.box((8 - hw, y0, 7.3), (8 + hw, y1, 8.7), blade, side=edg)
+        m.box((8 - hw - 0.8, y0 + 0.2, 7.68), (8 - hw, y1, 8.32), edg)
+        m.box((8 + hw, y0 + 0.2, 7.68), (8 + hw + 0.8, y1, 8.32), edg)
+    m.box((7.6, 19.0, 7.62), (8.4, 20.2, 8.38), edg)
+    m.box((7.82, 20.2, 7.78), (8.18, 21.2, 8.22), edg)
     if tier in RUNE:
         rg = m.style("bladerune", glow_grad(RUNE[tier], shade(RUNE[tier], 0.75)), 2, 16)
-        m.box((7.7, 5.0, 7.05), (8.3, 15.6, 8.95), rg, glow=True)
+        m.box((7.7, 5.0, 7.05), (8.3, 16.0, 8.95), rg, glow=True)
+    elif tier in ("iron", "golden"):
+        # a fuller: a groove down the middle of each face
+        m.box((7.72, 4.6, 7.2), (8.28, 14.5, 8.8), fuller)
     else:
         m.box((7.7, 4.8, 7.05), (8.3, 16, 8.95), ridge)
-    m.box((8 - w + 0.2, 17, 7.45), (8 + w - 0.2, 18.6, 8.55), blade, side=edg)
-    m.box((7.55, 18.6, 7.65), (8.45, 19.9, 8.35), edg)
-    m.box((7.85, 19.9, 7.82), (8.15, 20.8, 8.18), edg)
     if legendary:
         for y in (5.0, 6.4):
             m.box((8 - w - 1.5, y, 7.75), (8 - w - 0.9, y + 0.7, 8.25), edg)

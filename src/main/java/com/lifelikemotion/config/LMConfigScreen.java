@@ -30,6 +30,7 @@ public class LMConfigScreen extends Screen {
             new Row(0, null, "Use animations", "Pouring, scooping, striking flint, shears, bone meal, casting a rod...", LMConfig.FP_USE_ANIMS),
             new Row(0, null, "Reactions", "Flinching when hit, patting out fire", LMConfig.FP_REACTIONS),
             new Row(1, "First person (more)", "World actions", "Swimming, climbing, opening, buttons, reins, rowing, stretching, tossing", LMConfig.FP_WORLD_ACTIONS),
+            new Row(1, null, "Item auras", "Sparkles, embers and glyphs around legendary and enchanted things", LMConfig.FP_AURAS),
             new Row(1, null, "Speed", "Speed of show-offs and other animations", LMConfig.FP_SPEED),
             new Row(1, null, "Sway", "How much your hands lag when you look around", LMConfig.FP_SWAY),
             new Row(1, null, "Bob", "How much your hands bob when you walk, run and jump", LMConfig.FP_BOB),

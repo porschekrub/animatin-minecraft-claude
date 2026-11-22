@@ -12,6 +12,7 @@ public final class LMConfig {
     public static final ForgeConfigSpec.BooleanValue FP_ENABLED;
     public static final ForgeConfigSpec.BooleanValue FP_ARMS_WITH_ITEMS;
     public static final ForgeConfigSpec.BooleanValue FP_IDLE_SHOW;
+    public static final ForgeConfigSpec.BooleanValue FP_AURAS;
     public static final ForgeConfigSpec.BooleanValue FP_PHYSICS, FP_USE_ANIMS, FP_REACTIONS, FP_WORLD_ACTIONS;
     public static final ForgeConfigSpec.DoubleValue FP_SPEED;
     public static final ForgeConfigSpec.DoubleValue FP_SWAY;
@@ -34,6 +35,7 @@ public final class LMConfig {
         FP_ARMS_WITH_ITEMS = b.comment("Show your arm holding the item").define("showArmWithItem", false);
         FP_IDLE_SHOW = b.comment("Show off what you hold (twirls, tosses...) when you stand still for a moment; the inspect key (I) always works")
                 .define("idleShowOff", true);
+        FP_AURAS = b.comment("Sparkles, embers and enchanting glyphs around legendary and enchanted things you hold").define("auras", true);
         FP_PHYSICS = b.comment("Physics for held things: inertia, floating when falling, cloth fluttering, lanterns swinging, liquids sloshing")
                 .define("physics", true);
         FP_USE_ANIMS = b.comment("Own animations for using things: pouring and scooping buckets, striking flint, shears, bone meal, casting a rod...")
