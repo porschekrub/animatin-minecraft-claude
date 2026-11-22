@@ -152,6 +152,30 @@ public final class ClientSmoke {
             if (t == 43) mc.options.setCameraType(CameraType.FIRST_PERSON);
             return t > 46;
         });
+        // sculpted food: held, and all of it laid out on the ground
+        for (String it : new String[]{"apple", "golden_apple", "bread", "cooked_beef", "cooked_chicken", "salmon", "carrot", "mushroom_stew", "pumpkin_pie", "melon_slice", "sweet_berries", "porkchop"})
+            fp("food_" + it, it, null, 0);
+        if (wanted("food_ground")) add(t -> {
+            String[] foods = {"apple", "golden_apple", "enchanted_golden_apple", "carrot", "golden_carrot", "potato", "baked_potato", "poisonous_potato",
+                    "beetroot", "melon_slice", "sweet_berries", "glow_berries", "chorus_fruit", "bread", "cookie", "pumpkin_pie", "beef", "cooked_beef",
+                    "porkchop", "cooked_porkchop", "mutton", "cooked_mutton", "chicken", "cooked_chicken", "rabbit", "cooked_rabbit", "cod", "cooked_cod",
+                    "salmon", "cooked_salmon", "tropical_fish", "pufferfish", "mushroom_stew", "rabbit_stew", "beetroot_soup", "suspicious_stew",
+                    "rotten_flesh", "spider_eye", "dried_kelp"};
+            if (t == 0) {
+                mc.options.setCameraType(CameraType.FIRST_PERSON);
+                give("air");
+                cmd("kill @e[type=item]");
+                cmd("tp @s 0 -60 -1 0 55");
+                for (int i = 0; i < foods.length; i++)
+                    cmd(String.format("summon item %.2f -60 %.2f {Item:{id:\"minecraft:%s\",Count:1b},PickupDelay:32767,Age:-32768,NoGravity:1b}",
+                            -2.4 + (i % 8) * 0.7, 0.6 + (i / 8) * 0.7, foods[i]));
+            }
+            if (t == 30) shot("food_ground");
+            if (t == 31) cmd("kill @e[type=item]");
+            return t > 34;
+        });
+        use("food_eat_apple", "apple", 14);
+        use("food_eat_stew", "mushroom_stew", 14);
         // every show-off move, frozen at eight points in time, with an item it belongs to
         String[][] showItems = {{"sword_twirl_wipe", "iron_sword"}, {"sword_flip", "diamond_sword"}, {"tool_toss", "iron_axe"},
                 {"tool_shoulder", "diamond_pickaxe"}, {"tool_twirl", "iron_pickaxe"}, {"shovel_spin", "iron_shovel"}, {"rod_flick", "fishing_rod"},
