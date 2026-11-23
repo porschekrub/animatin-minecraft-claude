@@ -1,19 +1,9 @@
-newmtl liquid
+newmtl layer0
 Kd 1 1 1
 forge_TintIndex 0
 map_Kd lifelikemotion:item/obj/white
 
-newmtl cork
-Kd 1 1 1
-forge_TintIndex -1
-map_Kd lifelikemotion:item/obj/white
-
-newmtl twine
-Kd 1 1 1
-forge_TintIndex -1
-map_Kd lifelikemotion:item/obj/white
-
-newmtl glass
+newmtl layer1
 Kd 1 1 1
 forge_TintIndex -1
 map_Kd lifelikemotion:item/obj/white

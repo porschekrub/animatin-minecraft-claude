@@ -1,14 +1,4 @@
-newmtl skin
-Kd 1 1 1
-forge_TintIndex -1
-map_Kd lifelikemotion:item/obj/white
-
-newmtl stem
-Kd 1 1 1
-forge_TintIndex -1
-map_Kd lifelikemotion:item/obj/white
-
-newmtl leaf
+newmtl layer0
 Kd 1 1 1
 forge_TintIndex -1
 map_Kd lifelikemotion:item/obj/white

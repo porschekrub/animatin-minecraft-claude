@@ -19,13 +19,22 @@ import bmesh
 import numpy as np
 from mathutils import Matrix, Vector
 
-ARGS = [a for a in sys.argv[1:] if not a.startswith("--")]
+PACK = None  # the resource pack folder the models go into (set by configure)
 PREVIEW = None
-if "--preview" in sys.argv:
-    PREVIEW = sys.argv[sys.argv.index("--preview") + 1]
-    ARGS = [a for a in ARGS if a != PREVIEW]
-PACK = ARGS[0]
-ONLY = set(ARGS[1:])
+ONLY = set()
+
+
+def configure(argv):
+    """command line: <pack dir> [names...] [--preview out.png]"""
+    global PACK, PREVIEW, ONLY
+    args = [a for a in argv[1:] if not a.startswith("--")]
+    if "--preview" in argv:
+        PREVIEW = argv[argv.index("--preview") + 1]
+        args = [a for a in args if a != PREVIEW]
+    PACK = args[0]
+    ONLY = set(args[1:])
+
+
 NS = "lifelikemotion"
 C = 0.5  # the block's middle (x and y); models stand on z
 WHITE = f"{NS}:item/obj/white"
@@ -37,14 +46,19 @@ def reset():
 
 
 def mat(name, color=(1, 1, 1), ramp=None, axis="Z", noise=0.0, noise_scale=8.0, stretch=(1, 1, 1), edge=0.35,
-        edge_radius=0.012, alpha=1.0, glow=False, tint=-1):
+        edge_radius=0.012, alpha=1.0, glow=False, tint=-1, attr=None):
     """a painted material. ramp = [(position, colour), ...] along an object axis; noise darkens in soft patches
     (stretch < 1 on an axis draws it out into streaks along that axis); edge lightens worn edges and ridges"""
     m = bpy.data.materials.new(name)
     m.use_nodes = True
     nt = m.node_tree
     bsdf = nt.nodes["Principled BSDF"]
-    if ramp:
+    if attr:
+        # colours painted onto the mesh itself (one per corner)
+        ca = nt.nodes.new("ShaderNodeVertexColor")
+        ca.layer_name = attr
+        last = ca.outputs["Color"]
+    elif ramp:
         tc = nt.nodes.new("ShaderNodeTexCoord")
         sep = nt.nodes.new("ShaderNodeSeparateXYZ")
         cr = nt.nodes.new("ShaderNodeValToRGB")
@@ -264,7 +278,7 @@ def srgb(x):
     return np.where(x <= 0.0031308, x * 12.92, 1.055 * np.power(x, 1 / 2.4) - 0.055)
 
 
-def bake_and_export(ob, name, display, translucent=False, particle=None):
+def bake_and_export(ob, name, display, translucent=False, particle=None, soft=0.0):
     """bake the painted colour times soft ambient occlusion (and alpha, for glass) into every corner of the mesh,
     then write the OBJ (with Forge's "vc" vertex colours), its material file and the item model"""
     scene = bpy.context.scene
@@ -274,9 +288,26 @@ def bake_and_export(ob, name, display, translucent=False, particle=None):
     bpy.ops.object.select_all(action="DESELECT")
     bpy.context.view_layer.objects.active = ob
     ob.select_set(True)
-    col = _bake_corners(ob, "DIFFUSE", pass_filter={"COLOR"})[:, :3]
+    me = ob.data
     ao = _bake_corners(ob, "AO")[:, :1]
-    rgb = srgb(col * (0.42 + 0.58 * ao))
+    if "paint" in me.color_attributes:
+        # exact colours painted per corner (Minecraft's own pixels): only the light worn edges are baked, as a mask
+        base = np.zeros(len(me.loops) * 4, dtype=np.float32)
+        me.color_attributes["paint"].data.foreach_get("color", base)
+        base = base.reshape(-1, 4)[:, :3]
+        for m in me.materials:
+            nt = m.node_tree
+            for node in [nd for nd in nt.nodes if nd.bl_idname == "ShaderNodeVertexColor"]:
+                black = nt.nodes.new("ShaderNodeRGB")
+                black.outputs[0].default_value = (0, 0, 0, 1)
+                for l in list(node.outputs["Color"].links):
+                    nt.links.new(black.outputs[0], l.to_socket)
+        mask = _bake_corners(ob, "DIFFUSE", pass_filter={"COLOR"})[:, :3]
+        # worn edges brighten in their own colour (a dark red rim stays red, it doesn't wash out to pink)
+        rgb = srgb(base * (0.5 + 0.5 * ao) * (1 + 2.2 * mask))
+    else:
+        col = _bake_corners(ob, "DIFFUSE", pass_filter={"COLOR"})[:, :3]
+        rgb = srgb(col * (0.42 + 0.58 * ao))
     alpha = np.ones((len(rgb), 1))
     if any(m.get("alpha", 1.0) < 1.0 for m in ob.data.materials):
         for m in ob.data.materials:
@@ -289,7 +320,6 @@ def bake_and_export(ob, name, display, translucent=False, particle=None):
         alpha = _bake_corners(ob, "DIFFUSE", pass_filter={"COLOR"})[:, :1]
     rgba = np.concatenate([rgb, np.clip(alpha, 0, 1)], axis=1)
     # kept for the preview render
-    me = ob.data
     fin = me.color_attributes.new("final", "FLOAT_COLOR", "CORNER")
     shown = rgba[:, :3].copy()
     tinted = np.zeros(len(me.loops), dtype=bool)
@@ -299,7 +329,7 @@ def bake_and_export(ob, name, display, translucent=False, particle=None):
     shown[tinted] *= np.array([0.97, 0.14, 0.27])  # a sample potion colour (healing)
     lin = np.where(shown <= 0.04045, shown / 12.92, np.power((shown + 0.055) / 1.055, 2.4))
     fin.data.foreach_set("color", np.concatenate([lin, rgba[:, 3:]], axis=1).astype(np.float32).ravel())
-    write_obj(ob, name, rgba)
+    write_obj(ob, name, rgba, soft)
     out_model = os.path.join(PACK, "assets", NS, "models", "item3d")
     model = {"loader": "forge:obj", "model": f"{NS}:models/item/obj/{name}.obj", "flip_v": True,
              "automatic_culling": False, "shade_quads": True, "emissive_ambient": True,
@@ -310,7 +340,7 @@ def bake_and_export(ob, name, display, translucent=False, particle=None):
         json.dump(model, f, separators=(",", ":"))
 
 
-def write_obj(ob, name, rgba):
+def write_obj(ob, name, rgba, soft=0.0):
     """our own OBJ writer: Minecraft's Y-up axes, corner normals, and a "vc" colour per corner (Forge's extension)"""
     me = ob.data
     # quads and triangles only (the game draws quads); bigger faces become triangles
@@ -323,6 +353,21 @@ def write_obj(ob, name, rgba):
     normals = np.zeros(len(me.loops) * 3, dtype=np.float32)
     me.corner_normals.foreach_get("vector", normals)
     normals = normals.reshape(-1, 3)
+    if soft:
+        # rounded-looking edges: each corner's normal leans toward the other faces meeting at its point, so light rolls
+        # softly over every rim instead of breaking sharply (shared flat faces stay flat)
+        seen = {}
+        for p in me.polygons:
+            key = tuple(round(c, 3) for c in p.normal)
+            for vi in p.vertices:
+                seen.setdefault(vi, {})[key] = np.array(p.normal)
+        for p in me.polygons:
+            fn = np.array(p.normal)
+            for li in p.loop_indices:
+                others = [n for n in seen[me.loops[li].vertex_index].values() if np.dot(n, fn) < 0.99]
+                if others:
+                    v = fn + soft * np.sum(others, axis=0)
+                    normals[li] = v / (np.linalg.norm(v) or 1.0)
     out = os.path.join(PACK, "assets", NS, "models", "item", "obj")
     os.makedirs(out, exist_ok=True)
     lines = [f"# Lifelike Motion: {name} (made in Blender by tools/blender/items.py)", f"mtllib {name}.mtl", f"o {name}"]
@@ -611,11 +656,13 @@ def render_preview(ob, out):
     ca.layer_name = "final"
     nt.links.new(ca.outputs["Color"], bsdf.inputs["Base Color"])
     nt.links.new(ca.outputs["Alpha"], bsdf.inputs["Alpha"])
-    bsdf.inputs["Roughness"].default_value = 0.55
+    bsdf.inputs["Roughness"].default_value = 1.0
+    bsdf.inputs["Specular IOR Level"].default_value = 0.0  # matte, like the game's own lighting
     ob.data.materials.clear()
     ob.data.materials.append(pm)
     sc.render.engine = "CYCLES"
-    sc.cycles.samples = 48
+    sc.cycles.samples = 96
+    sc.cycles.use_denoising = False  # the denoiser smears painted pixels
     sc.view_settings.view_transform = "Standard"
     sc.render.resolution_x = sc.render.resolution_y = 420
     w = bpy.data.worlds.new("w")
@@ -640,6 +687,7 @@ def render_preview(ob, out):
 
 
 if __name__ == "__main__":
+    configure(sys.argv)
     white_texture()
     pics = []
     for name, make in ITEMS.items():
