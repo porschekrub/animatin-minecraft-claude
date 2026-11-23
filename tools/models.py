@@ -1,0 +1,480 @@
+#!/usr/bin/env python3
+"""Lifelike Motion's 3D items, made the way a pro Minecraft modeler does it in Blockbench: each item is a handful of
+well-shaped parts (boxes, some turned), and every face is hand-painted pixel art at Minecraft's own detail (16 pixels
+to a block). The painting is done here by rules tuned per material: a small hand-picked palette per material, light
+from above, a one-pixel bevel (light top and left rims, dark bottom and right), clean details (a ridge down a blade,
+a wrapped grip, gem facets, a label on a bottle) and soft shadows painted in wherever parts meet (each texel looks
+around for nearby parts).
+
+Writes plain Minecraft item models (assets/lifelikemotion/models/item3d/<name>.json), one texture per item
+(assets/lifelikemotion/textures/item/model/<name>.png), and the item's own model (our model in the hand and on the
+ground, the usual flat picture in the inventory).        python3 tools/models.py [names...]
+"""
+import json
+import math
+import os
+import random
+import sys
+
+import numpy as np
+from PIL import Image
+
+PACK = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src", "main", "resources", "resourcepacks",
+                    "lifelike_3d_items")
+NS = "lifelikemotion"
+ANGLES = (-45, -22.5, 0, 22.5, 45)
+FACES = ("north", "south", "east", "west", "up", "down")
+NORMAL = {"north": (0, 0, -1), "south": (0, 0, 1), "east": (1, 0, 0), "west": (-1, 0, 0), "up": (0, 1, 0),
+          "down": (0, -1, 0)}
+
+
+def hexc(h):
+    return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
+
+
+# ---------------------------------------------------------------- materials
+class Mat:
+    """a material: its palette (dark to light, hand-picked), which palette step is its middle, its kind of surface
+    (which decides the pattern) and how strongly it's bevelled"""
+
+    def __init__(self, pal, base=None, kind="plain", bevel=1.0, alpha=255, tint=False, glow=False, grad=1.0, shine=1.0):
+        self.pal = [hexc(c) for c in pal]
+        self.base = (len(self.pal) - 1) / 2 if base is None else base
+        self.kind, self.bevel, self.alpha, self.tint, self.glow, self.grad = kind, bevel, alpha, tint, glow, grad
+        self.shine = shine
+
+
+# ---------------------------------------------------------------- the face painter
+LIFT = {"up": 1.0, "down": -1.3, "north": -0.1, "south": 0.15, "east": -0.35, "west": 0.25}
+
+
+def paint_face(mat, face, w, h, seed, decal=None):
+    """one face's pixel art as palette steps (h rows of w; row 0 is the face's top / north edge)"""
+    rnd = random.Random(seed)
+    side = face not in ("up", "down")
+    k = np.full((h, w), mat.base + LIFT[face], float)
+    jj, ii = np.mgrid[0:h, 0:w]
+    if side and h > 2:
+        k += mat.grad * (0.5 - (jj + 0.5) / h) * 1.4                     # lit from above
+    if mat.kind == "metal" or mat.kind == "blade":
+        d = (ii + jj * 0.8) / max(w + h * 0.8, 1)
+        k += mat.shine * (1.5 * np.exp(-((d - 0.3) / 0.08) ** 2) + 0.6 * np.exp(-((d - 0.58) / 0.05) ** 2) - 0.35)
+    elif mat.kind == "gem":
+        u = (ii + 0.5) / w - 0.5
+        v = (jj + 0.5) / h - 0.5
+        k += np.where(u + v < 0, 0.9, -0.6)                              # lit facets top-left, shaded bottom-right
+        k += np.where((np.abs(u - v) < 0.18) & (u + v < 0), 0.8, 0)
+    elif mat.kind == "wood":
+        phase = rnd.random() * 6
+        streaks = np.sin((ii if side else jj) * 2.1 + phase + 0.6 * np.sin(jj * 0.7 + phase))
+        k += np.where(streaks > 0.55, -0.9, np.where(streaks < -0.8, 0.5, 0))
+    elif mat.kind == "wrap":
+        k += np.where((ii + jj) % 3 == 0, 1.0, np.where((ii + jj) % 3 == 2, -1.0, 0.1))
+    elif mat.kind == "organic":
+        k += np.array([[0.7 * (rnd.random() < 0.06) - 0.7 * (rnd.random() < 0.05) for _ in range(w)] for _ in range(h)])
+    elif mat.kind == "glass":
+        k += np.where(ii == 1, 1.5, 0) if w > 3 else 0                   # a tall highlight
+    # bevel: a light rim along the top and left, a dark one along the bottom and right
+    if mat.bevel and w >= 3 and h >= 3:
+        rim = np.zeros((h, w))
+        rim[0, :] += 1.0
+        rim[-1, :] -= 0.9
+        if side:
+            soft = 0.15 if mat.kind == "organic" else 1.0
+            rim[:, 0] += 0.5 * soft
+            rim[:, -1] -= 0.5 * soft
+        else:
+            rim[:, 0] += 0.5
+            rim[:, -1] += 0.3
+        k += rim * mat.bevel
+    if decal:
+        k = decal(k, ii, jj, w, h, face)
+    return k
+
+
+# ---------------------------------------------------------------- models
+class Model:
+    def __init__(self, name):
+        self.name = name
+        self.els = []
+
+    def box(self, frm, to, mat, rot=None, faces=None, decal=None, ao=True):
+        """a part from frm to to (pixels, 16 a block); rot = (angle, axis, origin); decal(k, i, j, w, h, face) -> k"""
+        if rot:
+            assert rot[0] in ANGLES, rot
+        self.els.append({"frm": list(frm), "to": list(to), "mat": mat, "rot": rot, "faces": faces, "decal": decal,
+                         "ao": ao})
+
+    # -------------------------------------------------- soft shadows where parts meet
+    def occlusion(self, ei, face, w, h):
+        """per texel of one face: how much of the space just in front of it is filled by other parts (0..1)"""
+        e = self.els[ei]
+        frm, to = np.array(e["frm"], float), np.array(e["to"], float)
+        n = np.array(NORMAL[face], float)
+        # the face's corner and its two in-plane directions (texel i across, j down), matching the uv layout
+        if face == "north":
+            o, U, V = np.array([to[0], to[1], frm[2]]), (-1, 0, 0), (0, -1, 0)
+        elif face == "south":
+            o, U, V = np.array([frm[0], to[1], to[2]]), (1, 0, 0), (0, -1, 0)
+        elif face == "east":
+            o, U, V = np.array([to[0], to[1], to[2]]), (0, 0, -1), (0, -1, 0)
+        elif face == "west":
+            o, U, V = np.array([frm[0], to[1], frm[2]]), (0, 0, 1), (0, -1, 0)
+        elif face == "up":
+            o, U, V = np.array([frm[0], to[1], frm[2]]), (1, 0, 0), (0, 0, 1)
+        else:
+            o, U, V = np.array([frm[0], frm[1], to[2]]), (1, 0, 0), (0, 0, -1)
+        U, V = np.array(U, float), np.array(V, float)
+        su = abs(np.dot(to - frm, np.abs(U))) / w
+        sv = abs(np.dot(to - frm, np.abs(V))) / h
+        others = [(np.array(x["frm"], float), np.array(x["to"], float)) for k, x in enumerate(self.els)
+                  if k != ei and not x["rot"] and x["mat"].alpha == 255]
+        if e["rot"] or not others:
+            return np.zeros((h, w))
+        dirs = []
+        rnd = random.Random(7)
+        for _ in range(24):
+            a, b = rnd.random() * 2 * math.pi, math.sqrt(rnd.random())
+            t1 = np.cross(n, [0.3, 1, 0.2] if abs(n[1]) < 0.9 else [1, 0.2, 0.3])
+            t1 /= np.linalg.norm(t1)
+            t2 = np.cross(n, t1)
+            dirs.append(b * math.cos(a) * t1 + b * math.sin(a) * t2 + math.sqrt(1 - b * b) * n)
+        dirs = np.array(dirs)
+        out = np.zeros((h, w))
+        for j in range(h):
+            for i in range(w):
+                p = o + U * (i + 0.5) * su + V * (j + 0.5) * sv + n * 0.02
+                hits = 0.0
+                for d in dirs:
+                    inv = 1.0 / np.where(np.abs(d) < 1e-9, 1e-9, d)
+                    best = None
+                    for (lo, hi) in others:
+                        t0, t1_ = (lo - p) * inv, (hi - p) * inv
+                        tn, tf = np.max(np.minimum(t0, t1_)), np.min(np.maximum(t0, t1_))
+                        if tf >= max(tn, 0) and tn < 2.5:
+                            best = tn if best is None else min(best, tn)
+                    if best is not None:
+                        hits += 1 - max(best, 0) / 2.5
+                out[j, i] = hits / len(dirs)
+        return out
+
+    def write(self, display, translucent=False):
+        dims = {"north": (0, 1), "south": (0, 1), "east": (2, 1), "west": (2, 1), "up": (0, 2), "down": (0, 2)}
+        pieces = []
+        for ei, e in enumerate(self.els):
+            size = [abs(e["to"][a] - e["frm"][a]) for a in range(3)]
+            for face, (a, b) in dims.items():
+                if e["faces"] and face not in e["faces"]:
+                    continue
+                w, h = max(1, math.ceil(size[a] - 1e-6)), max(1, math.ceil(size[b] - 1e-6))
+                pieces.append((ei, face, w, h))
+        for T in (16, 32, 64, 128):
+            place, x, y, shelf, ok = {}, 0, 0, 0, True
+            for ei, face, w, h in sorted(pieces, key=lambda p: (-p[3], -p[2])):
+                if x + w > T:
+                    x, y, shelf = 0, y + shelf, 0
+                if y + h > T or w > T:
+                    ok = False
+                    break
+                place[(ei, face)] = (x, y, w, h)
+                x += w
+                shelf = max(shelf, h)
+            if ok:
+                break
+        tex = Image.new("RGBA", (T, T), (0, 0, 0, 0))
+        els = []
+        for ei, e in enumerate(self.els):
+            mat = e["mat"]
+            el = {"from": e["frm"], "to": e["to"], "faces": {}}
+            if e["rot"]:
+                el["rotation"] = {"angle": e["rot"][0], "axis": e["rot"][1], "origin": list(e["rot"][2])}
+            for face in FACES:
+                if (ei, face) not in place:
+                    continue
+                x, y, w, h = place[(ei, face)]
+                k = paint_face(mat, face, w, h, seed=ei * 31 + FACES.index(face), decal=e["decal"])
+                occ = self.occlusion(ei, face, w, h) if e["ao"] else np.zeros((h, w))
+                pal = mat.pal
+                for j in range(h):
+                    for i in range(w):
+                        idx = int(round(min(max(k[j, i], 0), len(pal) - 1)))
+                        c = np.array(pal[idx], float) * (1 - 0.55 * occ[j, i])
+                        a = mat.alpha
+                        if mat.kind == "glass" and (i == 1 or j == 0) and w > 3:
+                            a = min(255, a + 60)
+                        tex.putpixel((x + i, y + j), (*[int(round(v)) for v in c], a))
+                f = {"uv": [x * 16 / T, y * 16 / T, (x + w) * 16 / T, (y + h) * 16 / T], "texture": "#0"}
+                if mat.tint:
+                    f["tintindex"] = 0
+                el["faces"][face] = f
+            if mat.glow:
+                el["forge_data"] = {"block_light": 15, "sky_light": 15}
+            els.append(el)
+        tp = os.path.join(PACK, "assets", NS, "textures", "item", "model", self.name + ".png")
+        os.makedirs(os.path.dirname(tp), exist_ok=True)
+        tex.save(tp)
+        model = {"textures": {"0": f"{NS}:item/model/{self.name}", "particle": f"minecraft:item/{self.name}"},
+                 "elements": els, "display": display}
+        if translucent:
+            model["render_type"] = "minecraft:translucent"
+        mp = os.path.join(PACK, "assets", NS, "models", "item3d", self.name + ".json")
+        os.makedirs(os.path.dirname(mp), exist_ok=True)
+        with open(mp, "w") as fh:
+            json.dump(model, fh, separators=(",", ":"))
+        return T
+
+
+# ---------------------------------------------------------------- how items sit in the hand
+def blade_held(turn=20, scale=0.34, lift=0.0, tp=0.85):
+    """a sword or tool standing up in the model, held tilted forward like Minecraft's own"""
+    return {
+        "thirdperson_righthand": {"rotation": [0, -90, 55 + turn], "translation": [0, 4.0 + lift, 0.5], "scale": [tp] * 3},
+        "thirdperson_lefthand": {"rotation": [0, 90, -55 - turn], "translation": [0, 4.0 + lift, 0.5], "scale": [tp] * 3},
+        "firstperson_righthand": {"rotation": [0, -90, 25 + turn], "translation": [1.13, 3.2 + lift, 1.13], "scale": [scale] * 3},
+        "firstperson_lefthand": {"rotation": [0, 90, -25 - turn], "translation": [1.13, 3.2 + lift, 1.13], "scale": [scale] * 3},
+        "ground": {"rotation": [0, 0, turn], "translation": [0, 2, 0], "scale": [0.5] * 3},
+        "fixed": {"rotation": [0, 180, turn], "scale": [1, 1, 1]},
+        "head": {"rotation": [0, 180, turn], "translation": [0, 13, 7], "scale": [1, 1, 1]},
+    }
+
+
+def upright(scale=0.34, lift=4.0, side=-0.5, toward=-1.0, turn=-35, tilt=12):
+    """round things held standing up and facing you (turned a little, top tipped a little toward you)"""
+    fp = lambda sx: {"rotation": [tilt, turn * sx, 0], "translation": [side, lift, toward], "scale": [scale] * 3}
+    return {
+        "thirdperson_righthand": {"rotation": [0, -35, 0], "translation": [0, 2.5, 1.5], "scale": [scale * 1.05] * 3},
+        "thirdperson_lefthand": {"rotation": [0, 35, 0], "translation": [0, 2.5, 1.5], "scale": [scale * 1.05] * 3},
+        "firstperson_righthand": fp(1), "firstperson_lefthand": fp(-1),
+        "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.5] * 3},
+        "fixed": {"rotation": [0, 180, 0], "scale": [0.9] * 3},
+        "head": {"rotation": [0, 180, 0], "translation": [0, 13, 7], "scale": [1, 1, 1]},
+    }
+
+
+# ---------------------------------------------------------------- palettes (dark -> light), hand-picked
+DIAMOND = ["0b2f2a", "11463d", "17695a", "1f9180", "2bc2a8", "4ee6cb", "9ef7e6", "e4fffa"]
+DIAMOND_DARK = ["06211d", "0b2f2a", "11463d", "17695a", "1f9180", "2bc2a8"]
+GOLD = ["5c3a06", "8f5f0d", "c48b19", "e8b631", "f9d969", "fff3bd"]
+LEATHER = ["1c1007", "2e1c0d", "452b15", "5e3c1f", "77502b"]
+WOOD = ["2e1d0c", "45301a", "5f4325", "7a5830", "936b3c"]
+IRON = ["3d4045", "5a5e64", "7d8187", "a1a5aa", "c4c7cb", "e2e4e6", "fbfbfc"]
+APPLE = ["4a060b", "6e0b12", "98111a", "c01b22", "dd2e2b", "ef5236", "f9874f", "ffc58a"]
+LEAF = ["1f4a14", "2c661c", "3f8a27", "58ad35", "7fcf4e", "aee77a"]
+STEM = ["24160a", "3a2512", "54391d", "6f4f2b"]
+CORK = ["5e3a1c", "7d5229", "9e6d3b", "be8c52", "d9ad72"]
+LABEL = ["2a6fd6", "8f7a52", "c0a878", "e0cfa4", "f2e8cc", "fffaf0"]  # paper, with a blue drop at step 0
+GLASS = ["5f8aa6", "86b2cc", "b4d7e9", "e0f3fc", "ffffff"]
+WATER = ["123b8c", "1a52b8", "2468d6", "3c84ea", "62a3f5", "a9d2ff", "e6f3ff"]
+TINTED = ["5a5a5a", "7a7a7a", "9a9a9a", "bcbcbc", "dcdcdc", "f4f4f4"]  # coloured by the game (the potion)
+STRING = ["6e5a36", "9a8152", "c4ab78", "e3cfa0"]
+
+
+# ---------------------------------------------------------------- cool things
+def diamond_sword():
+    m = Model("diamond_sword")
+    blade = Mat(DIAMOND, base=4.2, kind="blade", shine=0.7)
+    edge = Mat(DIAMOND, base=6.2, kind="blade", bevel=0.4)
+    guard = Mat(DIAMOND_DARK, base=3.0, kind="metal")
+    gold = Mat(GOLD, base=3.0, kind="metal")
+    gem = Mat(DIAMOND, base=5.0, kind="gem", bevel=0.3, glow=True)
+    grip = Mat(LEATHER, base=2.0, kind="wrap", bevel=0.5)
+
+    def ridge(k, ii, jj, w, h, face):
+        # a bright spine up the middle of the blade, and two small runes near the guard
+        if face in ("north", "south") and w >= 3:
+            mid = (w - 1) / 2
+            k = np.where(np.abs(ii - mid) < 0.6, k + 1.6, k)
+        return k
+
+    def runes(k, ii, jj, w, h, face):
+        if face in ("north", "south") and h > 8:
+            near = (jj >= h - 5) & (jj <= h - 2) & ((ii == 0) | (ii == w - 1)) & (jj % 2 == 0)
+            k = np.where(near, 0.5, k)
+        return k
+
+    m.box((6.5, 0, 6.5), (9.5, 2, 9.5), guard)                          # pommel
+    m.box((7.5, 0.5, 6.25), (8.5, 1.5, 9.75), gem, ao=False)            # its gem, both sides
+    m.box((7, 2, 7), (9, 7.5, 9), grip)                                  # wrapped grip
+    m.box((6.75, 7, 6.75), (9.25, 7.5, 9.25), gold)                      # collar
+    m.box((5, 7.5, 6.5), (11, 9.5, 9.5), guard)                          # guard: heavy middle
+    m.box((2.5, 8, 7), (13.5, 9, 9), guard)                              # wings
+    m.box((1.5, 8, 7), (2.5, 10.5, 9), gold), m.box((13.5, 8, 7), (14.5, 10.5, 9), gold)  # tips sweeping up
+    m.box((7.25, 7.75, 6.25), (8.75, 9.25, 9.75), gem, ao=False)        # a gem through the guard
+    m.box((6, 9.5, 7.5), (10, 21, 8.5), blade, decal=ridge)             # blade
+    m.box((5.5, 10, 7.6), (6, 20, 8.4), edge), m.box((10, 10, 7.6), (10.5, 20, 8.4), edge)  # sharp edges
+    m.box((6.5, 21, 7.5), (9.5, 23, 8.5), blade, decal=ridge)           # narrowing
+    m.box((7, 23, 7.55), (9, 24.5, 8.45), edge)
+    m.box((7.5, 24.5, 7.6), (8.5, 26, 8.4), edge)                        # the point
+    m.write(blade_held(20, 0.34, 0.0))
+
+
+def diamond_axe():
+    m = Model("diamond_axe")
+    wood = Mat(WOOD, base=2.2, kind="wood", bevel=0.6)
+    wrap = Mat(LEATHER, base=2.0, kind="wrap", bevel=0.5)
+    head = Mat(DIAMOND, base=3.6, kind="metal")
+    dark = Mat(DIAMOND_DARK, base=3.0, kind="metal")
+    edge = Mat(DIAMOND, base=6.3, kind="blade", bevel=0.3)
+    gold = Mat(GOLD, base=3.0, kind="metal")
+    gem = Mat(DIAMOND, base=5.0, kind="gem", bevel=0.3, glow=True)
+
+    def bevel_edge(k, ii, jj, w, h, face):
+        # a lighter bevel band just before the cutting edge
+        if face in ("north", "south"):
+            k = np.where(ii >= w - 2, k + 1.2, k)
+        return k
+
+    m.box((7, 0, 7), (9, 17, 9), wood)                                   # handle
+    m.box((6.5, 0, 6.5), (9.5, 1, 9.5), gold)                           # end cap
+    m.box((6.75, 1.5, 6.75), (9.25, 6, 9.25), wrap)                     # grip
+    m.box((6.75, 6, 6.75), (9.25, 6.5, 9.25), gold)
+    m.box((6.5, 11, 6.5), (9.5, 16.5, 9.5), dark)                       # socket
+    m.box((7.25, 16.5, 7.25), (8.75, 17.5, 8.75), gem, ao=False)        # a gem capping the handle
+    m.box((7.5, 13, 6.25), (8.5, 14, 9.75), gold, ao=False)             # rivet
+    m.box((9.5, 11.5, 7.25), (12, 16, 8.75), head)                      # cheek
+    m.box((12, 10, 7.5), (14.5, 17.5, 8.5), head, decal=bevel_edge)     # blade
+    m.box((14.5, 9.5, 7.6), (15.5, 18, 8.4), edge)                      # cutting edge
+    m.box((12.5, 9, 7.6), (14.5, 10, 8.4), head)                        # beard
+    m.box((3.5, 12.5, 7.5), (6.5, 14.5, 8.5), dark)                     # back spike
+    m.box((2.5, 13, 7.6), (3.5, 14, 8.4), edge)
+    m.write(blade_held(45, 0.4, -0.5))
+
+
+# ---------------------------------------------------------------- beautiful things
+def apple():
+    m = Model("apple")
+    skin = Mat(APPLE, base=3.6, kind="organic", grad=1.3)
+    top = Mat(APPLE, base=4.4, kind="organic", grad=1.0)
+    stem = Mat(STEM, base=1.6, bevel=0.4)
+    leaf = Mat(LEAF, base=2.6, bevel=0.2)
+
+    def shine(k, ii, jj, w, h, face):
+        # a soft glossy highlight high on the lit faces, and a few pale speckles
+        if face in ("south", "west") and w >= 6:
+            k = np.where((jj == 1) & (ii >= 1) & (ii <= 2), 6.8, k)
+            k = np.where((jj == 2) & (ii == 1), 6.0, k)
+        return k
+
+    def ring(k, ii, jj, w, h, face):
+        # the top: darker in a ring round the stem's dimple
+        if face == "up":
+            cx, cy = (w - 1) / 2, (h - 1) / 2
+            r = np.hypot(ii - cx, jj - cy)
+            k = np.where(r < 1.6, k - 1.6, k)
+        return k
+
+    def vein(k, ii, jj, w, h, face):
+        if face in ("up", "down"):
+            k = np.where(jj == h // 2, k + 1.4, k)
+        return k
+
+    m.box((4, 1, 4), (12, 10, 12), skin, ao=False)                       # core
+    m.box((3, 2, 4.5), (13, 9, 11.5), skin, decal=shine)                 # rounding out the sides
+    m.box((4.5, 2, 3), (11.5, 9, 13), skin, decal=shine)
+    m.box((5, 10, 5), (11, 11, 11), top, decal=ring)                     # shoulders
+    m.box((5, 0, 5), (11, 1, 11), skin)                                  # base
+    m.box((7.5, 10.5, 7.5), (8.5, 14, 8.5), stem, rot=(22.5, "z", (8, 10.5, 8)))
+    m.box((8.5, 12.5, 6.5), (13, 13, 9.5), leaf, rot=(-22.5, "z", (8.5, 12.5, 8)), decal=vein, ao=False)
+    m.write(upright(0.34, 4.0))
+
+
+def potion():
+    """a glass bottle you can see the potion through (coloured by the game: blue for water), a paper label, string
+    round the neck and a cork"""
+    m = Model("potion")
+    glass = Mat(GLASS, base=1.6, kind="glass", alpha=70, bevel=0.6)
+    liquid = Mat(TINTED, base=3.0, tint=True, bevel=0.5)
+    label = Mat(LABEL, base=3.6, bevel=0.6)
+    cork = Mat(CORK, base=2.4, kind="wood", bevel=0.7)
+    string = Mat(STRING, base=2.0, bevel=0.3)
+
+    def surface(k, ii, jj, w, h, face):
+        if face == "up":
+            k = k + 1.2
+            k = np.where((ii == 1) & (jj == 1), k + 1.5, k)
+        return k
+
+    def drop(k, ii, jj, w, h, face):
+        # a border and a little water drop printed on the label
+        if face == "south":
+            border = (ii == 0) | (ii == w - 1) | (jj == 0) | (jj == h - 1)
+            k = np.where(border, 1.6, k)
+            inside = (ii >= 1) & (ii <= w - 2)
+            wave = inside & (((jj == h // 2 - 1) & (ii % 2 == 1)) | ((jj == h // 2) & (ii % 2 == 0)))
+            k = np.where(wave, -9, k)                                    # a little wave
+        return k
+
+    m.box((5, 0.5, 5), (11, 5.5, 11), liquid, decal=surface, ao=False)   # the potion inside
+    m.box((4.5, 0, 4.5), (11.5, 7, 11.5), glass, ao=False)               # body
+    m.box((5.5, 7, 5.5), (10.5, 8, 10.5), glass, ao=False)               # shoulder
+    m.box((6.5, 8, 6.5), (9.5, 10.5, 9.5), glass, ao=False)              # neck
+    m.box((6, 10.5, 6), (10, 11.5, 10), glass, ao=False)                 # lip
+    m.box((6.75, 10.25, 6.75), (9.25, 13, 9.25), cork)
+    m.box((6.25, 8.5, 6.25), (9.75, 9.25, 9.75), string)
+    m.box((9.75, 6.5, 7.5), (10.25, 8.75, 8.5), string)                  # its loose end
+    m.box((5, 0.5, 11.5), (11, 6.5, 11.6), label, faces=("south",), decal=drop, ao=False)
+    m.write(upright(0.34, 5.0), translucent=True)
+
+
+def water_bucket():
+    """an iron bucket with a rolled rim and a band, side lugs, a carry handle with a wooden grip, and water"""
+    m = Model("water_bucket")
+    iron = Mat(IRON, base=3.6, kind="metal", bevel=0.8, shine=0.45)
+    inner = Mat(IRON, base=2.2, bevel=0.3)
+    band = Mat(IRON, base=1.8, kind="metal", bevel=0.8, shine=0.5)
+    rim = Mat(IRON, base=4.4, kind="metal", bevel=0.9, shine=0.4)
+    water = Mat(WATER, base=3.3, bevel=0.0)
+    wood = Mat(WOOD, base=2.6, kind="wood", bevel=0.6)
+
+    def ripples(k, ii, jj, w, h, face):
+        if face == "up":
+            band = (ii + jj >= 3) & (ii + jj <= 5)
+            k = np.where(band, k + 1.3, k)                               # the sky reflected across the water
+            k = np.where((ii + jj == 9) & (ii >= 4) & (ii <= 5), k + 1.0, k)
+            k = np.where((ii == 2) & (jj == 2), k + 3, k)                # a glint
+        return k
+
+    m.box((3.5, 0, 3.5), (12.5, 1, 12.5), iron)                          # bottom
+    m.box((3, 1, 3), (13, 10, 4), iron), m.box((3, 1, 12), (13, 10, 13), iron)   # walls
+    m.box((3, 1, 4), (4, 10, 12), iron), m.box((12, 1, 4), (13, 10, 12), iron)
+    m.box((4, 1, 4), (12, 9, 12), water, decal=ripples)                  # water
+    m.box((2.5, 10, 2.5), (13.5, 11, 3.5), rim), m.box((2.5, 10, 12.5), (13.5, 11, 13.5), rim)  # rolled rim
+    m.box((2.5, 10, 3.5), (3.5, 11, 12.5), rim), m.box((12.5, 10, 3.5), (13.5, 11, 12.5), rim)
+    m.box((2.75, 3.5, 2.75), (13.25, 4.5, 13.25), band)                  # band
+    m.box((1.75, 8, 7), (3, 10, 9), band), m.box((13, 8, 7), (14.25, 10, 9), band)  # lugs
+    # the carry handle: up from the lugs, leaning in, across the top with a wooden grip
+    m.box((2, 10, 7.6), (2.8, 13, 8.4), band)
+    m.box((13.2, 10, 7.6), (14, 13, 8.4), band)
+    m.box((2, 12.5, 7.6), (2.8, 16.5, 8.4), band, rot=(-45, "z", (2.4, 12.6, 8)))
+    m.box((13.2, 12.5, 7.6), (14, 16.5, 8.4), band, rot=(45, "z", (13.6, 12.6, 8)))
+    m.box((5.1, 15.3, 7.6), (10.9, 16.1, 8.4), band)
+    m.box((6, 15, 7.25), (10, 16.5, 8.75), wood)
+    m.write(upright(0.3, 5.0))
+
+
+ITEMS = {"diamond_sword": diamond_sword, "diamond_axe": diamond_axe, "apple": apple, "potion": potion,
+         "water_bucket": water_bucket}
+GUI_LAYERS = {"potion": ["minecraft:item/potion_overlay", "minecraft:item/potion"]}
+
+
+def item_model(name):
+    """the item's own model: ours everywhere except the inventory, which keeps the usual flat picture"""
+    layers = GUI_LAYERS.get(name, [f"minecraft:item/{name}"])
+    model = {"loader": "forge:separate_transforms", "textures": {"particle": f"minecraft:item/{name}"},
+             "base": {"parent": f"{NS}:item3d/{name}"},
+             "perspectives": {"gui": {"parent": "minecraft:item/generated",
+                                      "textures": {f"layer{i}": t for i, t in enumerate(layers)}}}}
+    p = os.path.join(PACK, "assets", "minecraft", "models", "item")
+    os.makedirs(p, exist_ok=True)
+    with open(os.path.join(p, name + ".json"), "w") as fh:
+        json.dump(model, fh, separators=(",", ":"))
+
+
+if __name__ == "__main__":
+    only = set(sys.argv[1:])
+    for name, make in ITEMS.items():
+        if only and name not in only:
+            continue
+        make()
+        item_model(name)
+        print("made", name)

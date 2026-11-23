@@ -36,7 +36,7 @@ public final class ClientSmoke {
     /** -Dlifelikemotion.only=fp_sword,fp_torch: only the shots starting with these (for quick local checks) */
     static final String[] ONLY = System.getProperty("lifelikemotion.only", "").isBlank() ? null : System.getProperty("lifelikemotion.only").split("[,+]");
 
-    /** the items with our own 3D models (kept in step with tools/blender/blocky.py) */
+    /** the items with our own 3D models (kept in step with tools/models.py) */
     static final String[] ITEMS_3D = {"diamond_sword", "diamond_axe", "apple", "potion{Potion:\"minecraft:water\"}", "water_bucket"};
 
     static boolean wanted(String name) {
