@@ -1,0 +1,1 @@
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/creeper_banner_pattern"},"base":{"parent":"lifelikemotion:item3d/creeper_banner_pattern"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/creeper_banner_pattern"}}}}

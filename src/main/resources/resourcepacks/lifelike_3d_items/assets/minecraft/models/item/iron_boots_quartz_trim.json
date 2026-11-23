@@ -1,0 +1,1 @@
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/iron_boots"},"base":{"parent":"lifelikemotion:item3d/iron_boots_quartz_trim"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/iron_boots","layer1":"minecraft:trims/items/boots_trim_quartz"}}}}

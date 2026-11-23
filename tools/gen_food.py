@@ -16,12 +16,13 @@ import sys
 
 from PIL import Image
 
-PACK = sys.argv[1]
+PACK = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("LM_PACK", "")
 JAR = os.environ.get("MC_JAR", "/tmp/mcjar/client.jar")
 ONLY = set(sys.argv[2:])
 NS = "lifelikemotion"
 STEP = 0.5
 TINT = (253, 253, 253)
+TINT2 = (252, 252, 252)
 N = int(16 / STEP)
 
 
@@ -43,8 +44,10 @@ def noise(x, y, z, seed=0):
 
 
 class Food:
-    def __init__(self, name, gui=None, overrides=None, gui_layers=None):
+    def __init__(self, name, gui=None, overrides=None, gui_layers=None, gui_parent=None, write_item=True):
         self.name = name
+        self.gui_parent = gui_parent
+        self.write_item = write_item
         self.gui = gui
         self.overrides = overrides
         self.gui_layers = gui_layers
@@ -65,7 +68,7 @@ class Food:
         lit = {}
         for (ix, iy, iz), c in grid.items():
             k = 0.8 + 0.34 * round((iy + 1) / N * 6) / 6 if layer_light else 1.0
-            tint = c == TINT
+            tint = 1 if c == TINT else 2 if c == TINT2 else 0
             a = c[3] if len(c) == 4 else 255
             rgb = shade(c[:3], k)
             lit[(ix, iy, iz)] = (rgb + (a,), glow(c[:3]), tint)
@@ -115,7 +118,7 @@ class Food:
                 if any(not blocks(cell, (cell[0] + d[0], cell[1] + d[1], cell[2] + d[2])) for cell in cells):
                     faces[name] = {"uv": u, "texture": "#t"}
                     if key[2]:
-                        faces[name]["tintindex"] = 0
+                        faces[name]["tintindex"] = key[2] - 1
             if not faces:
                 continue
             e = {"from": [ix * STEP, iy * STEP, iz * STEP], "to": [(jx + 1) * STEP, (iy + 1) * STEP, (jz + 1) * STEP],
@@ -146,7 +149,11 @@ class Food:
             json.dump(model, f, separators=(",", ":"))
         gui = "minecraft:item/" + (self.gui or self.name)
         item = {"loader": "forge:separate_transforms", "textures": {"particle": gui}, "base": {"parent": f"{NS}:item3d/{self.name}"},
-                "perspectives": {"gui": {"parent": "minecraft:item/generated", "textures": self.gui_layers or {"layer0": gui}}}}
+                "perspectives": {"gui": {"parent": self.gui_parent or "minecraft:item/generated", "textures": self.gui_layers or {"layer0": gui}}}}
+        if self.gui_parent:
+            item["perspectives"]["gui"].pop("textures")
+        if not self.write_item:
+            return len(els)
         if self.overrides:
             item["overrides"] = self.overrides
         with open(os.path.join(PACK, "assets", "minecraft", "models", "item", self.name + ".json"), "w") as f:
@@ -1220,24 +1227,29 @@ def layered_gem(name, c, core, profile, glow_core=True):
 DIAMOND_PROFILE = [(2.0, 3.2, 0.6), (3.2, 4.4, 1.5), (4.4, 5.6, 2.4), (5.6, 6.8, 3.3), (6.8, 8.0, 4.1), (8.0, 9.0, 4.4),
                    (9.0, 10.0, 3.7), (10.0, 10.9, 3.0), (10.9, 11.6, 2.2)]
 
-n = 0
-if not ONLY or "dials" in ONLY:
-    n += dials()
-for name, make in list(FOODS.items()) + list(BATCH3.items()) + list(BATCH4.items()):
-    if name == "diamond":
-        if not ONLY or name in ONLY:
-            layered_gem("diamond", (110, 240, 230), (230, 255, 255), DIAMOND_PROFILE)
-            n += 1
-        continue
-    if ONLY and name not in ONLY:
-        continue
-    shape, glow = make()
-    if name in FLAT:
-        shape = stand(shape)
-    if name in TILTED:
-        shape = tilt(shape)
-    els = Food(name, gui_layers=GUI_LAYERS.get(name)).build(shape, glow or (lambda c: False), layer_light=name not in FACETED,
-                           scale=0.8 if name == "emerald" else 0.75 if "book" in name else 1.15 if name in ("diamond", "iron_nugget", "gold_nugget") else 1.0)
-    n += 1
-    print(f"{name}: {els} boxes")
-print("made", n, "foods")
+def main():
+    n = 0
+    if not ONLY or "dials" in ONLY:
+        n += dials()
+    for name, make in list(FOODS.items()) + list(BATCH3.items()) + list(BATCH4.items()):
+        if name == "diamond":
+            if not ONLY or name in ONLY:
+                layered_gem("diamond", (110, 240, 230), (230, 255, 255), DIAMOND_PROFILE)
+                n += 1
+            continue
+        if ONLY and name not in ONLY:
+            continue
+        shape, glow = make()
+        if name in FLAT:
+            shape = stand(shape)
+        if name in TILTED:
+            shape = tilt(shape)
+        els = Food(name, gui_layers=GUI_LAYERS.get(name)).build(shape, glow or (lambda c: False), layer_light=name not in FACETED,
+                               scale=0.8 if name == "emerald" else 0.75 if "book" in name else 1.15 if name in ("diamond", "iron_nugget", "gold_nugget") else 1.0)
+        n += 1
+        print(f"{name}: {els} boxes")
+    print("made", n, "foods")
+
+
+if __name__ == "__main__":
+    main()

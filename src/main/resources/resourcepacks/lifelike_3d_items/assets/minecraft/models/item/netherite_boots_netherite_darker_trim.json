@@ -1,0 +1,1 @@
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/netherite_boots"},"base":{"parent":"lifelikemotion:item3d/netherite_boots_netherite_darker_trim"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/netherite_boots","layer1":"minecraft:trims/items/boots_trim_netherite_darker"}}}}

@@ -1,0 +1,1 @@
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/spawn_egg"},"base":{"parent":"lifelikemotion:item3d/spawn_egg"},"perspectives":{"gui":{"parent":"minecraft:item/template_spawn_egg"}}}

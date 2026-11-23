@@ -246,6 +246,18 @@ public final class ClientSmoke {
             if (t == 31) cmd("kill @e[type=item]");
             return t > 34;
         });
+        for (String it : new String[]{"pig_spawn_egg", "creeper_spawn_egg", "diamond_chestplate", "iron_boots", "music_disc_cat", "red_dye", "wheat_seeds", "oak_boat", "cherry_chest_boat", "tnt_minecart", "angler_pottery_sherd", "netherite_upgrade_smithing_template"})
+            fp("rest_" + it, it, null, 0);
+        String[][] nbt = {{"leather_chestplate", "{display:{color:3949738}}"}, {"netherite_helmet", "{Trim:{material:\"minecraft:gold\",pattern:\"minecraft:coast\"}}"}};
+        for (String[] nb : nbt)
+            if (wanted("rest_" + nb[0])) add(t -> {
+                if (t == 0) {
+                    mc.player.getInventory().selected = 0;
+                    cmd("item replace entity @s weapon.mainhand with minecraft:" + nb[0] + nb[1]);
+                }
+                if (t == 25) shot("rest_" + nb[0] + "_nbt");
+                return t > 27;
+            });
         use("food_eat_apple", "apple", 14);
         use("food_eat_stew", "mushroom_stew", 14);
         // every show-off move, frozen at eight points in time, with an item it belongs to

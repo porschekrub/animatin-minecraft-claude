@@ -1,0 +1,1 @@
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/leather_horse_armor"},"base":{"parent":"lifelikemotion:item3d/leather_horse_armor"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/leather_horse_armor"}}}}

@@ -1,0 +1,1 @@
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/diamond_boots"},"base":{"parent":"lifelikemotion:item3d/diamond_boots_diamond_darker_trim"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/diamond_boots","layer1":"minecraft:trims/items/boots_trim_diamond_darker"}}}}
