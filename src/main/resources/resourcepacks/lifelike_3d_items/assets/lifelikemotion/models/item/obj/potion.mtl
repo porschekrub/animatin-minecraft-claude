@@ -8,6 +8,11 @@ Kd 1 1 1
 forge_TintIndex -1
 map_Kd lifelikemotion:item/obj/white
 
+newmtl label
+Kd 1 1 1
+forge_TintIndex -1
+map_Kd lifelikemotion:item/obj/white
+
 newmtl potion
 Kd 1 1 1
 forge_TintIndex 0

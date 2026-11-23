@@ -278,7 +278,27 @@ def srgb(x):
     return np.where(x <= 0.0031308, x * 12.92, 1.055 * np.power(x, 1 / 2.4) - 0.055)
 
 
-def bake_and_export(ob, name, display, translucent=False, particle=None, soft=0.0):
+def blur_corners(ob, values, radius):
+    """average a per-corner value over every corner within `radius` (blocks): soft shadows stop picking out
+    every little step of a blocky round surface, while the big shadows stay"""
+    from mathutils import kdtree
+    me = ob.data
+    pos = [me.vertices[l.vertex_index].co.copy() for l in me.loops]
+    nrm = np.zeros(len(me.loops) * 3, dtype=np.float32)
+    me.corner_normals.foreach_get("vector", nrm)
+    nrm = nrm.reshape(-1, 3)
+    tree = kdtree.KDTree(len(pos))
+    for i, p in enumerate(pos):
+        tree.insert(p, i)
+    tree.balance()
+    out = values.copy()
+    for i, p in enumerate(pos):
+        near = [j for (_, j, _) in tree.find_range(p, radius) if float(np.dot(nrm[i], nrm[j])) > -0.2]
+        out[i] = values[near].mean(axis=0)
+    return out
+
+
+def bake_and_export(ob, name, display, translucent=False, particle=None, soft=0.0, ao_blur=0.0):
     """bake the painted colour times soft ambient occlusion (and alpha, for glass) into every corner of the mesh,
     then write the OBJ (with Forge's "vc" vertex colours), its material file and the item model"""
     scene = bpy.context.scene
@@ -290,6 +310,8 @@ def bake_and_export(ob, name, display, translucent=False, particle=None, soft=0.
     ob.select_set(True)
     me = ob.data
     ao = _bake_corners(ob, "AO")[:, :1]
+    if ao_blur:
+        ao = blur_corners(ob, ao, ao_blur)
     if all("tex" in m for m in me.materials):
         # the colours come from the Minecraft picture itself: the vertices carry only the soft shadows
         rgb = np.repeat(0.5 + 0.5 * ao, 3, axis=1)

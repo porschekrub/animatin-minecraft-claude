@@ -1,9 +1,29 @@
+newmtl band
+Kd 1 1 1
+forge_TintIndex -1
+map_Kd lifelikemotion:item/obj/white
+
+newmtl grip
+Kd 1 1 1
+forge_TintIndex -1
+map_Kd lifelikemotion:item/obj/white
+
+newmtl handle
+Kd 1 1 1
+forge_TintIndex -1
+map_Kd lifelikemotion:item/obj/white
+
 newmtl iron
 Kd 1 1 1
 forge_TintIndex -1
 map_Kd lifelikemotion:item/obj/white
 
-newmtl lug
+newmtl rim
+Kd 1 1 1
+forge_TintIndex -1
+map_Kd lifelikemotion:item/obj/white
+
+newmtl rivet
 Kd 1 1 1
 forge_TintIndex -1
 map_Kd lifelikemotion:item/obj/white

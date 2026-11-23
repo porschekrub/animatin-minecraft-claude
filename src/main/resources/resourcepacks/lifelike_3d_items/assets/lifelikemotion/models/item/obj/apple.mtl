@@ -1,4 +1,4 @@
-newmtl dip
+newmtl calyx
 Kd 1 1 1
 forge_TintIndex -1
 map_Kd lifelikemotion:item/obj/white

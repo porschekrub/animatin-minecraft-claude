@@ -3,15 +3,20 @@ Kd 1 1 1
 forge_TintIndex -1
 map_Kd lifelikemotion:item/obj/white
 
-newmtl head
+newmtl gem
+Kd 1 1 1
+forge_TintIndex -1
+Ka 1 1 1
+map_Kd lifelikemotion:item/obj/white
+
+newmtl gold
 Kd 1 1 1
 forge_TintIndex -1
 map_Kd lifelikemotion:item/obj/white
 
-newmtl stone
+newmtl head
 Kd 1 1 1
 forge_TintIndex -1
-Ka 1 1 1
 map_Kd lifelikemotion:item/obj/white
 
 newmtl wood
