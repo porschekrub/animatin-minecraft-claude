@@ -192,6 +192,15 @@ def lathe(name, profile, material, steps=24, smooth=True, cx=C, cy=C, lobes=None
     return loft(name, rings, material, smooth)
 
 
+def dense(profile, step=0.02):
+    """more rings along a side profile: small faces sort cleanly behind and in front of see-through glass"""
+    out = [profile[0]]
+    for (r0, z0), (r1, z1) in zip(profile, profile[1:]):
+        n = max(1, int(math.hypot(r1 - r0, z1 - z0) / step))
+        out += [(r0 + (r1 - r0) * k / n, z0 + (z1 - z0) * k / n) for k in range(1, n + 1)]
+    return out
+
+
 def sweep(name, path, section, material, smooth=True):
     """a bar along a path in the x/z plane: path = [(x, z, half depth, half height), ...];
     section = unit outline [(u, v), ...] (u across the depth, y; v across the height, at right angles to the path)"""
@@ -376,12 +385,12 @@ def hand_display(turn=45, scale=0.68, tp=0.85, lift=0.0):
 
 
 def food_display(scale=1.0):
-    s = 0.6 * scale
+    s = 0.46 * scale
     return {
-        "thirdperson_righthand": {"rotation": [0, 0, 0], "translation": [0, 3, 1], "scale": [0.55 * scale] * 3},
-        "thirdperson_lefthand": {"rotation": [0, 0, 0], "translation": [0, 3, 1], "scale": [0.55 * scale] * 3},
-        "firstperson_righthand": {"rotation": [0, -70, 15], "translation": [1.13, 4.0, 1.13], "scale": [s] * 3},
-        "firstperson_lefthand": {"rotation": [0, 70, -15], "translation": [1.13, 4.0, 1.13], "scale": [s] * 3},
+        "thirdperson_righthand": {"rotation": [0, 0, 0], "translation": [0, 3, 1], "scale": [0.5 * scale] * 3},
+        "thirdperson_lefthand": {"rotation": [0, 0, 0], "translation": [0, 3, 1], "scale": [0.5 * scale] * 3},
+        "firstperson_righthand": {"rotation": [0, -90, 25], "translation": [1.13, 7.0, 1.13], "scale": [s] * 3},
+        "firstperson_lefthand": {"rotation": [0, 90, -25], "translation": [1.13, 7.0, 1.13], "scale": [s] * 3},
         "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.5, 0.5, 0.5]},
         "fixed": {"rotation": [0, 180, 0], "scale": [1, 1, 1]},
         "head": {"rotation": [0, 180, 0], "translation": [0, 13, 7], "scale": [1, 1, 1]},
@@ -448,7 +457,7 @@ def sword(name, blade_ramp, guard_ramp, grip_c, gem_c):
     prof = [(0.0, 0.0), (0.03, 0.02), (0.045, 0.05), (0.03, 0.085), (0.0, 0.095)]
     parts.append(lathe("pommel", prof, guard, steps=8, smooth=False))
     ob = join(parts, name)
-    return ob, hand_display(30)
+    return ob, hand_display(20, lift=6.0)
 
 
 def pickaxe(name, head_ramp):
@@ -548,7 +557,8 @@ def apple(name):
     bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-6)
     lf = obj_from_bm("leaf", bm, leaf)
     modifier(lf, "SOLIDIFY", thickness=0.012, offset=0)
-    lf.data.transform(Matrix.Translation((C + 0.03, C, 0.68)) @ Matrix.Rotation(0.35, 4, "Y") @ Matrix.Rotation(0.5, 4, "Z"))
+    # tilted up so it reads from the side as well as from above
+    lf.data.transform(Matrix.Translation((C + 0.03, C, 0.68)) @ Matrix.Rotation(0.3, 4, "Y") @ Matrix.Rotation(0.6, 4, "Z") @ Matrix.Rotation(-0.8, 4, "X"))
     parts.append(lf)
     ob = join(parts, name)
     return ob, food_display()
@@ -561,8 +571,8 @@ def potion(name):
     twine = mat("twine", (0.62, 0.5, 0.32), noise=0.2, noise_scale=60, edge=0.2)
     # what's inside first, the glass last
     parts = []
-    inner = [(0.0, 0.085), (0.12, 0.085), (0.18, 0.11), (0.215, 0.17), (0.225, 0.25), (0.215, 0.33), (0.2, 0.37), (0.0, 0.375)]
-    parts.append(lathe("liquid", inner, liquid, steps=32))
+    inner = [(0.0, 0.09), (0.11, 0.09), (0.165, 0.115), (0.2, 0.17), (0.21, 0.25), (0.2, 0.33), (0.185, 0.365), (0.0, 0.37)]
+    parts.append(lathe("liquid", dense(inner, 0.025), liquid, steps=32))
     prof = [(0.0, 0.66), (0.058, 0.66), (0.062, 0.77), (0.07, 0.8), (0.066, 0.83), (0.0, 0.835)]
     parts.append(lathe("cork", prof, cork, steps=16))
     t = add(bpy.ops.mesh.primitive_torus_add, twine, major_radius=0.078, minor_radius=0.011, major_segments=24,
@@ -571,7 +581,7 @@ def potion(name):
     outer = [(0.0, 0.07), (0.13, 0.07), (0.2, 0.095), (0.24, 0.16), (0.25, 0.25), (0.235, 0.35), (0.19, 0.43),
              (0.11, 0.49), (0.072, 0.53), (0.068, 0.6), (0.07, 0.69), (0.09, 0.7), (0.092, 0.73), (0.075, 0.74),
              (0.0, 0.74)]
-    parts.append(lathe("glass", outer, glass, steps=32))
+    parts.append(lathe("glass", dense(outer, 0.025), glass, steps=32))
     ob = join(parts, name)
     return ob, food_display(1.0)
 
@@ -606,11 +616,12 @@ def render_preview(ob, out):
     ob.data.materials.append(pm)
     sc.render.engine = "CYCLES"
     sc.cycles.samples = 48
+    sc.view_settings.view_transform = "Standard"
     sc.render.resolution_x = sc.render.resolution_y = 420
     w = bpy.data.worlds.new("w")
     w.use_nodes = True
-    w.node_tree.nodes["Background"].inputs[0].default_value = (0.42, 0.55, 0.75, 1)
-    w.node_tree.nodes["Background"].inputs[1].default_value = 0.7
+    w.node_tree.nodes["Background"].inputs[0].default_value = (0.16, 0.2, 0.28, 1)
+    w.node_tree.nodes["Background"].inputs[1].default_value = 1.0
     sc.world = w
     cam = bpy.data.objects.new("cam", bpy.data.cameras.new("cam"))
     sc.collection.objects.link(cam)
@@ -621,7 +632,7 @@ def render_preview(ob, out):
     cam.location = ctr + Vector((size * 0.9, -size * 1.5, size * 0.45))
     cam.rotation_euler = (ctr - cam.location).to_track_quat("-Z", "Y").to_euler()
     key = bpy.data.objects.new("key", bpy.data.lights.new("key", "SUN"))
-    key.data.energy = 3.0
+    key.data.energy = 2.2
     key.rotation_euler = (0.8, 0.2, -0.6)
     sc.collection.objects.link(key)
     sc.render.filepath = out
