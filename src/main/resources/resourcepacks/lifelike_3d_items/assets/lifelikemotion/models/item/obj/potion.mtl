@@ -1,0 +1,20 @@
+newmtl liquid
+Kd 1 1 1
+forge_TintIndex 0
+map_Kd lifelikemotion:item/obj/white
+
+newmtl cork
+Kd 1 1 1
+forge_TintIndex -1
+map_Kd lifelikemotion:item/obj/white
+
+newmtl twine
+Kd 1 1 1
+forge_TintIndex -1
+map_Kd lifelikemotion:item/obj/white
+
+newmtl glass
+Kd 1 1 1
+forge_TintIndex -1
+map_Kd lifelikemotion:item/obj/white
+

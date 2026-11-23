@@ -129,7 +129,7 @@ public final class ClientSmoke {
         fp("fp_empty_idle", "air", null, 0);
         fp("fp_punch", "air", Motion.Action.ATTACK, 2);
         // hand-built models: held, mid-swing, seen from outside, on the ground
-        for (String it : new String[]{"wooden_sword", "stone_sword", "iron_sword", "golden_sword", "diamond_sword", "netherite_sword", "netherite_pickaxe", "diamond_axe", "golden_shovel", "iron_hoe", "torch", "soul_lantern", "fishing_rod", "shears", "flint_and_steel", "bow", "crossbow", "trident", "shield"}) {
+        for (String it : new String[]{"wooden_sword", "stone_sword", "iron_sword", "golden_sword", "diamond_sword", "netherite_sword", "netherite_pickaxe", "iron_pickaxe", "diamond_axe", "golden_shovel", "iron_hoe", "torch", "soul_lantern", "fishing_rod", "shears", "flint_and_steel", "bow", "crossbow", "trident", "shield"}) {
             fp("hand_" + it + "_held", it, null, 0);
             fp("hand_" + it + "_swing", it, Motion.Action.ATTACK, 2);
         }

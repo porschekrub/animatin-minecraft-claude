@@ -1,0 +1,20 @@
+newmtl blade
+Kd 1 1 1
+forge_TintIndex -1
+map_Kd lifelikemotion:item/obj/white
+
+newmtl guard
+Kd 1 1 1
+forge_TintIndex -1
+map_Kd lifelikemotion:item/obj/white
+
+newmtl gem
+Kd 1 1 1
+forge_TintIndex -1
+map_Kd lifelikemotion:item/obj/white
+
+newmtl grip
+Kd 1 1 1
+forge_TintIndex -1
+map_Kd lifelikemotion:item/obj/white
+
