@@ -32,30 +32,54 @@ def rgb(h):
 
 # ---------------------------------------------------------------- paints
 class Paint:
-    """how one material is painted: a ramp of colours along a direction (dark to light), pixel grain, lighter rims,
-    and an optional pattern(pixel, normal) -> brightness factor"""
+    """how one material is painted, pixel-art style: a short palette of tones (dark to light). Each pixel picks ONE
+    tone from: where it sits along a direction, soft clustered noise (patches of lighter and darker pixels), which way
+    its face points (tops lighter, undersides darker), and its place on the box (a light rim along top edges, a dark
+    one along bottom edges). Optional sparkles (single bright pixels) and a pattern(pixel, normal) -> tone shift."""
 
-    def __init__(self, ramp, axis=(0, 1, 0), lo=0, hi=16, grain=0.05, rim=0.12, top=0.06, pattern=None,
-                 alpha=1.0, tint=-1, glow=False):
+    def __init__(self, ramp, axis=(0, 1, 0), lo=0, hi=16, clusters=0.7, scale=2.5, rim=0.8, faces=0.6,
+                 pattern=None, sparkle=0.0, alpha=1.0, tint=-1, glow=False, seed=0):
         self.ramp = [rgb(c) if isinstance(c, str) else c for c in ramp]
         self.axis, self.lo, self.hi = np.array(axis, float), lo, hi
-        self.grain, self.rim, self.top, self.pattern = grain, rim, top, pattern
-        self.alpha, self.tint, self.glow = alpha, tint, glow
+        self.clusters, self.scale, self.rim, self.faces = clusters, scale, rim, faces
+        self.pattern, self.sparkle = pattern, sparkle
+        self.alpha, self.tint, self.glow, self.seed = alpha, tint, glow, seed
 
-    def at(self, p, n, edge, rnd):
+    def noise(self, p):
+        """smooth value noise in [-1, 1] over pixel positions: patches a few pixels wide"""
+        q = np.array(p) / self.scale
+        i = np.floor(q).astype(int)
+        f = q - i
+        f = f * f * (3 - 2 * f)
+        def h(c):
+            return random.Random(hash((self.seed, c[0], c[1], c[2]))).random() * 2 - 1
+        out = 0.0
+        for dx in (0, 1):
+            for dy in (0, 1):
+                for dz in (0, 1):
+                    w = (f[0] if dx else 1 - f[0]) * (f[1] if dy else 1 - f[1]) * (f[2] if dz else 1 - f[2])
+                    out += w * h((i[0] + dx, i[1] + dy, i[2] + dz))
+        return out
+
+    def at(self, p, n, edges, rnd):
+        top = len(self.ramp) - 1
         t = (np.dot(self.axis, p) - self.lo) / max(self.hi - self.lo, 1e-6)
-        t = min(max(t, 0.0), 1.0) * (len(self.ramp) - 1)
-        i = min(int(t), len(self.ramp) - 2)
-        f = t - i
-        c = np.array(self.ramp[i]) * (1 - f) + np.array(self.ramp[i + 1]) * f
-        k = 1.0 + (rnd.random() * 2 - 1) * self.grain
-        if edge:
+        k = min(max(t, 0.0), 1.0) * top
+        k += self.clusters * self.noise(p) * 1.4
+        k += self.faces * (n[1] - 0.25 * n[0] + 0.25 * n[2])  # light from above, a little from the front-left
+        if "up" in edges:
             k += self.rim
-        if n[1] > 0:
-            k += self.top
+        elif "down" in edges:
+            k -= self.rim * 0.7
+        elif edges:
+            k += self.rim * 0.4
         if self.pattern:
-            k *= self.pattern(p, n)
-        return np.clip(c * k, 0, 1)
+            k += self.pattern(p, n)
+        i = int(round(min(max(k, 0), top)))
+        c = np.array(self.ramp[i])
+        if self.sparkle and rnd.random() < self.sparkle:
+            c = np.clip(c * 0.4 + 0.6, 0, 1)
+        return c
 
 
 # ---------------------------------------------------------------- building
@@ -91,10 +115,13 @@ def build(name, boxes, paints, seed=1):
                 continue
             # rim texels: at the edge of this face (a tangent neighbour is missing or another material)
             tang = [t for t in DIRS if t != d and t != tuple(-v for v in d)]
-            edge = any(grid.get((x + t[0], y + t[1], z + t[2])) != m or
-                       grid.get((x + t[0] + d[0], y + t[1] + d[1], z + t[2] + d[2])) is not None for t in tang)
+            edges = set()
+            for t in tang:
+                if grid.get((x + t[0], y + t[1], z + t[2])) != m or \
+                        grid.get((x + t[0] + d[0], y + t[1] + d[1], z + t[2] + d[2])) is not None:
+                    edges.add("up" if t == (0, 1, 0) else "down" if t == (0, -1, 0) else "side")
             centre = np.array([x + 0.5, y + 0.5, z + 0.5])
-            col = paints[m].at(centre, d, edge, rnd)
+            col = paints[m].at(centre, d, edges, rnd)
             # the face's corners, in pixels
             ax = [i for i in range(3) if d[i] == 0]
             fc = centre + 0.5 * np.array(d)
@@ -130,24 +157,25 @@ def mirror_x(boxes, cx=16):
 
 
 def apple():
-    """a squared-off apple: a chunky core with every side bevelled in a step, a stem and a leaf"""
+    """a squared-off apple: a chunky core with every side bevelled in a step, a stem in a little hollow, a leaf"""
     R = "skin"
     boxes = [
         (4, 2, 4, 12, 10, 12, R),        # core
         (3, 3, 5, 13, 9, 11, R), (5, 3, 3, 11, 9, 13, R),  # sides stepped in
         (5, 10, 5, 11, 11, 11, R), (5, 1, 5, 11, 2, 11, R),  # top and bottom
-        (7, 10, 7, 9, 11, 9, "dip"),      # the hollow round the stem
+        (7, 10, 7, 9, 11, 9, "dip"),
         (7, 11, 7, 8, 14, 8, "stem"), (8, 13, 7, 9, 14, 8, "stem"),
         (8, 12, 8, 12, 13, 9, "leaf"), (9, 13, 8, 11, 14, 9, "leaf"),
     ]
-    def blush(p, n):
-        # a sunny blush on the upper front, darker underneath
-        return 1.0 + 0.12 * max(0.0, (p[1] - 6) / 5) * (1 if p[2] > 8 else 0.4)
+    def shine(p, n):
+        # a patch of bright pixels where the light catches the upper front-left
+        return 1.6 if (p[1] > 7 and p[0] < 7 and p[2] > 8 and (n[2] > 0 or n[0] < 0 or n[1] > 0)) else 0.0
     paints = {
-        R: Paint(["7a0c12", "b5161f", "e02b2f", "f0553a", "f78a4a"], lo=1, hi=11, grain=0.045, rim=0.1, pattern=blush),
-        "dip": Paint(["5a0a0e", "7a1410"], grain=0.03, rim=0),
-        "stem": Paint(["3b2410", "6b4520"], lo=11, hi=14, grain=0.04, rim=0.08),
-        "leaf": Paint(["2f6b1c", "5aa62e", "8ad04a"], axis=(1, 0, 0), lo=8, hi=12, grain=0.05, rim=0.12),
+        R: Paint(["5a0a12", "8c1018", "bd1b22", "dd2c2c", "f04b3a", "ff8566"], lo=1, hi=12, clusters=0.6,
+                 pattern=shine, seed=1),
+        "dip": Paint(["4a080d", "6e0f12"], clusters=0.2, rim=0, faces=0.3),
+        "stem": Paint(["2e1c0c", "4d3218", "6e4c25"], lo=11, hi=14, clusters=0.3, rim=0.5),
+        "leaf": Paint(["24501a", "357a22", "4f9e2c", "74c442"], axis=(1, 0, 0), lo=8, hi=12, clusters=0.5, seed=3),
     }
     return boxes, paints, "food"
 
@@ -161,43 +189,44 @@ def potion():
         (7, 10, 7, 9, 13, 9, "cork"),
     ]
     paints = {
-        "glass": Paint([(0.72, 0.86, 0.95), (0.9, 0.96, 1.0)], lo=1, hi=11, grain=0.02, rim=0.18, alpha=0.42),
-        "potion": Paint([(0.62, 0.62, 0.62), (1.0, 1.0, 1.0)], lo=2, hi=6, grain=0.04, rim=0.1, tint=0),
-        "cork": Paint(["8a5a30", "b88350", "d8a970"], lo=10, hi=13, grain=0.07, rim=0.1),
+        "glass": Paint(["8fb6cf", "b8d8ec", "dcf0fb", "ffffff"], lo=1, hi=11, clusters=0.3, rim=1.2, alpha=0.42),
+        "potion": Paint([(0.5, 0.5, 0.5), (0.68, 0.68, 0.68), (0.85, 0.85, 0.85), (1.0, 1.0, 1.0)], lo=2, hi=6,
+                        clusters=0.5, tint=0, seed=5),
+        "cork": Paint(["6b4524", "8f6133", "b5834a", "d6a86c"], lo=10, hi=13, clusters=0.8, scale=1.5, seed=6),
     }
     return boxes, paints, "food"
 
 
 def sword():
-    """standing up: a pommel, a wrapped grip, a guard with raised tips, a blade with a thicker middle and a point"""
+    """standing up: a pommel stone, a wrapped grip, a guard with raised tips, a blade with bright edges and a point"""
     boxes = [
         (6, 0, 7, 10, 2, 9, "gem"), (7, 0, 6, 9, 2, 10, "gem"),       # pommel
         (7, 2, 7, 9, 7, 9, "grip"),
         (3, 7, 6, 13, 9, 10, "guard"),
         (2, 8, 7, 3, 11, 9, "guard"), (13, 8, 7, 14, 11, 9, "guard"),  # raised tips
         (7, 8, 5, 9, 10, 6, "gem"), (7, 8, 10, 9, 10, 11, "gem"),     # a stone on each face of the guard
-        (6, 9, 7, 10, 22, 9, "blade"),                                  # blade: 4 wide, 2 thick
-        (5, 9, 7, 6, 20, 9, "edge"), (10, 9, 7, 11, 20, 9, "edge"),   # its sharp edges
+        (6, 9, 7, 10, 22, 9, "blade"),
+        (5, 9, 7, 6, 20, 9, "edge"), (10, 9, 7, 11, 20, 9, "edge"),
         (6, 22, 7, 10, 24, 9, "blade"), (7, 24, 7, 9, 26, 9, "blade"), (5, 20, 7, 6, 21, 9, "edge"),
         (10, 20, 7, 11, 21, 9, "edge"),
     ]
     def wrap(p, n):
-        return 0.78 if int(p[1]) % 2 == 0 else 1.0
-    def fuller(p, n):
-        # a darker groove down the middle of each face
-        return 0.82 if 7 <= p[0] < 9 and abs(n[2]) > 0 and p[1] < 20 else 1.0
+        return -1.2 if int(p[1]) % 2 == 0 else 0.0
+    def groove(p, n):
+        return -1.5 if 7 <= p[0] < 9 and abs(n[2]) > 0 and p[1] < 21 else 0.0
     paints = {
-        "blade": Paint(["1e8a77", "2bc7ac", "33ebcb", "a4fdf0"], lo=9, hi=26, grain=0.04, rim=0.08, pattern=fuller),
-        "edge": Paint(["8ff5e4", "c8fff6"], lo=9, hi=21, grain=0.03, rim=0.0),
-        "guard": Paint(["0e3f36", "15634f", "1e8a77"], lo=7, hi=11, grain=0.05, rim=0.15),
-        "gem": Paint(["2bc7ac", "a4fdf0"], lo=0, hi=11, grain=0.03, rim=0.2),
-        "grip": Paint(["3d2812", "68481f", "8a6630"], lo=2, hi=7, grain=0.05, rim=0.05, pattern=wrap),
+        "blade": Paint(["0e3f36", "15634f", "1e8a77", "2bc7ac", "33ebcb", "a4fdf0"], lo=9, hi=26, clusters=0.5,
+                       pattern=groove, sparkle=0.04, seed=7),
+        "edge": Paint(["4fd9c0", "a4fdf0", "e6fffb"], lo=9, hi=21, clusters=0.3, rim=0.3, sparkle=0.05),
+        "guard": Paint(["0a2e28", "0e3f36", "15634f", "1e8a77", "2bc7ac"], lo=7, hi=11, clusters=0.5, seed=8),
+        "gem": Paint(["1e8a77", "33ebcb", "a4fdf0", "ffffff"], lo=0, hi=11, clusters=0.4, sparkle=0.08),
+        "grip": Paint(["2e1c0c", "4a3018", "68481f", "8a6630"], lo=2, hi=7, clusters=0.4, pattern=wrap, rim=0.4),
     }
     return boxes, paints, "blade"
 
 
 def pickaxe():
-    """a wooden handle with an iron cap, an iron head block and two arms curving down to points"""
+    """a wooden handle with an iron cap, an iron block holding the head, and two arms stepping down to points"""
     head = [
         (10, 14, 7, 13, 17, 9, "iron"), (13, 13, 7, 15, 16, 9, "iron"), (15, 11, 7, 17, 14, 9, "iron"),
         (16, 9, 7, 17, 11, 9, "tip"),
@@ -205,14 +234,17 @@ def pickaxe():
     boxes = [
         (7, 0, 7, 9, 18, 9, "wood"),
         (6, 0, 6, 10, 1, 10, "iron"),
-        (6, 14, 6, 10, 18, 10, "iron"),       # the block that holds the head on
+        (6, 14, 6, 10, 18, 10, "iron"),
     ] + mirror_x(head, 16)
     def grain(p, n):
-        return 0.85 if (int(p[0]) + int(p[2])) % 3 == 0 and abs(n[1]) < 0.5 else 1.0
+        # streaks running along the handle
+        return -1.0 if (int(p[0]) * 7 + int(p[2]) * 3 + int(p[1] / 4)) % 4 == 0 and abs(n[1]) < 0.5 else 0.0
     paints = {
-        "wood": Paint(["4a3318", "6e4c25", "8c6634"], lo=0, hi=18, grain=0.05, rim=0.06, pattern=grain),
-        "iron": Paint(["5e6064", "8f9296", "b9bcc0", "d4d6d9"], lo=9, hi=18, grain=0.035, rim=0.12),
-        "tip": Paint(["8f9296", "c9cbce"], lo=9, hi=11, grain=0.03, rim=0.1),
+        "wood": Paint(["3b2611", "553a1a", "6e4c25", "8a6332", "a47a40"], lo=0, hi=18, clusters=0.4, pattern=grain,
+                      seed=9),
+        "iron": Paint(["44464a", "65686c", "8a8d91", "aeb1b4", "cfd1d3", "eceeef"], lo=9, hi=18, clusters=0.45,
+                      seed=10),
+        "tip": Paint(["8a8d91", "cfd1d3", "f6f7f8"], lo=9, hi=11, clusters=0.3),
     }
     return boxes, paints, "tool"
 
