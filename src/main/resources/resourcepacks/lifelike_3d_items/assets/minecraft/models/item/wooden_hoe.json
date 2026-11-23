@@ -1,1 +1,0 @@
-{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/wooden_hoe"},"base":{"parent":"lifelikemotion:item3d/wooden_hoe"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/wooden_hoe"}}}}

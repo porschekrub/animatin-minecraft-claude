@@ -1,1 +1,0 @@
-{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/chainmail_boots"},"base":{"parent":"lifelikemotion:item3d/chainmail_boots_copper_trim"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/chainmail_boots","layer1":"minecraft:trims/items/boots_trim_copper"}}}}

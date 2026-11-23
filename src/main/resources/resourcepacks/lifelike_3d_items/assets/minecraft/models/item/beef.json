@@ -1,1 +1,0 @@
-{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/beef"},"base":{"parent":"lifelikemotion:item3d/beef"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/beef"}}}}

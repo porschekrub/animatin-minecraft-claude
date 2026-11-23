@@ -1,1 +1,0 @@
-{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/bow_pulling_1"},"base":{"parent":"lifelikemotion:item3d/bow_pulling_1"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/bow_pulling_1"}}}}

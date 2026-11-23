@@ -1,1 +1,0 @@
-{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/crimson_hanging_sign"},"base":{"parent":"lifelikemotion:item3d/crimson_hanging_sign"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/crimson_hanging_sign"}}}}

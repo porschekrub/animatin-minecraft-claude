@@ -1,1 +1,0 @@
-{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/music_disc_mall"},"base":{"parent":"lifelikemotion:item3d/music_disc_mall"},"perspectives":{"gui":{"parent":"minecraft:item/template_music_disc","textures":{"layer0":"minecraft:item/music_disc_mall"}}}}

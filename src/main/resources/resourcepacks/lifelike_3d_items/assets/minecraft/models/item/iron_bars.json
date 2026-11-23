@@ -1,1 +1,0 @@
-{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:block/iron_bars"},"base":{"parent":"lifelikemotion:item3d/iron_bars"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:block/iron_bars"}}}}

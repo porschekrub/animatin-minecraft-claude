@@ -1,1 +1,0 @@
-{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/piglin_banner_pattern"},"base":{"parent":"lifelikemotion:item3d/piglin_banner_pattern"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/piglin_banner_pattern"}}}}

@@ -1,1 +1,0 @@
-{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/glow_ink_sac"},"base":{"parent":"lifelikemotion:item3d/glow_ink_sac"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/glow_ink_sac"}}}}

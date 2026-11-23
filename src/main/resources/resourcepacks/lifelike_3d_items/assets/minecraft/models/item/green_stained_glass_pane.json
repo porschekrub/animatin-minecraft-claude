@@ -1,1 +1,0 @@
-{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:block/green_stained_glass"},"base":{"parent":"lifelikemotion:item3d/green_stained_glass_pane"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:block/green_stained_glass"}}}}

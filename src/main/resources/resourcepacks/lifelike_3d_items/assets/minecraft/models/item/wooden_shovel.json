@@ -1,1 +1,0 @@
-{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/wooden_shovel"},"base":{"parent":"lifelikemotion:item3d/wooden_shovel"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/wooden_shovel"}}}}

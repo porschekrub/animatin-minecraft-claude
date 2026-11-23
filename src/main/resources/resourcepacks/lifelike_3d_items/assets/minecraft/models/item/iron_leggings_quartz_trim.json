@@ -1,1 +1,0 @@
-{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/iron_leggings"},"base":{"parent":"lifelikemotion:item3d/iron_leggings_quartz_trim"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/iron_leggings","layer1":"minecraft:trims/items/leggings_trim_quartz"}}}}

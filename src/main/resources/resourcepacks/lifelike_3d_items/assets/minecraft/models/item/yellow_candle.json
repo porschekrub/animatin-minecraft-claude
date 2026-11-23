@@ -1,1 +1,0 @@
-{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/yellow_candle"},"base":{"parent":"lifelikemotion:item3d/yellow_candle"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/yellow_candle"}}}}

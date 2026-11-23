@@ -1,1 +1,0 @@
-{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/end_crystal"},"base":{"parent":"lifelikemotion:item3d/end_crystal"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/end_crystal"}}}}

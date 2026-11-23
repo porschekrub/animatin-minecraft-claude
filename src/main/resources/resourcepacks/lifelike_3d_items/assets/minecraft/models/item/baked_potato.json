@@ -1,1 +1,0 @@
-{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/baked_potato"},"base":{"parent":"lifelikemotion:item3d/baked_potato"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/baked_potato"}}}}

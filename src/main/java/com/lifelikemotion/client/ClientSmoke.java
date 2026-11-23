@@ -18,7 +18,7 @@ import java.util.List;
 
 /**
  * CI only (-Dlifelikemotion.clientsmoke=true): in the test world, puts the player through every animation and takes a
- * screenshot of each (first person, third person, 3D items on the ground and in the inventory), then quits.
+ * screenshot of each (first person, third person, emotes, mobs), then quits.
  * "CLIENT SMOKE OK" in the log means every step ran.
  */
 public final class ClientSmoke {
@@ -83,7 +83,6 @@ public final class ClientSmoke {
     // ------------------------------------------------------------------ the script
     static void build() {
         Minecraft mc = Minecraft.getInstance();
-        // the 3D items pack (normally switched on at the title screen, which quick play skips)
         add(t -> {
             if (t == 0) {
                 if (BASELINE) {
@@ -96,7 +95,6 @@ public final class ClientSmoke {
                     com.lifelikemotion.config.LMConfig.MOBS_ENABLED.set(true);
                     // (the test stands still a lot: no show-offs of their own in the middle of other shots)
                     com.lifelikemotion.config.LMConfig.FP_IDLE_SHOW.set(false);
-                    Packs.enableNow();
                 }
             }
             return t > 140 && mc.getOverlay() == null;
@@ -128,136 +126,6 @@ public final class ClientSmoke {
         // ---- first person
         fp("fp_empty_idle", "air", null, 0);
         fp("fp_punch", "air", Motion.Action.ATTACK, 2);
-        // hand-built models: held, mid-swing, seen from outside, on the ground
-        for (String it : new String[]{"wooden_sword", "stone_sword", "iron_sword", "golden_sword", "diamond_sword", "netherite_sword", "netherite_pickaxe", "iron_pickaxe", "diamond_axe", "golden_shovel", "iron_hoe", "torch", "soul_lantern", "fishing_rod", "shears", "flint_and_steel", "bow", "crossbow", "trident", "shield"}) {
-            fp("hand_" + it + "_held", it, null, 0);
-            fp("hand_" + it + "_swing", it, Motion.Action.ATTACK, 2);
-        }
-        if (wanted("hand_outside")) add(t -> {
-            if (t == 0) {
-                mc.options.setCameraType(CameraType.FIRST_PERSON);
-                give("air");
-                cmd("tp @s 0 -60 0 0 35");
-                String[] items = {"diamond_sword", "netherite_pickaxe", "golden_axe", "torch", "bow", "trident", "shield"};
-                for (int i = 0; i < items.length; i++)
-                    cmd(String.format("summon item %.2f -60 %.2f {Item:{id:\"minecraft:%s\",Count:1b},PickupDelay:32767,Age:-32768}", -3.0 + i, 2.6, items[i]));
-            }
-            if (t == 30) shot("hand_outside_ground");
-            if (t == 31) {
-                cmd("kill @e[type=item]");
-                give("diamond_sword");
-                mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT);
-            }
-            if (t == 42) shot("hand_outside_third_person");
-            if (t == 43) mc.options.setCameraType(CameraType.FIRST_PERSON);
-            return t > 46;
-        });
-        // sculpted food: held, and all of it laid out on the ground
-        for (String it : new String[]{"apple", "golden_apple", "bread", "cooked_beef", "cooked_chicken", "salmon", "carrot", "mushroom_stew", "pumpkin_pie", "melon_slice", "sweet_berries", "porkchop"})
-            fp("food_" + it, it, null, 0);
-        if (wanted("food_ground")) add(t -> {
-            String[] foods = {"apple", "golden_apple", "enchanted_golden_apple", "carrot", "golden_carrot", "potato", "baked_potato", "poisonous_potato",
-                    "beetroot", "melon_slice", "sweet_berries", "glow_berries", "chorus_fruit", "bread", "cookie", "pumpkin_pie", "beef", "cooked_beef",
-                    "porkchop", "cooked_porkchop", "mutton", "cooked_mutton", "chicken", "cooked_chicken", "rabbit", "cooked_rabbit", "cod", "cooked_cod",
-                    "salmon", "cooked_salmon", "tropical_fish", "pufferfish", "mushroom_stew", "rabbit_stew", "beetroot_soup", "suspicious_stew",
-                    "rotten_flesh", "spider_eye", "dried_kelp"};
-            if (t == 0) {
-                mc.options.setCameraType(CameraType.FIRST_PERSON);
-                give("air");
-                cmd("kill @e[type=item]");
-                cmd("tp @s 0 -60 -1 0 55");
-                for (int i = 0; i < foods.length; i++)
-                    cmd(String.format("summon item %.2f -60 %.2f {Item:{id:\"minecraft:%s\",Count:1b},PickupDelay:32767,Age:-32768,NoGravity:1b}",
-                            -2.4 + (i % 8) * 0.7, 0.6 + (i / 8) * 0.7, foods[i]));
-            }
-            if (t == 30) shot("food_ground");
-            if (t == 31) cmd("kill @e[type=item]");
-            return t > 34;
-        });
-        for (String it : new String[]{"diamond", "emerald", "amethyst_shard", "gold_ingot", "netherite_ingot", "raw_gold", "redstone", "ender_pearl", "nether_star", "blaze_rod", "heart_of_the_sea", "coal"})
-            fp("gem_" + it, it, null, 0);
-        if (wanted("gem_ground")) add(t -> {
-            String[] gems = {"diamond", "emerald", "lapis_lazuli", "amethyst_shard", "quartz", "echo_shard", "prismarine_shard", "prismarine_crystals",
-                    "coal", "charcoal", "flint", "clay_ball", "raw_iron", "raw_gold", "raw_copper", "iron_ingot", "gold_ingot", "copper_ingot",
-                    "netherite_ingot", "netherite_scrap", "iron_nugget", "gold_nugget", "redstone", "glowstone_dust", "gunpowder", "sugar",
-                    "blaze_powder", "bone_meal", "ender_pearl", "ender_eye", "heart_of_the_sea", "nether_star", "blaze_rod", "brick", "nether_brick",
-                    "slime_ball", "magma_cream"};
-            if (t == 0) {
-                mc.options.setCameraType(CameraType.FIRST_PERSON);
-                give("air");
-                cmd("kill @e[type=item]");
-                cmd("tp @s 0 -60 -1 0 55");
-                for (int i = 0; i < gems.length; i++)
-                    cmd(String.format("summon item %.2f -60 %.2f {Item:{id:\"minecraft:%s\",Count:1b},PickupDelay:32767,Age:-32768,NoGravity:1b}",
-                            -2.4 + (i % 8) * 0.7, 0.6 + (i / 8) * 0.7, gems[i]));
-            }
-            if (t == 30) shot("gem_ground");
-            if (t == 31) cmd("kill @e[type=item]");
-            return t > 34;
-        });
-        for (String it : new String[]{"water_bucket", "lava_bucket", "axolotl_bucket", "enchanted_book", "writable_book", "experience_bottle", "totem_of_undying", "feather", "arrow", "lead", "saddle", "egg"})
-            fp("gear_" + it, it, null, 0);
-        // a potion coloured by its effect, and the compass and clock turning as you face around
-        String[][] pots = {{"potion", "healing"}, {"splash_potion", "swiftness"}, {"lingering_potion", "poison"}};
-        for (String[] pt : pots)
-            if (wanted("gear_" + pt[0])) add(t -> {
-                if (t == 0) {
-                    mc.options.setCameraType(CameraType.FIRST_PERSON);
-                    mc.player.getInventory().selected = 0;
-                    cmd("item replace entity @s weapon.mainhand with minecraft:" + pt[0] + "{Potion:\"minecraft:" + pt[1] + "\"}");
-                }
-                if (t == 25) shot("gear_" + pt[0]);
-                return t > 27;
-            });
-        for (String it : new String[]{"compass", "clock"})
-            if (wanted("gear_" + it)) add(t -> {
-                if (t == 0) {
-                    give(it);
-                    cmd("time set 6000");
-                }
-                if (t == 20) shot("gear_" + it + "_a");
-                if (t == 21) {
-                    yaw = 120f;
-                    cmd("time set 15000");
-                }
-                if (t == 40) shot("gear_" + it + "_b");
-                if (t == 41) {
-                    yaw = 0f;
-                    cmd("time set 6000");
-                }
-                return t > 44;
-            });
-        if (wanted("gear_ground")) add(t -> {
-            String[] items = {"potion", "splash_potion", "lingering_potion", "glass_bottle", "experience_bottle", "honey_bottle", "dragon_breath",
-                    "bucket", "water_bucket", "lava_bucket", "milk_bucket", "powder_snow_bucket", "cod_bucket", "tropical_fish_bucket", "book",
-                    "writable_book", "written_book", "enchanted_book", "knowledge_book", "name_tag", "lead", "string", "saddle", "paper", "map",
-                    "feather", "leather", "bone", "stick", "arrow", "spectral_arrow", "egg", "snowball", "totem_of_undying", "fire_charge",
-                    "firework_rocket", "ink_sac", "glow_ink_sac", "nautilus_shell", "ghast_tear", "honeycomb", "compass", "clock", "recovery_compass"};
-            if (t == 0) {
-                mc.options.setCameraType(CameraType.FIRST_PERSON);
-                give("air");
-                cmd("kill @e[type=item]");
-                cmd("tp @s 0 -60 -1 0 55");
-                for (int i = 0; i < items.length; i++)
-                    cmd(String.format("summon item %.2f -60 %.2f {Item:{id:\"minecraft:%s\",Count:1b},PickupDelay:32767,Age:-32768,NoGravity:1b}",
-                            -2.8 + (i % 9) * 0.7, 0.6 + (i / 9) * 0.7, items[i]));
-            }
-            if (t == 30) shot("gear_ground");
-            if (t == 31) cmd("kill @e[type=item]");
-            return t > 34;
-        });
-        for (String it : new String[]{"pig_spawn_egg", "creeper_spawn_egg", "diamond_chestplate", "iron_boots", "music_disc_cat", "red_dye", "wheat_seeds", "oak_boat", "cherry_chest_boat", "tnt_minecart", "angler_pottery_sherd", "netherite_upgrade_smithing_template"})
-            fp("rest_" + it, it, null, 0);
-        String[][] nbt = {{"leather_chestplate", "{display:{color:3949738}}"}, {"netherite_helmet", "{Trim:{material:\"minecraft:gold\",pattern:\"minecraft:coast\"}}"}};
-        for (String[] nb : nbt)
-            if (wanted("rest_" + nb[0])) add(t -> {
-                if (t == 0) {
-                    mc.player.getInventory().selected = 0;
-                    cmd("item replace entity @s weapon.mainhand with minecraft:" + nb[0] + nb[1]);
-                }
-                if (t == 25) shot("rest_" + nb[0] + "_nbt");
-                return t > 27;
-            });
         use("food_eat_apple", "apple", 14);
         use("food_eat_stew", "mushroom_stew", 14);
         // every show-off move, frozen at eight points in time, with an item it belongs to
@@ -595,43 +463,6 @@ public final class ClientSmoke {
             return t > 58;
         });
 
-        // ---- 3D items: on the ground, in the hand, and flat in the inventory
-        if (wanted("items3d_ground")) add(t -> {
-            if (t == 0) {
-                mc.options.setCameraType(CameraType.FIRST_PERSON);
-                give("air");
-                cmd("tp @s 0 -60 0 0 45");
-                String[] items = {"diamond_sword", "iron_pickaxe", "golden_axe", "bread", "apple", "cooked_beef", "diamond", "iron_ingot",
-                        "stick", "torch", "carrot", "emerald", "book", "feather", "bone", "ender_pearl"};
-                for (int i = 0; i < items.length; i++) {
-                    double x = -1.8 + (i % 4) * 1.2, z = 2.2 + (i / 4) * 1.1;
-                    cmd(String.format("summon item %.2f -60 %.2f {Item:{id:\"minecraft:%s\",Count:1b},PickupDelay:32767,Age:-32768}", x, z, items[i]));
-                }
-                pitch = 45f;
-            }
-            if (t == 30) shot("items3d_ground");
-            if (t == 31) pitch = 10f;
-            return t > 40;
-        });
-        if (wanted("items3d_held_third_person")) add(t -> {
-            if (t == 0) {
-                mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT);
-                give("diamond_sword");
-            }
-            if (t == 10) shot("items3d_held_third_person");
-            return t > 14;
-        });
-        if (wanted("items3d_inventory_flat")) add(t -> {
-            if (t == 0) {
-                mc.options.setCameraType(CameraType.FIRST_PERSON);
-                String[] hot = {"diamond_sword", "iron_pickaxe", "bread", "apple", "torch", "diamond", "stick", "bow", "cooked_beef"};
-                for (int i = 0; i < hot.length; i++) cmd("item replace entity @s hotbar." + i + " with minecraft:" + hot[i]);
-            }
-            if (t == 10) mc.setScreen(new InventoryScreen(mc.player));
-            if (t == 20) shot("items3d_inventory_flat");
-            if (t == 21) mc.setScreen(null);
-            return t > 26;
-        });
 
         finish();
     }

@@ -1,1 +1,0 @@
-{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/cooked_rabbit"},"base":{"parent":"lifelikemotion:item3d/cooked_rabbit"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/cooked_rabbit"}}}}

@@ -1,1 +1,0 @@
-{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:block/detector_rail"},"base":{"parent":"lifelikemotion:item3d/detector_rail"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:block/detector_rail"}}}}

@@ -1,1 +1,0 @@
-{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:block/tube_coral_fan"},"base":{"parent":"lifelikemotion:item3d/tube_coral_fan"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:block/tube_coral_fan"}}}}

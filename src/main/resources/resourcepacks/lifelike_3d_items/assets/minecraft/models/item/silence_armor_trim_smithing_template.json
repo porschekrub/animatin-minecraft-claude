@@ -1,1 +1,0 @@
-{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/silence_armor_trim_smithing_template"},"base":{"parent":"lifelikemotion:item3d/silence_armor_trim_smithing_template"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/silence_armor_trim_smithing_template"}}}}

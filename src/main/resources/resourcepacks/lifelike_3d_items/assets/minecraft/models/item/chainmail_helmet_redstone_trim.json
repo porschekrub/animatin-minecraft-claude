@@ -1,1 +1,0 @@
-{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/chainmail_helmet"},"base":{"parent":"lifelikemotion:item3d/chainmail_helmet_redstone_trim"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/chainmail_helmet","layer1":"minecraft:trims/items/helmet_trim_redstone"}}}}

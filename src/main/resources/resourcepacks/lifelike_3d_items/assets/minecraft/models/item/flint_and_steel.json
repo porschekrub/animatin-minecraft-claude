@@ -1,1 +1,0 @@
-{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/flint_and_steel"},"base":{"parent":"lifelikemotion:item3d/flint_and_steel"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/flint_and_steel"}}}}

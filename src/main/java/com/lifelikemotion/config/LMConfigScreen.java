@@ -116,7 +116,6 @@ public class LMConfigScreen extends Screen {
         java.util.List<int[]> heads = new java.util.ArrayList<>();
         layout(heads);
         for (int[] h : heads) g.drawString(font, ROWS[h[2]].section(), colX(h[0]), h[1] + 2, 0xFFD27F);
-        g.drawCenteredString(font, Component.literal("3D items: Options → Resource Packs → \"Lifelike 3D Items\""), width / 2, height - 44, 0xA0A0A0);
         super.render(g, mx, my, partial);
     }
 

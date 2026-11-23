@@ -1,1 +1,0 @@
-{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/sniffer_egg"},"base":{"parent":"lifelikemotion:item3d/sniffer_egg"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/sniffer_egg"}}}}

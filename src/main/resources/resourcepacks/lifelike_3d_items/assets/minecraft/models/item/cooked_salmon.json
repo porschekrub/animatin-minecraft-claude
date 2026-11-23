@@ -1,1 +1,0 @@
-{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/cooked_salmon"},"base":{"parent":"lifelikemotion:item3d/cooked_salmon"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/cooked_salmon"}}}}

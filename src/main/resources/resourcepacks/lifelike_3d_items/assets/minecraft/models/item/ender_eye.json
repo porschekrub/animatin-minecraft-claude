@@ -1,1 +1,0 @@
-{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/ender_eye"},"base":{"parent":"lifelikemotion:item3d/ender_eye"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/ender_eye"}}}}

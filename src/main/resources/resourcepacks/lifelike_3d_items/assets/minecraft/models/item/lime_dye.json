@@ -1,1 +1,0 @@
-{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/lime_dye"},"base":{"parent":"lifelikemotion:item3d/lime_dye"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/lime_dye"}}}}

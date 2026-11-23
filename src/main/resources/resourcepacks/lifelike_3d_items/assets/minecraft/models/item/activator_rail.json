@@ -1,1 +1,0 @@
-{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:block/activator_rail"},"base":{"parent":"lifelikemotion:item3d/activator_rail"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:block/activator_rail"}}}}

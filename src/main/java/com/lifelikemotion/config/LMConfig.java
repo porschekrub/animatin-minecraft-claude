@@ -25,8 +25,6 @@ public final class LMConfig {
     // mobs
     public static final ForgeConfigSpec.BooleanValue MOBS_ENABLED;
     public static final ForgeConfigSpec.DoubleValue MOBS_INTENSITY;
-    // 3D items
-    public static final ForgeConfigSpec.BooleanValue ITEMS_3D_PACK_ADDED;
 
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
@@ -61,10 +59,6 @@ public final class LMConfig {
         MOBS_INTENSITY = b.comment("Strength of the mob animations").defineInRange("intensity", 1.0, 0.0, 2.0);
         b.pop();
 
-        b.comment("3D items come as a built-in resource pack: Options → Resource Packs → \"Lifelike 3D Items\"").push("items3d");
-        ITEMS_3D_PACK_ADDED = b.comment("Set once the pack has been switched on for you the first time (it is not switched on again if you turn it off)")
-                .define("packAddedOnce", false);
-        b.pop();
         SPEC = b.build();
     }
 }

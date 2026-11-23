@@ -1,1 +1,0 @@
-{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:block/blue_orchid"},"base":{"parent":"lifelikemotion:item3d/blue_orchid"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:block/blue_orchid"}}}}

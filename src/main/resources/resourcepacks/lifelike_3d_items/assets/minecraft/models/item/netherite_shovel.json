@@ -1,1 +1,0 @@
-{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/netherite_shovel"},"base":{"parent":"lifelikemotion:item3d/netherite_shovel"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/netherite_shovel"}}}}
