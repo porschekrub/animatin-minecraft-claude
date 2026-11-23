@@ -36,6 +36,9 @@ public final class ClientSmoke {
     /** -Dlifelikemotion.only=fp_sword,fp_torch: only the shots starting with these (for quick local checks) */
     static final String[] ONLY = System.getProperty("lifelikemotion.only", "").isBlank() ? null : System.getProperty("lifelikemotion.only").split("[,+]");
 
+    /** the items with our own 3D models (kept in step with tools/blender/blocky.py) */
+    static final String[] ITEMS_3D = {"diamond_sword", "diamond_axe", "apple", "potion{Potion:\"minecraft:water\"}", "water_bucket"};
+
     static boolean wanted(String name) {
         if (ONLY == null) return true;
         for (String o : ONLY) if (name.startsWith(o)) return true;
@@ -95,6 +98,8 @@ public final class ClientSmoke {
                     com.lifelikemotion.config.LMConfig.MOBS_ENABLED.set(true);
                     // (the test stands still a lot: no show-offs of their own in the middle of other shots)
                     com.lifelikemotion.config.LMConfig.FP_IDLE_SHOW.set(false);
+                    // the 3D items pack (normally switched on at the title screen, which quick play skips)
+                    Packs.enableNow();
                 }
             }
             return t > 140 && mc.getOverlay() == null;
@@ -126,6 +131,23 @@ public final class ClientSmoke {
         // ---- first person
         fp("fp_empty_idle", "air", null, 0);
         fp("fp_punch", "air", Motion.Action.ATTACK, 2);
+        // 3D items: each held in first person, then all of them in the hand from the side and on the ground
+        for (String it : ITEMS_3D) fp("item3d_" + it.replaceAll("\\{.*", ""), it, null, 0);
+        if (wanted("item3d_ground")) add(t -> {
+            if (t == 0) {
+                mc.options.setCameraType(CameraType.FIRST_PERSON);
+                give("air");
+                cmd("kill @e[type=item]");
+                cmd("tp @s 0 -60 -1 0 50");
+                for (int i = 0; i < ITEMS_3D.length; i++)
+                    cmd(String.format("summon item %.2f -60 %.2f {Item:{id:\"minecraft:%s\",Count:1b%s},PickupDelay:32767,Age:-32768,NoGravity:1b}",
+                            -2.0 + (i % 5) * 1.0, 1.2 + (i / 5) * 1.0, ITEMS_3D[i].replaceAll("\\{.*", ""),
+                            ITEMS_3D[i].contains("{") ? ",tag:" + ITEMS_3D[i].substring(ITEMS_3D[i].indexOf('{')) : ""));
+            }
+            if (t == 30) shot("item3d_ground");
+            if (t == 31) cmd("kill @e[type=item]");
+            return t > 34;
+        });
         use("food_eat_apple", "apple", 14);
         use("food_eat_stew", "mushroom_stew", 14);
         // every show-off move, frozen at eight points in time, with an item it belongs to
@@ -571,8 +593,9 @@ public final class ClientSmoke {
 
     static void give(String item) {
         Minecraft mc = Minecraft.getInstance();
-        ItemStack stack = item.equals("air") ? ItemStack.EMPTY
-                : new ItemStack(BuiltInRegistries.ITEM.get(new ResourceLocation("minecraft", item)));
+        String id = item.contains("{") ? item.substring(0, item.indexOf('{')) : item;  // "potion{Potion:...}" = id + nbt
+        ItemStack stack = id.equals("air") ? ItemStack.EMPTY
+                : new ItemStack(BuiltInRegistries.ITEM.get(new ResourceLocation("minecraft", id)));
         mc.player.getInventory().selected = 0;
         cmd("item replace entity @s weapon.mainhand with minecraft:" + (stack.isEmpty() ? "air" : item));
     }

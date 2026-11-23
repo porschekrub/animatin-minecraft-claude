@@ -1,0 +1,1 @@
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/water_bucket"},"base":{"parent":"lifelikemotion:item3d/water_bucket"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/water_bucket"}}}}

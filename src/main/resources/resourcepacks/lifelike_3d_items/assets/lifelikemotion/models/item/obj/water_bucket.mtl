@@ -1,0 +1,15 @@
+newmtl iron
+Kd 1 1 1
+forge_TintIndex -1
+map_Kd lifelikemotion:item/obj/white
+
+newmtl lug
+Kd 1 1 1
+forge_TintIndex -1
+map_Kd lifelikemotion:item/obj/white
+
+newmtl water
+Kd 1 1 1
+forge_TintIndex -1
+map_Kd lifelikemotion:item/obj/white
+

@@ -14,7 +14,8 @@
     "CreeperModelMixin",
     "SpiderModelMixin",
     "VillagerModelMixin",
-    "LivingEntityMixin"
+    "LivingEntityMixin",
+    "ReloadableResourceManagerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

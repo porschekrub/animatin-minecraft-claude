@@ -2,6 +2,10 @@
 
 Everything you do gets an animation.
 
+- **Chunky 3D items** – real block-built models of the actual things (a sword with a guard and wrapped grip, an axe with
+  a fanned blade, an apple with a stem and leaf, glass bottles you can see the drink through, a bucket of water), each
+  painted smoothly with its own colours. A built-in resource pack, *Lifelike 3D Items*, switched on the first time you
+  start the game; the inventory keeps the usual flat icons. Made in Blender by `tools/blender/blocky.py`.
 - **Weighty first person** – your arm holds the item; sword slashes alternate forehand / backhand, axes chop overhead,
   pickaxes strike, shovels scoop, empty hands jab. The hands lag when you turn, bob and pump when you walk and sprint,
   trail your jumps and dip when you land; lanterns and torches swing.
