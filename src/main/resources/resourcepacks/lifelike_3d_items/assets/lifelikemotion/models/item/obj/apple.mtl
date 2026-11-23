@@ -1,5 +1,5 @@
-newmtl layer0
+newmtl body
 Kd 1 1 1
 forge_TintIndex -1
-map_Kd lifelikemotion:item/obj/white
+map_Kd lifelikemotion:item/obj/apple_skin
 

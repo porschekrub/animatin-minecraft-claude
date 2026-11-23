@@ -290,7 +290,10 @@ def bake_and_export(ob, name, display, translucent=False, particle=None, soft=0.
     ob.select_set(True)
     me = ob.data
     ao = _bake_corners(ob, "AO")[:, :1]
-    if "paint" in me.color_attributes:
+    if all("tex" in m for m in me.materials):
+        # the colours come from the Minecraft picture itself: the vertices carry only the soft shadows
+        rgb = np.repeat(0.5 + 0.5 * ao, 3, axis=1)
+    elif "paint" in me.color_attributes:
         # exact colours painted per corner (Minecraft's own pixels): only the light worn edges are baked, as a mask
         base = np.zeros(len(me.loops) * 4, dtype=np.float32)
         me.color_attributes["paint"].data.foreach_get("color", base)
@@ -374,7 +377,19 @@ def write_obj(ob, name, rgba, soft=0.0):
     for v in me.vertices:
         x, y, z = v.co
         lines.append(f"v {x:.5f} {z:.5f} {1 - y:.5f}")  # Blender Z-up -> Minecraft Y-up (+Y in Blender faces north)
-    lines.append("vt 0.5 0.5")
+    # texture coordinates: the mesh's own (a Minecraft picture laid onto the shape), or one plain point
+    uv = me.uv_layers.get("pic")
+    vt, keyuv = {}, []
+    if uv:
+        for li in range(len(me.loops)):
+            k = tuple(round(float(c), 5) for c in uv.data[li].uv)
+            if k not in vt:
+                vt[k] = len(vt) + 1
+                lines.append("vt %.5f %.5f" % k)
+            keyuv.append(vt[k])
+    else:
+        lines.append("vt 0.5 0.5")
+        keyuv = [1] * len(me.loops)
     vn, vc = {}, {}
     nl, cl = [], []
     keyed = []
@@ -390,23 +405,23 @@ def write_obj(ob, name, rgba, soft=0.0):
             cl.append("vc %.3f %.3f %.3f %.3f" % kc)
         keyed.append((vn[kn], vc[kc]))
     lines += nl + cl
-    mats = [(m.name.replace(" ", "_"), int(m.get("tint", -1)), bool(m.get("glow", False))) for m in me.materials]
+    mats = [(m.name.replace(" ", "_"), int(m.get("tint", -1)), bool(m.get("glow", False)), m.get("tex", WHITE)) for m in me.materials]
     by_mat = {}
     for p in me.polygons:
         by_mat.setdefault(p.material_index, []).append(p)
     for mi, polys in sorted(by_mat.items()):
         lines.append(f"usemtl {mats[mi][0]}")
         for p in polys:
-            corners = [f"{me.loops[li].vertex_index + 1}/1/{keyed[li][0]}/{keyed[li][1]}" for li in p.loop_indices]
+            corners = [f"{me.loops[li].vertex_index + 1}/{keyuv[li]}/{keyed[li][0]}/{keyed[li][1]}" for li in p.loop_indices]
             lines.append("f " + " ".join(corners))
     with open(os.path.join(out, name + ".obj"), "w") as f:
         f.write("\n".join(lines) + "\n")
     with open(os.path.join(out, name + ".mtl"), "w") as f:
-        for (mname, tint, glow) in mats:
+        for (mname, tint, glow, tex) in mats:
             f.write(f"newmtl {mname}\nKd 1 1 1\nforge_TintIndex {tint}\n")
             if glow:
                 f.write("Ka 1 1 1\n")
-            f.write(f"map_Kd {WHITE}\n\n")
+            f.write(f"map_Kd {tex}\n\n")
 
 
 def white_texture():
@@ -645,9 +660,11 @@ TRANSLUCENT = {"potion"}
 
 
 # ---------------------------------------------------------------- a quick look outside the game
-def render_preview(ob, out):
+def render_preview(ob, out, keep_materials=False):
     """the baked colours under soft studio light, roughly how the game will light them"""
     sc = bpy.context.scene
+    if keep_materials:
+        return _render(ob, out)
     pm = bpy.data.materials.new("preview")
     pm.use_nodes = True
     nt = pm.node_tree
@@ -660,6 +677,11 @@ def render_preview(ob, out):
     bsdf.inputs["Specular IOR Level"].default_value = 0.0  # matte, like the game's own lighting
     ob.data.materials.clear()
     ob.data.materials.append(pm)
+    _render(ob, out)
+
+
+def _render(ob, out):
+    sc = bpy.context.scene
     sc.render.engine = "CYCLES"
     sc.cycles.samples = 96
     sc.cycles.use_denoising = False  # the denoiser smears painted pixels
