@@ -1,5 +1,15 @@
-newmtl body
+newmtl iron
 Kd 1 1 1
 forge_TintIndex -1
-map_Kd lifelikemotion:item/obj/iron_pickaxe_skin
+map_Kd lifelikemotion:item/obj/white
+
+newmtl tip
+Kd 1 1 1
+forge_TintIndex -1
+map_Kd lifelikemotion:item/obj/white
+
+newmtl wood
+Kd 1 1 1
+forge_TintIndex -1
+map_Kd lifelikemotion:item/obj/white
 
