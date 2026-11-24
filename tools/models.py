@@ -445,7 +445,20 @@ def sword(tier):
     m.write(blade_held(20, 0.31, 0.0))
 
 
+def bevel_left(k, ii, jj, w, h, face):
+    """a lighter bevel band just before a cutting edge on the left (-x)"""
+    if face == "south":
+        k = np.where(ii <= 1, k + 1.2, k)
+    elif face == "north":
+        k = np.where(ii >= w - 2, k + 1.2, k)
+    return k
+
+
+TOOL_HELD = blade_held(45, 0.4, -0.5)    # the handle held out forward; a head's working side (on -x) faces down
+
+
 def axe(tier):
+    """the bit on the -x side: held out in front, it faces down, ready to chop"""
     t, fancy = TIERS[tier], tier in FANCY
     m = Model(f"{tier}_axe")
     handle(m, t, 17, fancy)
@@ -453,13 +466,13 @@ def axe(tier):
     if t.gem:
         m.box((7.25, 16.5, 7.25), (8.75, 17.5, 8.75), t.gem, ao=False)  # a gem capping the handle
     m.box((7.5, 13, 6.25), (8.5, 14, 9.75), t.trim, ao=False)           # rivet
-    m.box((9.5, 11.5, 7.25), (12, 16, 8.75), t.metal)                   # cheek
-    m.box((12, 10, 7.5), (14.5, 17.5, 8.5), t.head, decal=bevel_right)  # blade
-    m.box((14.5, 9.5, 7.6), (15.5, 18, 8.4), t.edge)                    # cutting edge
-    m.box((12.5, 9, 7.6), (14.5, 10, 8.4), t.metal)                     # beard
-    m.box((3.5, 12.5, 7.5), (6.5, 14.5, 8.5), t.dark)                   # back spike
-    m.box((2.5, 13, 7.6), (3.5, 14, 8.4), t.edge)
-    m.write(blade_held(45, 0.4, -0.5))
+    m.box((4, 11.5, 7.25), (6.5, 16, 8.75), t.metal)                    # cheek
+    m.box((1.5, 10, 7.5), (4, 17.5, 8.5), t.head, decal=bevel_left)     # blade
+    m.box((0.5, 9.5, 7.6), (1.5, 18, 8.4), t.edge)                      # cutting edge
+    m.box((1.5, 9, 7.6), (3.5, 10, 8.4), t.metal)                       # beard
+    m.box((9.5, 12.5, 7.5), (12.5, 14.5, 8.5), t.dark)                  # back spike
+    m.box((12.5, 13, 7.6), (13.5, 14, 8.4), t.edge)
+    m.write(TOOL_HELD)
 
 
 def pickaxe(tier):
@@ -481,7 +494,7 @@ def pickaxe(tier):
         x0, x1 = X(6.5, 7.5)
         m.box((x0, 9.5, 7.6), (x1, 11, 8.4), t.edge)                     # the point
     m.box((7, 17, 7), (9, 17.5, 9), t.trim)                              # a cap on top
-    m.write(blade_held(45, 0.4, -0.5))
+    m.write(TOOL_HELD)
 
 
 def shovel(tier):
@@ -495,21 +508,22 @@ def shovel(tier):
     m.box((6, 19, 7.5), (10, 20.5, 8.5), t.head, decal=ridge)
     m.box((6.75, 20.5, 7.6), (9.25, 21.5, 8.4), t.edge)                  # its rounded tip
     m.box((5, 15, 7.6), (5.5, 19, 8.4), t.edge), m.box((10.5, 15, 7.6), (11, 19, 8.4), t.edge)
-    m.write(blade_held(45, 0.4, -0.5))
+    m.write(TOOL_HELD)
 
 
 def hoe(tier):
+    """the blade on the -x side: held out in front, it hangs down toward the ground"""
     t, fancy = TIERS[tier], tier in FANCY
     m = Model(f"{tier}_hoe")
     handle(m, t, 17, fancy)
     m.box((6.5, 14.5, 6.5), (9.5, 17, 9.5), t.dark)                     # socket
     if t.gem:
         m.box((7.25, 15, 6.25), (8.75, 16.5, 9.75), t.gem, ao=False)
-    m.box((9.5, 15, 7.4), (13, 16.75, 8.6), t.metal, decal=bevel_up)    # neck reaching out
-    m.box((12, 11.5, 7.5), (14.5, 16.75, 8.5), t.head)                  # the blade, hanging down
-    m.box((12, 10.5, 7.6), (14.5, 11.5, 8.4), t.edge)                    # its edge
-    m.box((5, 15.25, 7.5), (6.5, 16.5, 8.5), t.dark)                    # a short back knob
-    m.write(blade_held(45, 0.4, -0.5))
+    m.box((3, 15, 7.4), (6.5, 16.75, 8.6), t.metal, decal=bevel_up)     # neck reaching out
+    m.box((1.5, 11.5, 7.5), (4, 16.75, 8.5), t.head)                    # the blade, hanging down
+    m.box((1.5, 10.5, 7.6), (4, 11.5, 8.4), t.edge)                     # its edge
+    m.box((9.5, 15.25, 7.5), (11, 16.5, 8.5), t.dark)                   # a short back knob
+    m.write(TOOL_HELD)
 
 
 # ---------------------------------------------------------------- beautiful things

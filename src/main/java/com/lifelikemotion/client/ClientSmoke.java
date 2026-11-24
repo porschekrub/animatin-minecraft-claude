@@ -251,12 +251,14 @@ public final class ClientSmoke {
         film("film");
         filmEat("filmeat");
         filmChop("filmchop");
-        swingStills("still_mine", "diamond_pickaxe", com.lifelikemotion.client.fp.Clips.MINE, 0, 0.2f, 0.36f, 0.48f, 0.56f, 0.7f, 0.85f);
-        swingStills("still_slasha", "diamond_sword", com.lifelikemotion.client.fp.Clips.SLASH_A, 0.18f, 0.3f, 0.38f, 0.44f, 0.5f, 0.6f, 0.75f);
-        swingStills("still_slashb", "diamond_sword", com.lifelikemotion.client.fp.Clips.SLASH_B, 0.18f, 0.38f, 0.44f, 0.5f, 0.6f);
-        swingStills("still_stab", "diamond_sword", com.lifelikemotion.client.fp.Clips.STAB, 0.22f, 0.4f);
-        swingStills("still_chop", "diamond_axe", com.lifelikemotion.client.fp.Clips.CHOP, 0.26f, 0.38f, 0.45f, 0.5f, 0.6f);
-        swingStills("still_dig", "diamond_shovel", com.lifelikemotion.client.fp.Clips.DIG, 0.22f, 0.46f, 0.66f);
+        filmShow("filmshow");
+        swingStills("still_hit_a", "diamond_sword", com.lifelikemotion.client.fp.Clips.SLASH_A, 0f, 0.28f, 0.46f, 0.56f);
+        swingStills("still_hit_b", "diamond_sword", com.lifelikemotion.client.fp.Clips.SLASH_B, 0.28f, 0.46f, 0.56f);
+        swingStills("still_axehit", "diamond_axe", com.lifelikemotion.client.fp.Clips.AXE_HIT, 0.32f, 0.52f, 0.62f);
+        swingStills("still_mine", "diamond_pickaxe", com.lifelikemotion.client.fp.Clips.MINE, 0.38f, 0.5f, 0.58f, 0.66f);
+        swingStills("still_chop", "diamond_axe", com.lifelikemotion.client.fp.Clips.CHOP, 0.35f, 0.48f, 0.58f);
+        swingStills("still_dig", "diamond_shovel", com.lifelikemotion.client.fp.Clips.DIG, 0.26f, 0.5f, 0.78f);
+        swingStills("still_till", "diamond_hoe", com.lifelikemotion.client.fp.Clips.TILL, 0.26f, 0.46f, 0.64f);
 
         // ---- first person
         fp("fp_empty_idle", "air", null, 0);
@@ -435,7 +437,7 @@ public final class ClientSmoke {
         use("eat_carrot", "carrot", 16);
         use("eat_milk", "milk_bucket", 18);
         // every swing, frozen at eight points in time (for tuning the keyframes)
-        String[] clipItems = {"iron_sword", "iron_sword", "iron_sword", "diamond_axe", "diamond_pickaxe", "iron_shovel", "iron_hoe", "air", "oak_planks", "snowball", "bread",
+        String[] clipItems = {"iron_sword", "iron_sword", "iron_sword", "iron_axe", "iron_sword", "diamond_axe", "diamond_pickaxe", "iron_shovel", "iron_hoe", "air", "oak_planks", "snowball", "bread",
                 "water_bucket", "bucket", "flint_and_steel", "shears", "bone_meal", "iron_axe", "iron_shovel", "fishing_rod", "fishing_rod", "air", "air", "air", "iron_sword"};
         for (int c = 0; c < com.lifelikemotion.client.fp.Clips.ALL.length; c++) {
             com.lifelikemotion.client.fp.Clip clip = com.lifelikemotion.client.fp.Clips.ALL[c];
@@ -824,6 +826,39 @@ public final class ClientSmoke {
                 cmd("fill 59 -60 32 61 -55 37 air");
             }
             return f > 80;
+        });
+    }
+
+    /** A film of the show-off key (Y) with a sword, then an axe, then a pickaxe. */
+    static void filmShow(String name) {
+        if (!wanted(name)) return;
+        Minecraft mc = Minecraft.getInstance();
+        String[] items = {"diamond_sword", "diamond_axe", "diamond_pickaxe"};
+        add(t -> {
+            if (t == 0) {
+                mc.options.setCameraType(CameraType.FIRST_PERSON);
+                cmd("gamemode creative");
+                cmd("kill @e[type=!player]");
+                cmd("tp @s 40 -60 30 0 10");
+                yaw = 0f;
+                pitch = 10f;
+            }
+            int f = t - 20, each = 110, i = f / each, g = f % each;
+            if (f == 0) {
+                slowClock(450);
+                filmName = name;
+                filmFrame = 0;
+                filmNext = Motion.ticks;
+            }
+            if (f >= 0 && i < items.length) {
+                if (g == 0) give(items[i]);
+                if (g == 12) KeyMapping.click(com.lifelikemotion.client.fp.Flourish.KEY.getKey());
+            }
+            if (f == each * items.length) {
+                filmName = null;
+                slowClock(50);
+            }
+            return f > each * items.length;
         });
     }
 

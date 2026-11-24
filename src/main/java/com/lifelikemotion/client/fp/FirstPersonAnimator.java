@@ -231,7 +231,9 @@ public final class FirstPersonAnimator {
         Matrix4f model = (Matrix4f) mp[1];
         Minecraft.getInstance().getEntityRenderDispatcher().getItemInHandRenderer().renderItem(p, stack,
                 right ? ItemDisplayContext.FIRST_PERSON_RIGHT_HAND : ItemDisplayContext.FIRST_PERSON_LEFT_HAND, !right, ps, buf, light);
-        if (LMConfig.FP_ARMS_WITH_ITEMS.get() && !p.isInvisible()) {
+        // your arm holds it while you eat, while you show it off (it comes up from below to take it) or always if asked
+        float showing = hand(p, right) ? Flourish.weight(partial) : 0;
+        if ((LMConfig.FP_ARMS_WITH_ITEMS.get() || eating || showing > 0) && !p.isInvisible()) {
             if (eating && twoHanded(stack)) {
                 // a bowl or a bucket is held in both hands, one at each side (the free hand, if it is free)
                 Vector3f a = Arm.toRoot(model, pts.lo().x, pts.lo().y, pts.lo().z), b = Arm.toRoot(model, pts.hi().x, pts.hi().y, pts.hi().z);
@@ -241,7 +243,9 @@ public final class FirstPersonAnimator {
                 if (other.isEmpty()) Arm.draw(ps, buf, light, p, !right, aMine ? b : a, Arm.restOuter(-s));
             } else {
                 Vector3f g = pts.grip();
-                Arm.draw(ps, buf, light, p, right, Arm.toRoot(model, g.x, g.y, g.z), outer(afterSwing, s));
+                Vector3f fist = Arm.toRoot(model, g.x, g.y, g.z);
+                if (!LMConfig.FP_ARMS_WITH_ITEMS.get() && !eating) fist.y -= 0.7f * (1 - showing);
+                Arm.draw(ps, buf, light, p, right, fist, outer(afterSwing, s));
             }
         }
         // the blade's trail while it cuts
@@ -286,7 +290,7 @@ public final class FirstPersonAnimator {
 
     /** the mining loop's length for a clip (ticks) */
     static int loopTicks(Clip c) {
-        return c == Clips.CHOP ? 10 : c == Clips.DIG ? 9 : Clips.ticks(c);
+        return c == Clips.CHOP ? 10 : c == Clips.DIG || c == Clips.TILL ? 9 : Clips.ticks(c);
     }
 
     /** the clip each hand is playing and how far in it is (for the trail and the strike) */
@@ -393,25 +397,25 @@ public final class FirstPersonAnimator {
         };
     }
 
-    /** Which swing, by what is held and what it is for. Swords run a three-hit combo. */
+    /**
+     * Which swing: hitting something (or the air) is an attack, each thing swung as a weapon; breaking a block is the
+     * item's own job, done over and over while the block breaks (a pickaxe picks, an axe chops, a shovel digs, a hoe
+     * hoes, a sword cuts). A sword's hits go one way then the other.
+     */
     static Clip clipFor(ItemKind kind) {
         Motion.Action a = Motion.action;
         Clip own = actionClip(a);
         if (own != null) return own;
         if (a == Motion.Action.USE) return kind == ItemKind.THROWABLE ? Clips.THROW : Clips.PLACE;
+        boolean job = a == Motion.Action.MINE;
         if (kind == ItemKind.EMPTY) return Clips.PUNCH;
         return switch (kind) {
-            case SWORD -> a == Motion.Action.MINE ? Clips.MINE : switch (Math.floorMod(Motion.swingCount - 1, 3)) {
-                case 0 -> Clips.SLASH_A;
-                case 1 -> Clips.SLASH_B;
-                default -> Clips.STAB;
-            };
-            case AXE -> Clips.CHOP;
-            case PICKAXE -> a == Motion.Action.MINE ? Clips.MINE : Clips.CHOP;
-            case SHOVEL -> Clips.DIG;
-            case HOE -> Clips.TILL;
-            case THROWABLE -> Clips.THROW;
-            case ROD -> Clips.CHOP;
+            case SWORD -> job ? Clips.HACK : Math.floorMod(Motion.swingCount, 2) == 1 ? Clips.SLASH_A : Clips.SLASH_B;
+            case AXE -> job ? Clips.CHOP : Clips.AXE_HIT;
+            case PICKAXE -> job ? Clips.MINE : Clips.SLASH_A;
+            case SHOVEL -> job ? Clips.DIG : Clips.SLASH_A;
+            case HOE -> job ? Clips.TILL : Clips.SLASH_A;
+            case THROWABLE -> job ? Clips.SWAT : Clips.THROW;
             default -> Clips.SWAT;
         };
     }

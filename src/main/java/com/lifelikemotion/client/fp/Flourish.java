@@ -15,15 +15,15 @@ import net.minecraftforge.event.TickEvent;
 import org.lwjgl.glfw.GLFW;
 
 /**
- * Plays a show-off move with what is in your main hand: by itself after you have stood still for a moment (then now and
- * then while you keep standing), or right away with the inspect key (I). Moving, swinging, using or switching the
+ * Plays a show-off move with what is in your main hand when you press the show-off key (Y), or (if switched on) by
+ * itself after you have stood still for a moment, now and then. Moving, swinging, using or switching the
  * item ends it smoothly.
  */
 public final class Flourish {
     private Flourish() {}
 
     public static final KeyMapping KEY = new KeyMapping("key.lifelikemotion.inspect", KeyConflictContext.IN_GAME,
-            InputConstants.Type.KEYSYM.getOrCreate(GLFW.GLFW_KEY_I), "key.categories.lifelikemotion");
+            InputConstants.Type.KEYSYM.getOrCreate(GLFW.GLFW_KEY_Y), "key.categories.lifelikemotion");
 
     static Flourishes.Move playing;
     static long start, stopAt = -1;
@@ -164,6 +164,19 @@ public final class Flourish {
         // (the clip's own moves stay in hand space: only the turning is about the item's middle)
         ps.translate(s * pose[0] * w, pose[1] * w, pose[2] * w);
         Clip.apply(ps, new float[]{0, 0, 0, pose[3], pose[4], pose[5]}, s, w, px + s * pv[0], py + pv[1], pz + pv[2]);
+    }
+
+    /** how far the move being played has come in (0 none .. 1 fully): it eases in and out over a few ticks */
+    public static float weight(float partial) {
+        if (testMove != null) return 1;
+        if (playing == null) return 0;
+        float w = Math.min(1, (Motion.ticks - start + partial) / FADE);
+        if (stopAt >= 0) w = Math.min(w, Math.max(0, 1 - (Motion.ticks - stopAt + partial) / FADE));
+        // and out again near its end
+        float u = (Motion.ticks - start + partial) / ticks(playing);
+        w = Math.min(w, Math.max(0, (1 - u) * ticks(playing) / FADE));
+        w = net.minecraft.util.Mth.clamp(w, 0, 1);
+        return w * w * (3 - 2 * w);
     }
 
     public static boolean active() {

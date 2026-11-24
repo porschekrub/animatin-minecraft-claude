@@ -52,6 +52,8 @@ public final class Clip {
 
     /** the shoulder the arm swings about, in the hand's camera space (x toward the hand's side) */
     public static float PX = 0.62f, PY = -0.92f, PZ = -0.50f;
+    /** where the wrist turns, from the hand's place: about where the fist holds a tool's handle */
+    public static float WX = 0.10f, WY = 0.19f, WZ = 0.22f;
 
     /** an arm swing's pose as a matrix, about the hand at (s * hx, hy, hz); k scales it */
     public static org.joml.Matrix4f armMatrix(float[] q, float s, float k, float hx, float hy, float hz) {
@@ -62,8 +64,10 @@ public final class Clip {
                 .rotateX((float) Math.toRadians(q[1] * k))
                 .rotateY((float) Math.toRadians(s * q[2] * k))
                 .translate(-px, -py, -pz)
+                .translate(s * WX, WY, WZ)
                 .rotateZ((float) Math.toRadians(s * q[3] * k))
-                .rotateX((float) Math.toRadians(q[4] * k));
+                .rotateX((float) Math.toRadians(q[4] * k))
+                .translate(-s * WX, -WY, -WZ);
     }
 
     /** The pose at time u (0..1): a Catmull-Rom spline through the keyframes (times may be uneven). */

@@ -31,31 +31,31 @@ public final class SwingFx {
     // ------------------------------------------------------------------ the strike: when it lands, how the camera moves
     /** where in each swing it lands (0..1), and the camera's kick then (pitch, yaw, roll, in degrees a second) */
     static float impact(Clip c) {
-        if (c == Clips.SLASH_A) return 0.42f;
-        if (c == Clips.SLASH_B) return 0.42f;
+        if (c == Clips.SLASH_A || c == Clips.SLASH_B) return 0.44f;
         if (c == Clips.STAB) return 0.38f;
-        if (c == Clips.CHOP) return 0.48f;
+        if (c == Clips.AXE_HIT) return 0.50f;
+        if (c == Clips.HACK) return 0.50f;
+        if (c == Clips.CHOP) return 0.54f;
         if (c == Clips.MINE) return 0.56f;
         if (c == Clips.PUNCH) return 0.32f;
         if (c == Clips.SWAT) return 0.44f;
         if (c == Clips.DIG) return 0.46f;
-        if (c == Clips.TILL) return 0.52f;
+        if (c == Clips.TILL) return 0.44f;
         if (c == Clips.THROW) return 0.42f;
         if (c == Clips.PLACE) return 0.34f;
         return -1;
     }
 
     static float[] kick(Clip c) {
-        if (c == Clips.SLASH_A) return new float[]{6, -36, -14};
-        if (c == Clips.SLASH_B) return new float[]{6, 36, 14};
-        if (c == Clips.STAB) return new float[]{22, 0, 0};
-        if (c == Clips.CHOP) return new float[]{45, 0, -6};
-        if (c == Clips.MINE) return new float[]{10, 0, 0};
-        if (c == Clips.PUNCH) return new float[]{16, 8, 4};
-        if (c == Clips.SWAT) return new float[]{10, -12, -14};
-        if (c == Clips.DIG || c == Clips.TILL) return new float[]{16, 0, 0};
-        if (c == Clips.THROW) return new float[]{12, -8, -4};
-        if (c == Clips.PLACE) return new float[]{10, 0, 0};
+        if (c == Clips.SLASH_A || c == Clips.AXE_HIT) return new float[]{14, 0, -4};
+        if (c == Clips.SLASH_B) return new float[]{8, 14, 8};
+        if (c == Clips.STAB) return new float[]{18, 0, 0};
+        if (c == Clips.CHOP || c == Clips.MINE || c == Clips.HACK) return new float[]{8, 0, 0};
+        if (c == Clips.PUNCH) return new float[]{12, 6, 3};
+        if (c == Clips.SWAT) return new float[]{8, 0, 0};
+        if (c == Clips.DIG || c == Clips.TILL) return new float[]{10, 0, 0};
+        if (c == Clips.THROW) return new float[]{10, -6, -3};
+        if (c == Clips.PLACE) return new float[]{8, 0, 0};
         return null;
     }
 
@@ -93,7 +93,7 @@ public final class SwingFx {
             Camera.kick(-40, 0, 0);
         }
         var p = mc.player;
-        if (p == null || target == null) return;
+        if (p == null || target == null || k <= 0) return;
         var lvl = p.level();
         var r = p.getRandom();
         var at = target.getBoundingBox().getCenter();
@@ -116,10 +116,10 @@ public final class SwingFx {
     // ------------------------------------------------------------------ the trail behind a blade
     /** where in each swing the blade leaves a trail (from, to), or null */
     static float[] trailWindow(Clip c) {
-        if (c == Clips.SLASH_A) return new float[]{0.28f, 0.58f};
-        if (c == Clips.SLASH_B) return new float[]{0.28f, 0.58f};
+        if (c == Clips.SLASH_A || c == Clips.SLASH_B) return new float[]{0.32f, 0.56f};
+        if (c == Clips.AXE_HIT) return new float[]{0.38f, 0.6f};
         if (c == Clips.STAB) return new float[]{0.24f, 0.42f};
-        if (c == Clips.CHOP) return new float[]{0.36f, 0.52f};
+        if (c == Clips.CHOP) return new float[]{0.4f, 0.58f};
         if (c == Clips.SWAT) return new float[]{0.24f, 0.50f};
         return null;
     }

@@ -24,10 +24,10 @@ public class LMConfigScreen extends Screen {
 
     static final Row[] ROWS = {
             new Row(0, "First person", "Custom animations", "Your own swings, sway and bob (off: the game's)", LMConfig.FP_ENABLED),
-            new Row(0, null, "Arm holds the item", "Show your arm holding what you carry", LMConfig.FP_ARMS_WITH_ITEMS),
+            new Row(0, null, "Arm always holds the item", "Your arm holding what you carry (else only eating and showing off)", LMConfig.FP_ARMS_WITH_ITEMS),
             new Row(0, null, "Both hands", "Both fists up when empty, your free hand at the side", LMConfig.FP_BOTH_HANDS),
             new Row(0, null, "Swing trails", "A trail behind your blade when you swing", LMConfig.FP_TRAILS),
-            new Row(0, null, "Show off when still", "Twirls, tosses and looks when you stand still (key I any time)", LMConfig.FP_IDLE_SHOW),
+            new Row(0, null, "Show off when still", "Twirls and tosses by themselves when you stand still (key Y any time)", LMConfig.FP_IDLE_SHOW),
             new Row(0, null, "Physics", "Inertia, floating when falling, cloth, swinging lanterns, sloshing liquids", LMConfig.FP_PHYSICS),
             new Row(0, null, "Use animations", "Pouring, scooping, striking flint, shears, bone meal, casting a rod...", LMConfig.FP_USE_ANIMS),
             new Row(0, null, "Reactions", "Flinching when hit, patting out fire", LMConfig.FP_REACTIONS),

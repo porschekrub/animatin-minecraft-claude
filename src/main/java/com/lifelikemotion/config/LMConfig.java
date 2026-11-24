@@ -33,14 +33,15 @@ public final class LMConfig {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
         b.comment("First person: your arms, what they hold and how they move").push("firstPerson");
         FP_ENABLED = b.comment("Custom first-person animations (off = the game's own)").define("enabled", true);
-        FP_ARMS_WITH_ITEMS = b.comment("Show your arm holding the item").define("armHoldsItem", true);
+        FP_ARMS_WITH_ITEMS = b.comment("Always show your arm holding what you carry (otherwise only while eating or showing it off with Y)")
+                .define("armAlwaysHoldsItem", false);
         FP_BOTH_HANDS = b.comment("Both fists up when your hands are empty, and your free hand at the side of the screen")
-                .define("bothHands", true);
-        FP_TRAILS = b.comment("A trail behind your blade when you swing").define("swingTrails", true);
-        FP_CAMERA = b.comment("How much the camera kicks with your swings and shakes when you hit something (0 = never)")
-                .defineInRange("cameraKick", 1.0, 0.0, 2.0);
-        FP_IDLE_SHOW = b.comment("Show off what you hold (twirls, tosses...) when you stand still for a moment; the inspect key (I) always works")
-                .define("idleShowOff", true);
+                .define("bothFistsUp", false);
+        FP_TRAILS = b.comment("A trail behind your blade when you swing").define("swingTrails", false);
+        FP_CAMERA = b.comment("How much the camera kicks with your swings and shakes when you hit something, with sparks (0 = never)")
+                .defineInRange("cameraKick", 0.0, 0.0, 2.0);
+        FP_IDLE_SHOW = b.comment("Also show off what you hold (twirls, tosses...) by itself when you stand still for a moment; the show-off key (Y) always works")
+                .define("showOffWhenStill", false);
         FP_AURAS = b.comment("Sparkles, embers and enchanting glyphs around legendary and enchanted things you hold").define("auras", true);
         FP_PHYSICS = b.comment("Physics for held things: inertia, floating when falling, cloth fluttering, lanterns swinging, liquids sloshing")
                 .define("physics", true);
