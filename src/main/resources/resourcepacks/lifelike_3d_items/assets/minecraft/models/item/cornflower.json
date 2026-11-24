@@ -1,0 +1,1 @@
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:block/cornflower"},"base":{"parent":"lifelikemotion:item3d/cornflower"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:block/cornflower"}}}}

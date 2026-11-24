@@ -1,0 +1,1 @@
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/nether_wart"},"base":{"parent":"lifelikemotion:item3d/nether_wart"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/nether_wart"}}}}

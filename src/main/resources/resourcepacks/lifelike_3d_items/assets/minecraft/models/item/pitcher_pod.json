@@ -1,0 +1,1 @@
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/pitcher_pod"},"base":{"parent":"lifelikemotion:item3d/pitcher_pod"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/pitcher_pod"}}}}

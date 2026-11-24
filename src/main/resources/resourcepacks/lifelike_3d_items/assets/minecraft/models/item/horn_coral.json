@@ -1,0 +1,1 @@
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:block/horn_coral"},"base":{"parent":"lifelikemotion:item3d/horn_coral"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:block/horn_coral"}}}}

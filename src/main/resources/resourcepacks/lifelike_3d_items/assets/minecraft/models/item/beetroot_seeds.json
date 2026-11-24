@@ -1,0 +1,1 @@
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/beetroot_seeds"},"base":{"parent":"lifelikemotion:item3d/beetroot_seeds"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/beetroot_seeds"}}}}

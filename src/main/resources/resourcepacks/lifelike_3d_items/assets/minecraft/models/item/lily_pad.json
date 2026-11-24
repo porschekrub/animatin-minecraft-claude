@@ -1,0 +1,1 @@
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:block/lily_pad"},"base":{"parent":"lifelikemotion:item3d/lily_pad"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:block/lily_pad"}}}}

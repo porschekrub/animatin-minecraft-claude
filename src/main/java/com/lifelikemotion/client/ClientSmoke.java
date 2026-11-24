@@ -113,6 +113,20 @@ public final class ClientSmoke {
             "heartbreak_pottery_sherd", "howl_pottery_sherd", "miner_pottery_sherd", "mourner_pottery_sherd",
             "plenty_pottery_sherd", "prize_pottery_sherd", "sheaf_pottery_sherd", "shelter_pottery_sherd",
             "skull_pottery_sherd", "snort_pottery_sherd"};
+    static final String[] PLANTS_3D = {
+            "dandelion", "poppy", "blue_orchid", "allium", "azure_bluet", "red_tulip", "orange_tulip",
+            "white_tulip", "pink_tulip", "oxeye_daisy", "cornflower", "lily_of_the_valley", "wither_rose",
+            "torchflower", "pink_petals", "sunflower", "lilac", "rose_bush", "peony", "pitcher_plant",
+            "oak_sapling", "spruce_sapling", "birch_sapling", "jungle_sapling", "acacia_sapling",
+            "dark_oak_sapling", "cherry_sapling", "mangrove_propagule", "grass", "tall_grass", "fern", "large_fern",
+            "dead_bush", "seagrass", "kelp", "bamboo", "vine", "glow_lichen", "hanging_roots", "lily_pad",
+            "red_mushroom", "brown_mushroom", "crimson_fungus", "warped_fungus", "crimson_roots", "warped_roots",
+            "nether_sprouts", "weeping_vines", "twisting_vines", "nether_wart", "tube_coral", "dead_tube_coral",
+            "tube_coral_fan", "dead_tube_coral_fan", "brain_coral", "dead_brain_coral", "brain_coral_fan",
+            "dead_brain_coral_fan", "bubble_coral", "dead_bubble_coral", "bubble_coral_fan",
+            "dead_bubble_coral_fan", "fire_coral", "dead_fire_coral", "fire_coral_fan", "dead_fire_coral_fan",
+            "horn_coral", "dead_horn_coral", "horn_coral_fan", "dead_horn_coral_fan", "wheat_seeds",
+            "pumpkin_seeds", "melon_seeds", "beetroot_seeds", "torchflower_seeds", "cocoa_beans", "pitcher_pod"};
     static final String[] ITEMS_3D = items3d();
 
     static String[] items3d() {
@@ -128,6 +142,7 @@ public final class ClientSmoke {
         l.addAll(java.util.List.of(VEHICLES_3D));
         l.addAll(java.util.List.of(MISC_3D));
         l.addAll(java.util.List.of(RELICS_3D));
+        l.addAll(java.util.List.of(PLANTS_3D));
         return l.toArray(new String[0]);
     }
 

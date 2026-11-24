@@ -1,0 +1,1 @@
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:block/rose_bush_top"},"base":{"parent":"lifelikemotion:item3d/rose_bush"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:block/rose_bush_top"}}}}

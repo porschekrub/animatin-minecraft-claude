@@ -1,0 +1,1 @@
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:block/hanging_roots"},"base":{"parent":"lifelikemotion:item3d/hanging_roots"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:block/hanging_roots"}}}}

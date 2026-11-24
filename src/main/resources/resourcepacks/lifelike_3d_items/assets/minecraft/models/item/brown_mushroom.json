@@ -1,0 +1,1 @@
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:block/brown_mushroom"},"base":{"parent":"lifelikemotion:item3d/brown_mushroom"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:block/brown_mushroom"}}}}

@@ -1,0 +1,1 @@
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:block/orange_tulip"},"base":{"parent":"lifelikemotion:item3d/orange_tulip"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:block/orange_tulip"}}}}
