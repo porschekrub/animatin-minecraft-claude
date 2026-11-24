@@ -213,7 +213,7 @@ public final class FirstPersonAnimator {
         if (eating) {
             // (the item's middle, here: eating moves and turns it about that)
             ps.pushPose();
-            ps.scale(SIZE, SIZE, SIZE);
+            ps.scale(size(kind), size(kind), size(kind));
             Object[] mp0 = Arm.modelPose(ps, p, stack, right);
             ps.popPose();
             Vector3f mid = Arm.points((net.minecraft.client.resources.model.BakedModel) mp0[0], stack, kind).mid();
@@ -223,7 +223,8 @@ public final class FirstPersonAnimator {
             eat(ps, p, s, stack, kind, partial, new Vector3f(c.x, c.y, c.z));
         }
         wrist(ps, p, s, kind, partial);
-        ps.scale(SIZE, SIZE, SIZE);
+        float size = size(kind);
+        ps.scale(size, size, size);
         // the item, and the arm whose fist closes round its grip
         Object[] mp = Arm.modelPose(ps, p, stack, right);
         Arm.Points pts = Arm.points((net.minecraft.client.resources.model.BakedModel) mp[0], stack, kind);
@@ -249,6 +250,11 @@ public final class FirstPersonAnimator {
             Matrix4f after = new Matrix4f(afterSwing).invert().mul(model);
             SwingFx.trail(ps, buf, lastClip[h], lastU[h], s, k, base, after, pts, stack);
         }
+    }
+
+    /** how big a held thing is drawn: tools and weapons big, small things (snowballs, food...) near the game's size */
+    static float size(ItemKind kind) {
+        return kind.tool() ? SIZE : kind == ItemKind.LIGHT || kind == ItemKind.BLOCK ? 1.2f : 1.05f;
     }
 
     /**
