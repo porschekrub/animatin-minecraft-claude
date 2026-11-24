@@ -17,6 +17,8 @@ from models import (Mat, Model, upright, blade_held, item_model, vanilla_layers,
                     LEATHER, GOLD, IRON, DIAMOND, DIAMOND_DARK, NETHERITE, EMBER, TINTED, STRING)
 from models_food import shine, stripes, spots, chain
 from models_drops import STICK
+from models import PACK
+import flames
 
 RUBY = ["4a0510", "7d0c1c", "b5172c", "e2324a", "ff7a8a"]
 CHAIN = ["2a2c30", "44474c", "62666c", "868a90", "aaaeb4", "d0d3d6"]
@@ -194,33 +196,32 @@ def torch_like(name, fire=None, ember=FLAME, head=None):
         m.box((6.8, 7.6, 6.8), (9.2, 10.2, 9.2), cloth, decal=spots(0.18, 99, seed=name))   # charred cloth
         m.box((7.1, 10.2, 7.1), (8.9, 10.6, 8.9), embers, ao=False)            # glowing embers on top
     if fire:
-        m.flame(5.5, 9.6, 10.5, 16.5, texture=fire)
+        m.flame(5.25, 9.8, 10.75, 17.5, texture=fire, planes=3)
     m.write(blade_held(-15, 0.5, 2.0), particle=vanilla_layers(name)[0])
 
 
 def torch():
-    torch_like("torch", "minecraft:block/fire_0")
+    torch_like("torch", flames.flame_texture(PACK, "flame", flames.FIRE))
 
 
 def soul_torch():
-    torch_like("soul_torch", "minecraft:block/soul_fire_0", ember=SOUL_FLAME)
+    torch_like("soul_torch", flames.flame_texture(PACK, "soul_flame", flames.SOUL, seed=2.0), ember=SOUL_FLAME)
 
 
 def redstone_torch():
     torch_like("redstone_torch", head=Mat(REDSTONE_GLOW, base=2.4, bevel=0.4, glow=True))
 
 
-def lantern_like(name, fire, glow_pal):
-    """an iron lantern: a base, four corner posts, clear glass panes, a vented cap and a hanging ring, with a wick
-    burning real fire inside"""
+def lantern_like(name, glow_pal):
+    """an iron lantern: a base, four corner posts, clear glass panes, a vented cap and a hanging ring, filled with a
+    warm glow of light"""
     m = Model(name)
     frame = Mat(["24262a", "36383e", "4c4f56", "666a72", "82868e"], base=2.2, kind="metal", bevel=0.7)
-    glass = Mat(["a8b4bc", "c8d4dc", "e8f0f4", "ffffff"], base=1.4, kind="glass", alpha=40, bevel=0.3)
-    wick = Mat(glow_pal, base=len(glow_pal) - 2, bevel=0.2, glow=True)
-    holder = Mat(IRON, base=2.0, kind="metal", bevel=0.4)
-    m.flame(5.25, 3.0, 10.75, 9.2, texture=fire)                              # the fire, drawn before the glass
-    m.box((6.5, 2.0, 6.5), (9.5, 3.0, 9.5), holder)                            # the burner
-    m.box((7.6, 3.0, 7.6), (8.4, 3.6, 8.4), wick, ao=False)
+    glass = Mat(["a8b4bc", "c8d4dc", "e8f0f4", "ffffff"], base=1.4, kind="glass", alpha=28, bevel=0.3)
+    halo = Mat(glow_pal, base=1.8, bevel=0.0, alpha=205, glow=True, grad=0.6)
+    core = Mat(glow_pal, base=len(glow_pal) - 1.5, bevel=0.0, glow=True)
+    m.box((6.75, 4.0, 6.75), (9.25, 7.0, 9.25), core, ao=False)                # a bright heart of light...
+    m.box((5.5, 2.25, 5.5), (10.5, 9.25, 10.5), halo, ao=False)                # ...in a soft glow (before the glass)
     for x, z in ((4.5, 4.5), (10.5, 4.5), (4.5, 10.5), (10.5, 10.5)):
         m.box((x, 1.5, z), (x + 1.0, 9.5, z + 1.0), frame)                      # corner posts
     m.box((4.25, 0.5, 4.25), (11.75, 2.0, 11.75), frame)                        # the base
@@ -241,12 +242,16 @@ def lantern_like(name, fire, glow_pal):
     m.write(d, translucent=True)
 
 
+LIGHT = ["c8701a", "eca040", "fcc868", "ffe4a0", "fff4d4", "ffffff"]
+SOUL_LIGHT = ["1a7a98", "36b0cc", "6cd8ea", "a8f0f8", "dcfcff", "ffffff"]
+
+
 def lantern():
-    lantern_like("lantern", "minecraft:block/fire_0", FLAME)
+    lantern_like("lantern", LIGHT)
 
 
 def soul_lantern():
-    lantern_like("soul_lantern", "minecraft:block/soul_fire_0", SOUL_FLAME)
+    lantern_like("soul_lantern", SOUL_LIGHT)
 
 
 DYES = {"": "e8dcc0", "white": "f0f0f0", "orange": "f07a1a", "magenta": "c040c0", "light_blue": "5aaef0",
