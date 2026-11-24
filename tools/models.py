@@ -158,7 +158,7 @@ class Model:
                 out[j, i] = hits / len(dirs)
         return out
 
-    def write(self, display, translucent=False):
+    def write(self, display, translucent=False, particle=None, gui_light=None):
         dims = {"north": (0, 1), "south": (0, 1), "east": (2, 1), "west": (2, 1), "up": (0, 2), "down": (0, 2)}
         pieces = []
         for ei, e in enumerate(self.els):
@@ -213,8 +213,10 @@ class Model:
         tp = os.path.join(PACK, "assets", NS, "textures", "item", "model", self.name + ".png")
         os.makedirs(os.path.dirname(tp), exist_ok=True)
         tex.save(tp)
-        model = {"textures": {"0": f"{NS}:item/model/{self.name}", "particle": vanilla_layers(self.name)[-1]},
+        model = {"textures": {"0": f"{NS}:item/model/{self.name}", "particle": particle or vanilla_layers(self.name)[-1]},
                  "elements": els, "display": display}
+        if gui_light:
+            model["gui_light"] = gui_light
         if translucent:
             model["render_type"] = "minecraft:translucent"
         mp = os.path.join(PACK, "assets", NS, "models", "item3d", self.name + ".json")
@@ -445,13 +447,27 @@ def vanilla_layers(name):
     return [t if ":" in t else "minecraft:" + t for t in layers] or [f"minecraft:item/{name}"]
 
 
-def item_model(name):
-    """the item's own model: ours everywhere except the inventory, which keeps the usual flat picture"""
-    layers = GUI_LAYERS.get(name) or vanilla_layers(name)
+def vanilla_overrides(name):
+    """the game's own override list for an item (bow pulling, compass angle, clock time...)"""
+    import zipfile
+    with zipfile.ZipFile(JAR) as z:
+        ov = json.loads(z.read(f"assets/minecraft/models/item/{name}.json")).get("overrides", [])
+    for o in ov:
+        if ":" not in o["model"]:
+            o["model"] = "minecraft:" + o["model"]
+    return ov
+
+
+def item_model(name, base=None, layers=None, overrides=None):
+    """the item's own model: ours (item3d/<base>) everywhere except the inventory, which keeps the usual flat
+    picture; overrides switch it between states the way the game's own model does"""
+    layers = layers or GUI_LAYERS.get(name) or vanilla_layers(name)
     model = {"loader": "forge:separate_transforms", "textures": {"particle": layers[-1]},
-             "base": {"parent": f"{NS}:item3d/{name}"},
+             "base": {"parent": f"{NS}:item3d/{base or name}"},
              "perspectives": {"gui": {"parent": "minecraft:item/generated",
                                       "textures": {f"layer{i}": t for i, t in enumerate(layers)}}}}
+    if overrides:
+        model["overrides"] = overrides
     p = os.path.join(PACK, "assets", "minecraft", "models", "item")
     os.makedirs(p, exist_ok=True)
     with open(os.path.join(p, name + ".json"), "w") as fh:
@@ -469,9 +485,10 @@ if __name__ == "__main__":
     ITEMS.update(models_materials.MATERIALS)
     ITEMS.update(models_drops.DROPS)
     only = set(sys.argv[1:])
-    for name, make in ITEMS.items():
+    import models_special  # noqa: E402  (batch 6: special items, each writes its own item models)
+    for name, make in list(ITEMS.items()) + list(models_special.SPECIAL.items()):
         if only and name not in only:
             continue
-        make()
-        item_model(name)
+        if make() is not False:   # special items write their own item models and return False
+            item_model(name)
         print("made", name)

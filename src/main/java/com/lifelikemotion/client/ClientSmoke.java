@@ -63,6 +63,13 @@ public final class ClientSmoke {
             "honeycomb", "scute", "shulker_shell", "nautilus_shell", "phantom_membrane", "ghast_tear", "paper",
             "wheat", "egg", "snowball", "arrow", "spectral_arrow", "tipped_arrow{Potion:\"minecraft:healing\"}", "fire_charge", "bowl",
             "sugar_cane"};
+    /** batch 6 (kept in step with tools/models_special.py) */
+    static final String[] SPECIAL_3D = {
+            "compass", "recovery_compass", "clock", "bow", "crossbow", "trident", "shield", "fishing_rod",
+            "carrot_on_a_stick", "warped_fungus_on_a_stick", "spyglass", "shears", "flint_and_steel",
+            "totem_of_undying", "lead", "name_tag", "saddle", "brush", "goat_horn", "book", "writable_book",
+            "written_book", "enchanted_book", "knowledge_book", "map", "firework_rocket",
+            "crossbow{Charged:1b,ChargedProjectiles:[{id:\"minecraft:arrow\",Count:1b}]}"};
     static final String[] ITEMS_3D = items3d();
 
     static String[] items3d() {
@@ -73,6 +80,7 @@ public final class ClientSmoke {
         l.addAll(java.util.List.of(VESSELS_3D));
         l.addAll(java.util.List.of(MATERIALS_3D));
         l.addAll(java.util.List.of(DROPS_3D));
+        l.addAll(java.util.List.of(SPECIAL_3D));
         return l.toArray(new String[0]);
     }
 

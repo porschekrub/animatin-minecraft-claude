@@ -1,0 +1,1 @@
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/carrot_on_a_stick"},"base":{"parent":"lifelikemotion:item3d/carrot_on_a_stick"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/carrot_on_a_stick"}}}}
