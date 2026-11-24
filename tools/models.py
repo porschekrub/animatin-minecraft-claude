@@ -38,11 +38,12 @@ class Mat:
     (which decides the pattern) and how strongly it's bevelled"""
 
     def __init__(self, pal, base=None, kind="plain", bevel=1.0, alpha=255, tint=False, glow=False, grad=1.0, shine=1.0,
-                 shade=True):
+                 shade=True, tint_index=0):
         self.pal = [hexc(c) for c in pal]
         self.base = (len(self.pal) - 1) / 2 if base is None else base
         self.kind, self.bevel, self.alpha, self.tint, self.glow, self.grad = kind, bevel, alpha, tint, glow, grad
         self.shine = shine
+        self.tint_index = tint_index   # which of the game's colours tints it (spawn eggs: 0 the shell, 1 the spots)
         self.shade = shade   # False: the game doesn't darken its sides (light sources: evenly bright all round)
 
 
@@ -249,7 +250,7 @@ class Model:
                 x, y, w, h = place[(ei, face)]
                 f = {"uv": [x * 16 / T, y * 16 / T, (x + w) * 16 / T, (y + h) * 16 / T], "texture": "#0"}
                 if mat.tint:
-                    f["tintindex"] = 0
+                    f["tintindex"] = mat.tint_index
                 el["faces"][face] = f
             if mat.glow:
                 el["forge_data"] = {"block_light": 15, "sky_light": 15}
@@ -552,6 +553,8 @@ if __name__ == "__main__":
     ITEMS.update(models_armor.LIGHTS)
     import models_vehicles  # noqa: E402  (batch 8: boats, minecarts, horse armour)
     ITEMS.update(models_vehicles.VEHICLES)
+    import models_discs  # noqa: E402  (batch 9: music discs, spawn eggs, dyes)
+    ITEMS.update(models_discs.MISC)
     for name, make in list(ITEMS.items()) + list(models_special.SPECIAL.items()) + list(models_armor.ARMOR.items()):
         if only and name not in only:
             continue

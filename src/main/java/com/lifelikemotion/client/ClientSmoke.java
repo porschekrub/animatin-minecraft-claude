@@ -90,6 +90,14 @@ public final class ClientSmoke {
             "bamboo_raft", "bamboo_chest_raft", "minecart", "chest_minecart", "furnace_minecart", "hopper_minecart",
             "tnt_minecart", "command_block_minecart", "leather_horse_armor", "iron_horse_armor",
             "golden_horse_armor", "diamond_horse_armor", "leather_horse_armor{display:{color:3949738}}"};
+    static final String[] MISC_3D = {
+            "music_disc_13", "music_disc_cat", "music_disc_blocks", "music_disc_chirp", "music_disc_far",
+            "music_disc_mall", "music_disc_mellohi", "music_disc_stal", "music_disc_strad", "music_disc_ward",
+            "music_disc_11", "music_disc_wait", "music_disc_otherside", "music_disc_5", "music_disc_pigstep",
+            "music_disc_relic", "disc_fragment_5", "creeper_spawn_egg", "pig_spawn_egg", "allay_spawn_egg",
+            "sniffer_spawn_egg", "white_dye", "orange_dye", "magenta_dye", "light_blue_dye", "yellow_dye", "lime_dye",
+            "pink_dye", "gray_dye", "light_gray_dye", "cyan_dye", "purple_dye", "blue_dye", "brown_dye", "green_dye",
+            "red_dye", "black_dye"};
     static final String[] ITEMS_3D = items3d();
 
     static String[] items3d() {
@@ -103,6 +111,7 @@ public final class ClientSmoke {
         l.addAll(java.util.List.of(SPECIAL_3D));
         l.addAll(java.util.List.of(ARMOR_3D));
         l.addAll(java.util.List.of(VEHICLES_3D));
+        l.addAll(java.util.List.of(MISC_3D));
         return l.toArray(new String[0]);
     }
 
