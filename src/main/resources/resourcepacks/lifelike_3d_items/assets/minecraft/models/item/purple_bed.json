@@ -1,0 +1,1 @@
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:block/purple_wool"},"base":{"parent":"lifelikemotion:item3d/purple_bed"},"perspectives":{"gui":{"parent":"minecraft:item/template_bed","textures":{"particle":"minecraft:block/purple_wool"}}}}

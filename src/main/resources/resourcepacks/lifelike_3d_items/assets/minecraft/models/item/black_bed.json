@@ -1,0 +1,1 @@
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:block/black_wool"},"base":{"parent":"lifelikemotion:item3d/black_bed"},"perspectives":{"gui":{"parent":"minecraft:item/template_bed","textures":{"particle":"minecraft:block/black_wool"}}}}

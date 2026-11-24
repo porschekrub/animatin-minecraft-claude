@@ -559,6 +559,8 @@ if __name__ == "__main__":
     ITEMS.update(models_relics.RELICS)
     import models_plants  # noqa: E402  (batch 11: flowers, saplings, grasses, mushrooms, corals, seeds)
     ITEMS.update(models_plants.PLANTS)
+    import models_blocks  # noqa: E402  (batch 12: doors, signs, hanging signs, beds)
+    ITEMS.update(models_blocks.BLOCKS)
     for name, make in list(ITEMS.items()) + list(models_special.SPECIAL.items()) + list(models_armor.ARMOR.items()):
         if only and name not in only:
             continue

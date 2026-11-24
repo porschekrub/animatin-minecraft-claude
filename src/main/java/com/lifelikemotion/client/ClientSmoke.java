@@ -127,6 +127,16 @@ public final class ClientSmoke {
             "dead_bubble_coral_fan", "fire_coral", "dead_fire_coral", "fire_coral_fan", "dead_fire_coral_fan",
             "horn_coral", "dead_horn_coral", "horn_coral_fan", "dead_horn_coral_fan", "wheat_seeds",
             "pumpkin_seeds", "melon_seeds", "beetroot_seeds", "torchflower_seeds", "cocoa_beans", "pitcher_pod"};
+    static final String[] BLOCKS_3D = {
+            "oak_door", "spruce_door", "birch_door", "jungle_door", "acacia_door", "dark_oak_door", "mangrove_door",
+            "cherry_door", "bamboo_door", "crimson_door", "warped_door", "iron_door", "oak_sign",
+            "oak_hanging_sign", "spruce_sign", "spruce_hanging_sign", "birch_sign", "birch_hanging_sign",
+            "jungle_sign", "jungle_hanging_sign", "acacia_sign", "acacia_hanging_sign", "dark_oak_sign",
+            "dark_oak_hanging_sign", "mangrove_sign", "mangrove_hanging_sign", "cherry_sign", "cherry_hanging_sign",
+            "bamboo_sign", "bamboo_hanging_sign", "crimson_sign", "crimson_hanging_sign", "warped_sign",
+            "warped_hanging_sign", "white_bed", "orange_bed", "magenta_bed", "light_blue_bed", "yellow_bed",
+            "lime_bed", "pink_bed", "gray_bed", "light_gray_bed", "cyan_bed", "purple_bed", "blue_bed", "brown_bed",
+            "green_bed", "red_bed", "black_bed"};
     static final String[] ITEMS_3D = items3d();
 
     static String[] items3d() {
@@ -143,6 +153,7 @@ public final class ClientSmoke {
         l.addAll(java.util.List.of(MISC_3D));
         l.addAll(java.util.List.of(RELICS_3D));
         l.addAll(java.util.List.of(PLANTS_3D));
+        l.addAll(java.util.List.of(BLOCKS_3D));
         return l.toArray(new String[0]);
     }
 
