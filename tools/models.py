@@ -463,9 +463,11 @@ if __name__ == "__main__":
     import models_food  # noqa: E402  (batch 2: food)
     import models_vessels  # noqa: E402  (batch 3: bottles and buckets)
     import models_materials  # noqa: E402  (batch 4: gems and materials)
+    import models_drops  # noqa: E402  (batch 5: mob drops and crafting bits)
     ITEMS.update(models_food.FOOD)
     ITEMS.update(models_vessels.VESSELS)
     ITEMS.update(models_materials.MATERIALS)
+    ITEMS.update(models_drops.DROPS)
     only = set(sys.argv[1:])
     for name, make in ITEMS.items():
         if only and name not in only:

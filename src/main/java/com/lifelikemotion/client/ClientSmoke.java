@@ -57,6 +57,12 @@ public final class ClientSmoke {
             "gold_nugget", "redstone", "glowstone_dust", "gunpowder", "sugar", "blaze_powder", "bone_meal",
             "ender_pearl", "ender_eye", "heart_of_the_sea", "nether_star", "blaze_rod", "brick", "nether_brick",
             "slime_ball", "magma_cream"};
+    /** batch 5 (kept in step with tools/models_drops.py) */
+    static final String[] DROPS_3D = {
+            "stick", "bone", "string", "feather", "leather", "rabbit_hide", "rabbit_foot", "ink_sac", "glow_ink_sac",
+            "honeycomb", "scute", "shulker_shell", "nautilus_shell", "phantom_membrane", "ghast_tear", "paper",
+            "wheat", "egg", "snowball", "arrow", "spectral_arrow", "tipped_arrow{Potion:\"minecraft:healing\"}", "fire_charge", "bowl",
+            "sugar_cane"};
     static final String[] ITEMS_3D = items3d();
 
     static String[] items3d() {
@@ -66,6 +72,7 @@ public final class ClientSmoke {
         l.addAll(java.util.List.of(FOOD_3D));
         l.addAll(java.util.List.of(VESSELS_3D));
         l.addAll(java.util.List.of(MATERIALS_3D));
+        l.addAll(java.util.List.of(DROPS_3D));
         return l.toArray(new String[0]);
     }
 
