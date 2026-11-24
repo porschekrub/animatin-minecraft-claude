@@ -1,0 +1,1 @@
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/glow_berries"},"base":{"parent":"lifelikemotion:item3d/glow_berries"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/glow_berries"}}}}

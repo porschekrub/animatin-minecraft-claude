@@ -37,13 +37,21 @@ public final class ClientSmoke {
     static final String[] ONLY = System.getProperty("lifelikemotion.only", "").isBlank() ? null : System.getProperty("lifelikemotion.only").split("[,+]");
 
     /** the items with our own 3D models (kept in step with tools/models.py) */
+    /** batch 2 (kept in step with tools/models_food.py) */
+    static final String[] FOOD_3D = {"apple", "golden_apple", "enchanted_golden_apple", "carrot", "golden_carrot",
+            "potato", "baked_potato", "poisonous_potato", "beetroot", "melon_slice", "sweet_berries", "glow_berries",
+            "chorus_fruit", "bread", "cookie", "pumpkin_pie", "beef", "cooked_beef", "porkchop", "cooked_porkchop",
+            "mutton", "cooked_mutton", "rabbit", "cooked_rabbit", "chicken", "cooked_chicken", "rotten_flesh",
+            "spider_eye", "dried_kelp", "cod", "cooked_cod", "salmon", "cooked_salmon", "tropical_fish", "pufferfish",
+            "mushroom_stew", "rabbit_stew", "beetroot_soup", "suspicious_stew", "honey_bottle"};
     static final String[] ITEMS_3D = items3d();
 
     static String[] items3d() {
         java.util.List<String> l = new java.util.ArrayList<>();
         for (String t : new String[]{"wooden", "stone", "iron", "golden", "diamond", "netherite"})
             for (String k : new String[]{"sword", "pickaxe", "axe", "shovel", "hoe"}) l.add(t + "_" + k);
-        l.addAll(java.util.List.of("apple", "potion{Potion:\"minecraft:water\"}", "water_bucket"));
+        l.addAll(java.util.List.of("potion{Potion:\"minecraft:water\"}", "water_bucket"));
+        l.addAll(java.util.List.of(FOOD_3D));
         return l.toArray(new String[0]);
     }
 

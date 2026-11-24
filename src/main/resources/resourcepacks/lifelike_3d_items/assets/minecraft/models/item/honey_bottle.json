@@ -1,0 +1,1 @@
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/honey_bottle"},"base":{"parent":"lifelikemotion:item3d/honey_bottle"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/honey_bottle"}}}}

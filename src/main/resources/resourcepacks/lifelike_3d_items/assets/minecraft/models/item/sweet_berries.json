@@ -1,0 +1,1 @@
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/sweet_berries"},"base":{"parent":"lifelikemotion:item3d/sweet_berries"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/sweet_berries"}}}}

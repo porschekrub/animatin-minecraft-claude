@@ -213,7 +213,7 @@ class Model:
         tp = os.path.join(PACK, "assets", NS, "textures", "item", "model", self.name + ".png")
         os.makedirs(os.path.dirname(tp), exist_ok=True)
         tex.save(tp)
-        model = {"textures": {"0": f"{NS}:item/model/{self.name}", "particle": f"minecraft:item/{self.name}"},
+        model = {"textures": {"0": f"{NS}:item/model/{self.name}", "particle": vanilla_layers(self.name)[-1]},
                  "elements": els, "display": display}
         if translucent:
             model["render_type"] = "minecraft:translucent"
@@ -425,43 +425,6 @@ def hoe(tier):
 
 
 # ---------------------------------------------------------------- beautiful things
-def apple():
-    m = Model("apple")
-    skin = Mat(APPLE, base=3.6, kind="organic", grad=1.3)
-    top = Mat(APPLE, base=4.4, kind="organic", grad=1.0)
-    stem = Mat(STEM, base=1.6, bevel=0.4)
-    leaf = Mat(LEAF, base=2.6, bevel=0.2)
-
-    def shine(k, ii, jj, w, h, face):
-        # a soft glossy highlight high on the lit faces, and a few pale speckles
-        if face in ("south", "west") and w >= 6:
-            k = np.where((jj == 1) & (ii >= 1) & (ii <= 2), 6.8, k)
-            k = np.where((jj == 2) & (ii == 1), 6.0, k)
-        return k
-
-    def ring(k, ii, jj, w, h, face):
-        # the top: darker in a ring round the stem's dimple
-        if face == "up":
-            cx, cy = (w - 1) / 2, (h - 1) / 2
-            r = np.hypot(ii - cx, jj - cy)
-            k = np.where(r < 1.6, k - 1.6, k)
-        return k
-
-    def vein(k, ii, jj, w, h, face):
-        if face in ("up", "down"):
-            k = np.where(jj == h // 2, k + 1.4, k)
-        return k
-
-    m.box((4, 1, 4), (12, 10, 12), skin, ao=False)                       # core
-    m.box((3, 2, 4.5), (13, 9, 11.5), skin, decal=shine)                 # rounding out the sides
-    m.box((4.5, 2, 3), (11.5, 9, 13), skin, decal=shine)
-    m.box((5, 10, 5), (11, 11, 11), top, decal=ring)                     # shoulders
-    m.box((5, 0, 5), (11, 1, 11), skin)                                  # base
-    m.box((7.5, 10.5, 7.5), (8.5, 14, 8.5), stem, rot=(22.5, "z", (8, 10.5, 8)))
-    m.box((8.5, 12.5, 6.5), (13, 13, 9.5), leaf, rot=(-22.5, "z", (8.5, 12.5, 8)), decal=vein, ao=False)
-    m.write(upright(0.34, 4.0))
-
-
 def potion():
     """a glass bottle you can see the potion through (coloured by the game: blue for water), string round the neck and
     a cork"""
@@ -526,14 +489,29 @@ def water_bucket():
 
 TOOLS = {"sword": sword, "pickaxe": pickaxe, "axe": axe, "shovel": shovel, "hoe": hoe}
 ITEMS = {f"{tier}_{kind}": (lambda f=f, tier=tier: f(tier)) for tier in TIERS for kind, f in TOOLS.items()}
-ITEMS.update({"apple": apple, "potion": potion, "water_bucket": water_bucket})
+ITEMS.update({"potion": potion, "water_bucket": water_bucket})
 GUI_LAYERS = {"potion": ["minecraft:item/potion_overlay", "minecraft:item/potion"]}
+
+
+JAR = os.environ.get("MC_JAR", "/tmp/mcjar/client.jar")
+
+
+def vanilla_layers(name):
+    """the item's flat picture layers, as the game's own item model has them"""
+    import zipfile
+    try:
+        with zipfile.ZipFile(JAR) as z:
+            tex = json.loads(z.read(f"assets/minecraft/models/item/{name}.json")).get("textures", {})
+    except (OSError, KeyError):
+        return [f"minecraft:item/{name}"]
+    layers = [tex[f"layer{i}"] for i in range(4) if f"layer{i}" in tex]
+    return [t if ":" in t else "minecraft:" + t for t in layers] or [f"minecraft:item/{name}"]
 
 
 def item_model(name):
     """the item's own model: ours everywhere except the inventory, which keeps the usual flat picture"""
-    layers = GUI_LAYERS.get(name, [f"minecraft:item/{name}"])
-    model = {"loader": "forge:separate_transforms", "textures": {"particle": f"minecraft:item/{name}"},
+    layers = GUI_LAYERS.get(name) or vanilla_layers(name)
+    model = {"loader": "forge:separate_transforms", "textures": {"particle": layers[-1]},
              "base": {"parent": f"{NS}:item3d/{name}"},
              "perspectives": {"gui": {"parent": "minecraft:item/generated",
                                       "textures": {f"layer{i}": t for i, t in enumerate(layers)}}}}
@@ -544,6 +522,9 @@ def item_model(name):
 
 
 if __name__ == "__main__":
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import models_food  # noqa: E402  (the food batch)
+    ITEMS.update(models_food.FOOD)
     only = set(sys.argv[1:])
     for name, make in ITEMS.items():
         if only and name not in only:
