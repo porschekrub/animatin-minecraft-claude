@@ -14,22 +14,56 @@ import net.minecraft.util.Mth;
 public final class Clip {
     final float[] times;
     final float[][] poses;
+    /** an arm swing (see {@link #arm}) rather than a pose about the hand */
+    public final boolean arm;
 
-    private Clip(float[] times, float[][] poses) {
+    private Clip(float[] times, float[][] poses, boolean arm) {
         this.times = times;
         this.poses = poses;
+        this.arm = arm;
     }
 
     /** of(t0, x,y,z,pitch,yaw,roll,  t1, ...) */
     public static Clip of(float... v) {
-        int n = v.length / 7;
+        return make(v, 6, false);
+    }
+
+    /**
+     * An arm swing: the whole arm turns about the shoulder (below the bottom corner of the screen), so the hand and
+     * what it holds sweep round in an arc, and the wrist turns the item on top of that. Keys:
+     * arm(t0, roll, pitch, yaw, wristRoll, wristPitch, reach, lift,  t1, ...): roll + sweeps the hand across toward the
+     * middle (like a clock hand turning back), pitch + lifts the arm up and back, yaw + turns it in; wristRoll + lays
+     * the item over toward the middle, wristPitch + tips it forward; reach pushes it forward, lift raises it.
+     */
+    public static Clip arm(float... v) {
+        return make(v, 7, true);
+    }
+
+    static Clip make(float[] v, int c, boolean arm) {
+        int n = v.length / (c + 1);
         float[] t = new float[n];
-        float[][] p = new float[n][6];
+        float[][] p = new float[n][c];
         for (int i = 0; i < n; i++) {
-            t[i] = v[i * 7];
-            System.arraycopy(v, i * 7 + 1, p[i], 0, 6);
+            t[i] = v[i * (c + 1)];
+            System.arraycopy(v, i * (c + 1) + 1, p[i], 0, c);
         }
-        return new Clip(t, p);
+        return new Clip(t, p, arm);
+    }
+
+    /** the shoulder the arm swings about, in the hand's camera space (x toward the hand's side) */
+    public static float PX = 0.62f, PY = -0.92f, PZ = -0.50f;
+
+    /** an arm swing's pose as a matrix, about the hand at (s * hx, hy, hz); k scales it */
+    public static org.joml.Matrix4f armMatrix(float[] q, float s, float k, float hx, float hy, float hz) {
+        float px = s * (PX - hx), py = PY - hy, pz = PZ - hz;
+        return new org.joml.Matrix4f().translate(0, q[6] * k, -q[5] * k)
+                .translate(px, py, pz)
+                .rotateZ((float) Math.toRadians(s * q[0] * k))
+                .rotateX((float) Math.toRadians(q[1] * k))
+                .rotateY((float) Math.toRadians(s * q[2] * k))
+                .translate(-px, -py, -pz)
+                .rotateZ((float) Math.toRadians(s * q[3] * k))
+                .rotateX((float) Math.toRadians(q[4] * k));
     }
 
     /** The pose at time u (0..1): a Catmull-Rom spline through the keyframes (times may be uneven). */
@@ -43,8 +77,9 @@ public final class Clip {
         float x = (u - t1) / span;
         float x2 = x * x, x3 = x2 * x;
         float h00 = 2 * x3 - 3 * x2 + 1, h10 = x3 - 2 * x2 + x, h01 = -2 * x3 + 3 * x2, h11 = x3 - x2;
-        float[] out = new float[6];
-        for (int c = 0; c < 6; c++) {
+        int nc = poses[0].length;
+        float[] out = new float[nc];
+        for (int c = 0; c < nc; c++) {
             float p0 = poses[i0][c], p1 = poses[i][c], p2 = poses[i2][c], p3 = poses[i3][c];
             // tangents scaled to this segment's length (keeps uneven spacing smooth)
             float m1 = i0 == i ? 0 : (p2 - p0) / Math.max(times[i2] - times[i0], 1e-4f) * span;

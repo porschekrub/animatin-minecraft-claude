@@ -250,6 +250,12 @@ public final class ClientSmoke {
         // ---- films of first-person motion (for judging it as it moves)
         film("film");
         filmEat("filmeat");
+        swingStills("still_mine", "diamond_pickaxe", com.lifelikemotion.client.fp.Clips.MINE, 0, 0.2f, 0.36f, 0.48f, 0.56f, 0.7f, 0.85f);
+        swingStills("still_slasha", "diamond_sword", com.lifelikemotion.client.fp.Clips.SLASH_A, 0.2f, 0.3f, 0.36f, 0.42f, 0.5f, 0.7f);
+        swingStills("still_slashb", "diamond_sword", com.lifelikemotion.client.fp.Clips.SLASH_B, 0.2f, 0.36f, 0.42f, 0.5f, 0.7f);
+        swingStills("still_stab", "diamond_sword", com.lifelikemotion.client.fp.Clips.STAB, 0.22f, 0.4f);
+        swingStills("still_chop", "diamond_axe", com.lifelikemotion.client.fp.Clips.CHOP, 0.26f, 0.38f, 0.45f, 0.5f, 0.6f);
+        swingStills("still_dig", "diamond_shovel", com.lifelikemotion.client.fp.Clips.DIG, 0.22f, 0.46f, 0.66f);
 
         // ---- first person
         fp("fp_empty_idle", "air", null, 0);
@@ -739,7 +745,7 @@ public final class ClientSmoke {
                 case 286 -> o.keyUse.setDown(false);
                 case 290 -> {
                     cmd("gamemode survival");
-                    cmd("fill ~-1 ~ ~2 ~1 ~2 ~2 stone");
+                    cmd("fill ~-1 ~ ~2 ~1 ~2 ~2 obsidian");
                     give("diamond_pickaxe");
                 }
                 case 298 -> o.keyAttack.setDown(true);                              // mine the block in front
@@ -758,6 +764,30 @@ public final class ClientSmoke {
                 cmd("kill @e[type=!player]");
             }
             return f > FILM;
+        });
+    }
+
+    /** Stills of one swing held at several points (u), for checking a swing's shape. */
+    static void swingStills(String name, String item, com.lifelikemotion.client.fp.Clip clip, float... us) {
+        if (!wanted(name)) return;
+        Minecraft mc = Minecraft.getInstance();
+        add(t -> {
+            if (t == 0) {
+                mc.options.setCameraType(CameraType.FIRST_PERSON);
+                cmd("tp @s 40 -60 30 0 10");
+                give(item);
+                com.lifelikemotion.client.fp.FirstPersonAnimator.testClip = clip;
+            }
+            int i = (t - 20) / 3;
+            if (t >= 20 && i < us.length) {
+                if ((t - 20) % 3 == 0) com.lifelikemotion.client.fp.FirstPersonAnimator.testSwing = us[i];
+                if ((t - 20) % 3 == 2) shot(String.format("%s_%02d", name, Math.round(us[i] * 100)));
+            }
+            if (t == 20 + us.length * 3) {
+                com.lifelikemotion.client.fp.FirstPersonAnimator.testSwing = null;
+                com.lifelikemotion.client.fp.FirstPersonAnimator.testClip = null;
+            }
+            return t > 22 + us.length * 3;
         });
     }
 

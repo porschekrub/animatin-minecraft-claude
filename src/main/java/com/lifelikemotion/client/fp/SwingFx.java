@@ -31,12 +31,13 @@ public final class SwingFx {
     // ------------------------------------------------------------------ the strike: when it lands, how the camera moves
     /** where in each swing it lands (0..1), and the camera's kick then (pitch, yaw, roll, in degrees a second) */
     static float impact(Clip c) {
-        if (c == Clips.SLASH_A || c == Clips.SLASH_B) return 0.44f;
-        if (c == Clips.STAB) return 0.40f;
-        if (c == Clips.CHOP) return 0.50f;
-        if (c == Clips.MINE) return 0.56f;
+        if (c == Clips.SLASH_A) return 0.40f;
+        if (c == Clips.SLASH_B) return 0.42f;
+        if (c == Clips.STAB) return 0.38f;
+        if (c == Clips.CHOP) return 0.48f;
+        if (c == Clips.MINE) return 0.54f;
         if (c == Clips.PUNCH) return 0.32f;
-        if (c == Clips.SWAT) return 0.42f;
+        if (c == Clips.SWAT) return 0.44f;
         if (c == Clips.DIG) return 0.46f;
         if (c == Clips.TILL) return 0.52f;
         if (c == Clips.THROW) return 0.42f;
@@ -45,16 +46,16 @@ public final class SwingFx {
     }
 
     static float[] kick(Clip c) {
-        if (c == Clips.SLASH_A) return new float[]{14, -34, -40};
-        if (c == Clips.SLASH_B) return new float[]{10, 34, 40};
-        if (c == Clips.STAB) return new float[]{30, 0, 0};
-        if (c == Clips.CHOP) return new float[]{75, 0, -8};
-        if (c == Clips.MINE) return new float[]{28, 0, 0};
-        if (c == Clips.PUNCH) return new float[]{22, 10, 6};
-        if (c == Clips.SWAT) return new float[]{14, -16, -20};
-        if (c == Clips.DIG || c == Clips.TILL) return new float[]{26, 0, 0};
-        if (c == Clips.THROW) return new float[]{18, -10, -6};
-        if (c == Clips.PLACE) return new float[]{16, 0, 0};
+        if (c == Clips.SLASH_A) return new float[]{10, -26, -30};
+        if (c == Clips.SLASH_B) return new float[]{6, 26, 30};
+        if (c == Clips.STAB) return new float[]{22, 0, 0};
+        if (c == Clips.CHOP) return new float[]{45, 0, -6};
+        if (c == Clips.MINE) return new float[]{10, 0, 0};
+        if (c == Clips.PUNCH) return new float[]{16, 8, 4};
+        if (c == Clips.SWAT) return new float[]{10, -12, -14};
+        if (c == Clips.DIG || c == Clips.TILL) return new float[]{16, 0, 0};
+        if (c == Clips.THROW) return new float[]{12, -8, -4};
+        if (c == Clips.PLACE) return new float[]{10, 0, 0};
         return null;
     }
 
@@ -115,10 +116,11 @@ public final class SwingFx {
     // ------------------------------------------------------------------ the trail behind a blade
     /** where in each swing the blade leaves a trail (from, to), or null */
     static float[] trailWindow(Clip c) {
-        if (c == Clips.SLASH_A || c == Clips.SLASH_B) return new float[]{0.28f, 0.62f};
-        if (c == Clips.STAB) return new float[]{0.26f, 0.46f};
-        if (c == Clips.CHOP) return new float[]{0.36f, 0.56f};
-        if (c == Clips.SWAT) return new float[]{0.22f, 0.48f};
+        if (c == Clips.SLASH_A) return new float[]{0.28f, 0.54f};
+        if (c == Clips.SLASH_B) return new float[]{0.30f, 0.56f};
+        if (c == Clips.STAB) return new float[]{0.24f, 0.42f};
+        if (c == Clips.CHOP) return new float[]{0.36f, 0.52f};
+        if (c == Clips.SWAT) return new float[]{0.24f, 0.50f};
         return null;
     }
 
@@ -147,7 +149,7 @@ public final class SwingFx {
         if (to - from < 0.01f) return;
         int n = 12;
         Vector3f[] tip = new Vector3f[n + 1], mid = new Vector3f[n + 1];
-        Vector3f t0 = pts.tip(), m0 = new Vector3f(pts.grip()).lerp(pts.tip(), 0.3f);
+        Vector3f t0 = pts.tip(), m0 = new Vector3f(pts.grip()).lerp(pts.tip(), 0.55f);
         for (int i = 0; i <= n; i++) {
             float ui = to - (to - from) * i / n;
             Matrix4f m = new Matrix4f(base).mul(clipMatrix(c.sample(ui), s, k)).mul(after);
@@ -178,6 +180,7 @@ public final class SwingFx {
 
     /** a clip pose as a matrix, as {@link Clip#apply} does it about the hand */
     static Matrix4f clipMatrix(float[] q, float s, float k) {
+        if (q.length == 7) return Clip.armMatrix(q, s, k, FirstPersonAnimator.HX, FirstPersonAnimator.HY, FirstPersonAnimator.HZ);
         return new Matrix4f().translate(s * q[0] * k, q[1] * k, q[2] * k)
                 .rotateY((float) Math.toRadians(s * q[4] * k))
                 .rotateX((float) Math.toRadians(q[3] * k))

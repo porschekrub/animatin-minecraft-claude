@@ -173,7 +173,7 @@ public final class FirstPersonAnimator {
         float t = Motion.ticks + partial;
         ps.translate(0, Mth.sin(t * 0.09f + (right ? 0 : 1.7f)) * 0.006f, 0);
         float[] q = swing(p, hand(p, right), ItemKind.EMPTY, partial);
-        if (q != null) Clip.apply(ps, q, s, k, 0, 0, 0);
+        if (q != null) applySwing(ps, q, s, k);
         Matrix4f m = ps.last().pose();
         Vector3f fist = Arm.toRoot(m, 0, 0, 0);
         Arm.draw(ps, buf, light, p, right, fist, outer(m, s));
@@ -208,7 +208,7 @@ public final class FirstPersonAnimator {
         ps.translate(s * HX, HY, HZ);
         Matrix4f base = new Matrix4f(ps.last().pose());
         float[] q = eating ? null : swing(p, hand(p, right), kind, partial);
-        if (q != null) Clip.apply(ps, q, s, k, 0, 0, 0);
+        if (q != null) applySwing(ps, q, s, k);
         Matrix4f afterSwing = new Matrix4f(ps.last().pose());
         if (eating) {
             // (the item's middle, here: eating moves and turns it about that)
@@ -274,7 +274,14 @@ public final class FirstPersonAnimator {
 
     // ------------------------------------------------------------------ swings, on our own clock
     static final long[] seenStart = {Long.MIN_VALUE, Long.MIN_VALUE};
-    static final float[][] lastPose = new float[2][6], fromPose = new float[2][6];
+    static final float[][] lastPose = new float[2][7], fromPose = new float[2][7];
+    static final boolean[] lastArm = new boolean[2], fromArm = new boolean[2];
+
+    /** a swing pose at the hand: an arm swing (about the shoulder) or a pose about the hand */
+    static void applySwing(PoseStack ps, float[] q, float s, float k) {
+        if (q.length == 7) ps.mulPoseMatrix(Clip.armMatrix(q, s, k, HX, HY, HZ));
+        else Clip.apply(ps, q, s, k, 0, 0, 0);
+    }
     static final float[] fromAt = {-1000, -1000};
 
     /** the mining loop's length for a clip (ticks) */
@@ -330,7 +337,8 @@ public final class FirstPersonAnimator {
                 if (seenStart[h] != Motion.swingStart) {
                     // a new swing: blend out of wherever the last one left the hand
                     seenStart[h] = Motion.swingStart;
-                    System.arraycopy(lastPose[h], 0, fromPose[h], 0, 6);
+                    System.arraycopy(lastPose[h], 0, fromPose[h], 0, 7);
+                    fromArm[h] = lastArm[h];
                     fromAt[h] = Motion.swingStart;
                     lastU[h] = 0;
                     lastClip[h] = null;
@@ -340,11 +348,13 @@ public final class FirstPersonAnimator {
                 playing = c;
                 float b = Mth.clamp((now - fromAt[h]) / 2.5f, 0, 1);
                 b = b * b * (3 - 2 * b);
-                for (int i = 0; i < 6; i++) q[i] = Mth.lerp(b, fromPose[h][i], q[i]);
+                // (blends only between swings of the same kind; the arm's own swings flow into each other)
+                if (fromArm[h] == c.arm) for (int i = 0; i < q.length; i++) q[i] = Mth.lerp(b, fromPose[h][i], q[i]);
             }
         }
         if (q == null) {
             java.util.Arrays.fill(lastPose[h], 0);
+            lastArm[h] = false;
             lastClip[h] = null;
             return null;
         }
@@ -357,7 +367,9 @@ public final class FirstPersonAnimator {
         }
         lastClip[h] = playing;
         lastU[h] = u;
-        System.arraycopy(q, 0, lastPose[h], 0, 6);
+        java.util.Arrays.fill(lastPose[h], 0);
+        System.arraycopy(q, 0, lastPose[h], 0, q.length);
+        lastArm[h] = playing != null && playing.arm;
         return q;
     }
 

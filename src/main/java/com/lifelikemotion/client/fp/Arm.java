@@ -43,7 +43,7 @@ public final class Arm {
      * the shoulder (x toward the arm's own side) and how big the arm is drawn. The shoulder sits low and close, so at
      * rest the arm reaches up and out to the hand the way the game's own first-person arm does.
      */
-    public static float SX = 0.15f, SY = -0.73f, SZ = -0.10f, SCALE = 0.9f;
+    public static float SX = 0.92f, SY = -0.88f, SZ = -0.38f, SCALE = 0.9f;
 
     /** the game's own first-person arm's turn (model space to the hand's camera space) */
     static Quaternionf vanilla(float s) {
@@ -113,7 +113,11 @@ public final class Arm {
             ps.last().normal().set(ROOT_N);
             ps.translate(fist.x, fist.y, fist.z);
             ps.mulPose(q);
+            // long enough to reach back past the shoulder (off screen) wherever the fist goes
+            float reach = new Vector3f(fist).sub(shoulder).length() + 0.25f;
+            float stretch = Math.max(1, reach / (10.5f / 16f * SCALE));
             ps.scale(SCALE, SCALE, SCALE);
+            ps.scale(1, stretch, 1);
             ps.translate(-cx / 16f, -8.5f / 16f, 0);                         // (the fist is the last few pixels)
             arm.setPos(0, 0, 0);
             arm.setRotation(0, 0, 0);
