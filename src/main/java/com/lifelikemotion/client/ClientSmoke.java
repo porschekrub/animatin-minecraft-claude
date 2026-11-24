@@ -37,7 +37,15 @@ public final class ClientSmoke {
     static final String[] ONLY = System.getProperty("lifelikemotion.only", "").isBlank() ? null : System.getProperty("lifelikemotion.only").split("[,+]");
 
     /** the items with our own 3D models (kept in step with tools/models.py) */
-    static final String[] ITEMS_3D = {"diamond_sword", "diamond_axe", "apple", "potion{Potion:\"minecraft:water\"}", "water_bucket"};
+    static final String[] ITEMS_3D = items3d();
+
+    static String[] items3d() {
+        java.util.List<String> l = new java.util.ArrayList<>();
+        for (String t : new String[]{"wooden", "stone", "iron", "golden", "diamond", "netherite"})
+            for (String k : new String[]{"sword", "pickaxe", "axe", "shovel", "hoe"}) l.add(t + "_" + k);
+        l.addAll(java.util.List.of("apple", "potion{Potion:\"minecraft:water\"}", "water_bucket"));
+        return l.toArray(new String[0]);
+    }
 
     static boolean wanted(String name) {
         if (ONLY == null) return true;
@@ -138,10 +146,10 @@ public final class ClientSmoke {
                 mc.options.setCameraType(CameraType.FIRST_PERSON);
                 give("air");
                 cmd("kill @e[type=item]");
-                cmd("tp @s 0 -60 -1 0 50");
+                cmd("tp @s 0 -58.4 -1.6 0 52");
                 for (int i = 0; i < ITEMS_3D.length; i++)
                     cmd(String.format("summon item %.2f -60 %.2f {Item:{id:\"minecraft:%s\",Count:1b%s},PickupDelay:32767,Age:-32768,NoGravity:1b}",
-                            -2.0 + (i % 5) * 1.0, 1.2 + (i / 5) * 1.0, ITEMS_3D[i].replaceAll("\\{.*", ""),
+                            -1.6 + (i % 5) * 0.8, 0.4 + (i / 5) * 0.62, ITEMS_3D[i].replaceAll("\\{.*", ""),
                             ITEMS_3D[i].contains("{") ? ",tag:" + ITEMS_3D[i].substring(ITEMS_3D[i].indexOf('{')) : ""));
             }
             if (t == 30) shot("item3d_ground");

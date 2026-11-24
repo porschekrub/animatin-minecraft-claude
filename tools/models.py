@@ -269,73 +269,158 @@ STRING = ["6e5a36", "9a8152", "c4ab78", "e3cfa0"]
 
 
 # ---------------------------------------------------------------- cool things
-def diamond_sword():
-    m = Model("diamond_sword")
-    blade = Mat(DIAMOND, base=4.2, kind="blade", shine=0.7)
-    edge = Mat(DIAMOND, base=6.2, kind="blade", bevel=0.4)
-    guard = Mat(DIAMOND_DARK, base=3.0, kind="metal")
-    gold = Mat(GOLD, base=3.0, kind="metal")
-    gem = Mat(DIAMOND, base=5.0, kind="gem", bevel=0.3, glow=True)
-    grip = Mat(LEATHER, base=2.0, kind="wrap", bevel=0.5)
+class Tier:
+    """one tool tier's materials: the head (blade), its bright edge, the darker metal round it (guard, socket), trims
+    (caps, collars, guard tips), the gem set in it (if any), the grip and the handle"""
 
-    def ridge(k, ii, jj, w, h, face):
-        # a bright spine up the middle of the blade, and two small runes near the guard
-        if face in ("north", "south") and w >= 3:
-            mid = (w - 1) / 2
-            k = np.where(np.abs(ii - mid) < 0.6, k + 1.6, k)
-        return k
+    def __init__(self, head, hb, dark, db, trim, tb, gem=None, grip="leather", handle=None, edge_b=None,
+                 shine=0.7, edge=None):
+        self.head = Mat(head, base=hb, kind="blade", shine=shine)
+        self.metal = Mat(head, base=hb - 0.6, kind="metal", shine=shine)
+        self.edge = Mat(head, base=edge_b if edge_b is not None else len(head) - 1.8, kind="blade", bevel=0.4) \
+            if edge is None else Mat(edge, base=len(edge) - 2.6, kind="blade", bevel=0.3, glow=True)
+        self.dark = Mat(dark, base=db, kind="metal")
+        self.trim = Mat(trim, base=tb, kind="metal")
+        self.gem = Mat(gem, base=len(gem) - 2.5, kind="gem", bevel=0.3, glow=True) if gem else None
+        self.grip = Mat(STRING, base=1.8, kind="wrap", bevel=0.4) if grip == "twine" else \
+            Mat(LEATHER, base=2.0, kind="wrap", bevel=0.5)
+        self.wood = Mat(handle or WOOD, base=2.2, kind="wood", bevel=0.6)
 
-    def runes(k, ii, jj, w, h, face):
-        if face in ("north", "south") and h > 8:
-            near = (jj >= h - 5) & (jj <= h - 2) & ((ii == 0) | (ii == w - 1)) & (jj % 2 == 0)
-            k = np.where(near, 0.5, k)
-        return k
 
-    m.box((6.5, 0, 6.5), (9.5, 2, 9.5), guard)                          # pommel
-    m.box((7.5, 0.5, 6.25), (8.5, 1.5, 9.75), gem, ao=False)            # its gem, both sides
-    m.box((7, 2, 7), (9, 7.5, 9), grip)                                  # wrapped grip
-    m.box((6.75, 7, 6.75), (9.25, 7.5, 9.25), gold)                      # collar
-    m.box((5, 7.5, 6.5), (11, 9.5, 9.5), guard)                          # guard: heavy middle
-    m.box((2.5, 8, 7), (13.5, 9, 9), guard)                              # wings
-    m.box((1.5, 8, 7), (2.5, 10.5, 9), gold), m.box((13.5, 8, 7), (14.5, 10.5, 9), gold)  # tips sweeping up
-    m.box((7.25, 7.75, 6.25), (8.75, 9.25, 9.75), gem, ao=False)        # a gem through the guard
-    m.box((6, 9.5, 7.5), (10, 21, 8.5), blade, decal=ridge)             # blade
-    m.box((5.5, 10, 7.6), (6, 20, 8.4), edge), m.box((10, 10, 7.6), (10.5, 20, 8.4), edge)  # sharp edges
-    m.box((6.5, 21, 7.5), (9.5, 23, 8.5), blade, decal=ridge)           # narrowing
-    m.box((7, 23, 7.55), (9, 24.5, 8.45), edge)
-    m.box((7.5, 24.5, 7.6), (8.5, 26, 8.4), edge)                        # the point
+PLANKS = ["3f2c14", "5c421f", "7d5c2c", "9c7739", "b8914a", "d1ac62"]
+STONE = ["2c2c2e", "434346", "5e5e61", "7c7c7f", "9b9b9e", "bdbdbf"]
+NETHERITE = ["0e0b0c", "171214", "221b1e", "2f2529", "3f3337", "54454a", "6e5d62"]
+EMBER = ["5a1405", "9c2a08", "d9531a", "ff8a3a", "ffc27a", "fff0d0"]
+RUBY = ["4a0510", "7d0c1c", "b5172c", "e2324a", "ff7a8a", "ffd0d6"]
+IRON_GEM = ["2a3a55", "3f5c8a", "5f86c2", "9cc0ee", "dceaff"]
+
+TIERS = {
+    "wooden": Tier(PLANKS, 3.0, WOOD, 2.0, WOOD, 2.6, grip="twine", edge_b=4.6, shine=0.3),
+    "stone": Tier(STONE, 3.0, STONE, 1.6, WOOD, 2.6, grip="twine", edge_b=4.6, shine=0.4),
+    "iron": Tier(IRON, 3.8, IRON, 1.6, IRON, 2.4, grip="leather", edge_b=5.6),
+    "golden": Tier(GOLD, 3.0, GOLD, 1.6, GOLD, 1.8, gem=RUBY, grip="leather", edge_b=4.6),
+    "diamond": Tier(DIAMOND, 4.2, DIAMOND_DARK, 3.0, GOLD, 3.0, gem=DIAMOND, grip="leather", edge_b=6.2),
+    "netherite": Tier(NETHERITE, 3.6, NETHERITE, 1.4, GOLD, 3.0, gem=EMBER, grip="leather", edge=EMBER),
+}
+FANCY = {"golden", "diamond", "netherite"}  # gems and trims
+
+
+def ridge(k, ii, jj, w, h, face):
+    """a bright spine up the middle of a blade"""
+    if face in ("north", "south") and w >= 3:
+        mid = (w - 1) / 2
+        k = np.where(np.abs(ii - mid) < 0.6, k + 1.6, k)
+    return k
+
+
+def bevel_right(k, ii, jj, w, h, face):
+    """a lighter bevel band just before a cutting edge on the right"""
+    if face in ("north", "south"):
+        k = np.where(ii >= w - 2, k + 1.2, k)
+    return k
+
+
+def bevel_up(k, ii, jj, w, h, face):
+    """a lighter bevel band along the top"""
+    if face in ("north", "south", "east", "west"):
+        k = np.where(jj <= 1, k + 1.2, k)
+    return k
+
+
+def handle(m, t, top, fancy):
+    """a wooden handle with a wrapped grip (and, for fancy tiers, a trimmed end cap and grip ring)"""
+    m.box((7, 0, 7), (9, top, 9), t.wood)
+    m.box((6.75, 1.5, 6.75), (9.25, 6, 9.25), t.grip)
+    if fancy:
+        m.box((6.5, 0, 6.5), (9.5, 1, 9.5), t.trim)
+        m.box((6.75, 6, 6.75), (9.25, 6.5, 9.25), t.trim)
+
+
+def sword(tier):
+    t, fancy = TIERS[tier], tier in FANCY
+    m = Model(f"{tier}_sword")
+    m.box((6.5, 0, 6.5), (9.5, 2, 9.5), t.dark)                          # pommel
+    if t.gem:
+        m.box((7.5, 0.5, 6.25), (8.5, 1.5, 9.75), t.gem, ao=False)
+    m.box((7, 2, 7), (9, 7.5, 9), t.grip)                                # wrapped grip
+    m.box((6.75, 7, 6.75), (9.25, 7.5, 9.25), t.trim)                    # collar
+    m.box((5, 7.5, 6.5), (11, 9.5, 9.5), t.dark)                         # guard: heavy middle
+    m.box((2.5, 8, 7), (13.5, 9, 9), t.dark)                             # wings
+    m.box((1.5, 8, 7), (2.5, 10.5, 9), t.trim), m.box((13.5, 8, 7), (14.5, 10.5, 9), t.trim)  # tips sweeping up
+    if t.gem:
+        m.box((7.25, 7.75, 6.25), (8.75, 9.25, 9.75), t.gem, ao=False)
+    m.box((6, 9.5, 7.5), (10, 21, 8.5), t.head, decal=ridge)             # blade
+    m.box((5.5, 10, 7.6), (6, 20, 8.4), t.edge), m.box((10, 10, 7.6), (10.5, 20, 8.4), t.edge)
+    m.box((6.5, 21, 7.5), (9.5, 23, 8.5), t.head, decal=ridge)
+    m.box((7, 23, 7.55), (9, 24.5, 8.45), t.edge)
+    m.box((7.5, 24.5, 7.6), (8.5, 26, 8.4), t.edge)                       # the point
     m.write(blade_held(20, 0.34, 0.0))
 
 
-def diamond_axe():
-    m = Model("diamond_axe")
-    wood = Mat(WOOD, base=2.2, kind="wood", bevel=0.6)
-    wrap = Mat(LEATHER, base=2.0, kind="wrap", bevel=0.5)
-    head = Mat(DIAMOND, base=3.6, kind="metal")
-    dark = Mat(DIAMOND_DARK, base=3.0, kind="metal")
-    edge = Mat(DIAMOND, base=6.3, kind="blade", bevel=0.3)
-    gold = Mat(GOLD, base=3.0, kind="metal")
-    gem = Mat(DIAMOND, base=5.0, kind="gem", bevel=0.3, glow=True)
+def axe(tier):
+    t, fancy = TIERS[tier], tier in FANCY
+    m = Model(f"{tier}_axe")
+    handle(m, t, 17, fancy)
+    m.box((6.5, 11, 6.5), (9.5, 16.5, 9.5), t.dark)                     # socket
+    if t.gem:
+        m.box((7.25, 16.5, 7.25), (8.75, 17.5, 8.75), t.gem, ao=False)  # a gem capping the handle
+    m.box((7.5, 13, 6.25), (8.5, 14, 9.75), t.trim, ao=False)           # rivet
+    m.box((9.5, 11.5, 7.25), (12, 16, 8.75), t.metal)                   # cheek
+    m.box((12, 10, 7.5), (14.5, 17.5, 8.5), t.head, decal=bevel_right)  # blade
+    m.box((14.5, 9.5, 7.6), (15.5, 18, 8.4), t.edge)                    # cutting edge
+    m.box((12.5, 9, 7.6), (14.5, 10, 8.4), t.metal)                     # beard
+    m.box((3.5, 12.5, 7.5), (6.5, 14.5, 8.5), t.dark)                   # back spike
+    m.box((2.5, 13, 7.6), (3.5, 14, 8.4), t.edge)
+    m.write(blade_held(45, 0.4, -0.5))
 
-    def bevel_edge(k, ii, jj, w, h, face):
-        # a lighter bevel band just before the cutting edge
-        if face in ("north", "south"):
-            k = np.where(ii >= w - 2, k + 1.2, k)
-        return k
 
-    m.box((7, 0, 7), (9, 17, 9), wood)                                   # handle
-    m.box((6.5, 0, 6.5), (9.5, 1, 9.5), gold)                           # end cap
-    m.box((6.75, 1.5, 6.75), (9.25, 6, 9.25), wrap)                     # grip
-    m.box((6.75, 6, 6.75), (9.25, 6.5, 9.25), gold)
-    m.box((6.5, 11, 6.5), (9.5, 16.5, 9.5), dark)                       # socket
-    m.box((7.25, 16.5, 7.25), (8.75, 17.5, 8.75), gem, ao=False)        # a gem capping the handle
-    m.box((7.5, 13, 6.25), (8.5, 14, 9.75), gold, ao=False)             # rivet
-    m.box((9.5, 11.5, 7.25), (12, 16, 8.75), head)                      # cheek
-    m.box((12, 10, 7.5), (14.5, 17.5, 8.5), head, decal=bevel_edge)     # blade
-    m.box((14.5, 9.5, 7.6), (15.5, 18, 8.4), edge)                      # cutting edge
-    m.box((12.5, 9, 7.6), (14.5, 10, 8.4), head)                        # beard
-    m.box((3.5, 12.5, 7.5), (6.5, 14.5, 8.5), dark)                     # back spike
-    m.box((2.5, 13, 7.6), (3.5, 14, 8.4), edge)
+def pickaxe(tier):
+    t, fancy = TIERS[tier], tier in FANCY
+    m = Model(f"{tier}_pickaxe")
+    handle(m, t, 16, fancy)
+    m.box((6.5, 13.5, 6.5), (9.5, 17, 9.5), t.dark)                     # the block holding the head
+    if t.gem:
+        m.box((7.25, 14.5, 6.25), (8.75, 16, 9.75), t.gem, ao=False)
+    for side in (-1, 1):                                                 # two arms curving down to points
+        def X(a, b):
+            return (8 + side * a, 8 + side * b) if side > 0 else (8 + side * b, 8 + side * a)
+        x0, x1 = X(1.5, 5)
+        m.box((x0, 14, 7.25), (x1, 16.5, 8.75), t.metal, decal=bevel_up)
+        x0, x1 = X(5, 6.5)
+        m.box((x0, 12.5, 7.4), (x1, 15.5, 8.6), t.head)
+        x0, x1 = X(6, 7.5)
+        m.box((x0, 11, 7.5), (x1, 13, 8.5), t.head)
+        x0, x1 = X(6.5, 7.5)
+        m.box((x0, 9.5, 7.6), (x1, 11, 8.4), t.edge)                     # the point
+    m.box((7, 17, 7), (9, 17.5, 9), t.trim)                              # a cap on top
+    m.write(blade_held(45, 0.4, -0.5))
+
+
+def shovel(tier):
+    t, fancy = TIERS[tier], tier in FANCY
+    m = Model(f"{tier}_shovel")
+    handle(m, t, 13, fancy)
+    m.box((6.75, 12, 6.75), (9.25, 14, 9.25), t.dark)                   # collar
+    if t.gem:
+        m.box((7.5, 12.5, 6.5), (8.5, 13.5, 9.5), t.gem, ao=False)
+    m.box((5.5, 14, 7.4), (10.5, 19, 8.6), t.head, decal=ridge)         # the blade
+    m.box((6, 19, 7.5), (10, 20.5, 8.5), t.head, decal=ridge)
+    m.box((6.75, 20.5, 7.6), (9.25, 21.5, 8.4), t.edge)                  # its rounded tip
+    m.box((5, 15, 7.6), (5.5, 19, 8.4), t.edge), m.box((10.5, 15, 7.6), (11, 19, 8.4), t.edge)
+    m.write(blade_held(45, 0.4, -0.5))
+
+
+def hoe(tier):
+    t, fancy = TIERS[tier], tier in FANCY
+    m = Model(f"{tier}_hoe")
+    handle(m, t, 17, fancy)
+    m.box((6.5, 14.5, 6.5), (9.5, 17, 9.5), t.dark)                     # socket
+    if t.gem:
+        m.box((7.25, 15, 6.25), (8.75, 16.5, 9.75), t.gem, ao=False)
+    m.box((9.5, 15, 7.4), (13, 16.75, 8.6), t.metal, decal=bevel_up)    # neck reaching out
+    m.box((12, 11.5, 7.5), (14.5, 16.75, 8.5), t.head)                  # the blade, hanging down
+    m.box((12, 10.5, 7.6), (14.5, 11.5, 8.4), t.edge)                    # its edge
+    m.box((5, 15.25, 7.5), (6.5, 16.5, 8.5), t.dark)                    # a short back knob
     m.write(blade_held(45, 0.4, -0.5))
 
 
@@ -439,8 +524,9 @@ def water_bucket():
     m.write(upright(0.3, 5.0))
 
 
-ITEMS = {"diamond_sword": diamond_sword, "diamond_axe": diamond_axe, "apple": apple, "potion": potion,
-         "water_bucket": water_bucket}
+TOOLS = {"sword": sword, "pickaxe": pickaxe, "axe": axe, "shovel": shovel, "hoe": hoe}
+ITEMS = {f"{tier}_{kind}": (lambda f=f, tier=tier: f(tier)) for tier in TIERS for kind, f in TOOLS.items()}
+ITEMS.update({"apple": apple, "potion": potion, "water_bucket": water_bucket})
 GUI_LAYERS = {"potion": ["minecraft:item/potion_overlay", "minecraft:item/potion"]}
 
 

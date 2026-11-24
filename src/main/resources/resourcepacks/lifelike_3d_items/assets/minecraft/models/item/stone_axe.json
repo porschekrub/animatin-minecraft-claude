@@ -1,0 +1,1 @@
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/stone_axe"},"base":{"parent":"lifelikemotion:item3d/stone_axe"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/stone_axe"}}}}
