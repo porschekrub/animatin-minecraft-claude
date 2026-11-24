@@ -29,6 +29,12 @@ public final class Motion {
     public static float sprint, sprintO, air, airO, land, landO, sneak, sneakO, water, waterO, walk, walkO;
     /** counts swings: odd and even slashes go opposite ways */
     public static int swingCount;
+    /**
+     * Swings run on our own clock (longer and bigger than the game's quick one): when the last one started (ticks) and
+     * with which hand. Mining is a loop of its own for as long as a block is being broken.
+     */
+    public static long swingStart = -1000, mineStart = -1000, mineStop = -1000;
+    public static boolean swingOffHand, mining;
     public static Action action = Action.ATTACK;
     static Action pending = Action.ATTACK;
     static boolean wasGround = true;
@@ -53,7 +59,8 @@ public final class Motion {
         if (p == null || mc.isPaused()) return;
         ticks++;
         busyO = busy;
-        boolean isBusy = p.swinging || p.isUsingItem() || mc.gameMode != null && mc.gameMode.isDestroying();
+        boolean isBusy = p.swinging || p.isUsingItem() || mc.gameMode != null && mc.gameMode.isDestroying()
+                || ticks - swingStart < 12;
         busy += ((isBusy ? 1 : 0) - busy) * (isBusy ? 0.6f : 0.15f);
         sprintO = sprint; airO = air; landO = land; sneakO = sneak; waterO = water; walkO = walk;
         boolean ground = p.onGround() || p.getAbilities().flying || p.isPassenger() || p.onClimbable();
@@ -85,12 +92,25 @@ public final class Motion {
         equipMain = Math.min(equipMain + 1, EQUIP_TICKS);
         equipOff = Math.min(equipOff + 1, EQUIP_TICKS);
         // a new swing started this tick
+        boolean destroying = mc.gameMode != null && mc.gameMode.isDestroying();
         if (p.swinging && p.swingTime == 0) {
-            swingCount++;
-            action = mc.gameMode != null && mc.gameMode.isDestroying() ? Action.MINE : pending;
+            action = destroying ? Action.MINE : pending;
+            // (while mining the game swings again and again: that is the mining loop, not new swings)
+            if (!destroying) {
+                swingCount++;
+                swingStart = ticks;
+                swingOffHand = p.swingingArm == net.minecraft.world.InteractionHand.OFF_HAND;
+            }
             com.lifelikemotion.client.fp.UseEffects.onSwing(p, action, usedAt);
         }
-        if (mc.gameMode != null && mc.gameMode.isDestroying()) action = Action.MINE;
+        if (destroying) action = Action.MINE;
+        if (destroying && !mining) {
+            mining = true;
+            mineStart = ticks;
+        } else if (!destroying && mining) {
+            mining = false;
+            mineStop = ticks;
+        }
     }
 
     static void onInteraction(InputEvent.InteractionKeyMappingTriggered e) {
@@ -146,13 +166,14 @@ public final class Motion {
     public static float landPos, landVel;
     static float landKick;
     static float lastYaw = Float.NaN, lastPitch;
-    static long lastNanos;
+    static float lastT = Float.NaN;
 
     /** Springs the hands' lag toward how fast the camera turns; call once per frame. */
     public static void frame(LocalPlayer p, float partial, float swayK) {
-        long now = System.nanoTime();
-        float dt = lastNanos == 0 ? 0.016f : Math.min((now - lastNanos) / 1e9f, 0.1f);
-        lastNanos = now;
+        // (game time, so the springs keep pace with everything else, slowed or paused)
+        float now = ticks + partial;
+        float dt = Float.isNaN(lastT) ? 0.016f : Mth.clamp((now - lastT) * 0.05f, 0, 0.1f);
+        lastT = now;
         float yaw = p.getViewYRot(partial), pitch = p.getViewXRot(partial);
         if (Float.isNaN(lastYaw) || dt <= 0) {
             lastYaw = yaw;
@@ -163,15 +184,15 @@ public final class Motion {
         lastYaw = yaw;
         lastPitch = pitch;
         // degrees per second turned -> how far the hands are pulled the other way (capped)
-        float tYaw = Mth.clamp(-dYaw / dt * 0.035f, -14, 14) * swayK;
-        float tPitch = Mth.clamp(-dPitch / dt * 0.03f, -10, 10) * swayK;
+        float tYaw = Mth.clamp(-dYaw / dt * 0.05f, -24, 24) * swayK;
+        float tPitch = Mth.clamp(-dPitch / dt * 0.045f, -18, 18) * swayK;
         // a damped spring: overshoots a little and settles, so the item feels like it has weight
         // landing / jumping: a springy dip that settles
         landVel += landKick;
         landKick = 0;
         landVel += (-landPos * 160 - landVel * 13) * dt;
         landPos += landVel * dt;
-        float k = 60, d = 11;
+        float k = 70, d = 8.5f;
         velYaw += ((tYaw - lagYaw) * k - velYaw * d) * dt;
         velPitch += ((tPitch - lagPitch) * k - velPitch * d) * dt;
         lagYaw += velYaw * dt;

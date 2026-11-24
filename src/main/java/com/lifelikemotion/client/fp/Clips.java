@@ -8,93 +8,112 @@ package com.lifelikemotion.client.fp;
 public final class Clips {
     private Clips() {}
 
-    /** sword, forehand: cocked up on the sword side, cut down and across, blade laid over, settle */
+    /** sword, forehand: cocked up and back over the shoulder, cut down across the screen, blade carried on
+     *  past and laid over, then a little bounce back to rest */
     public static final Clip SLASH_A = Clip.of(
-            0.00f, 0, 0, 0, 0, 0, 0,
-            0.14f, 0.06f, 0.13f, 0.05f, -28, 14, 22,
-            0.30f, -0.08f, 0.05f, -0.04f, -8, -5, 30,
-            0.42f, -0.24f, -0.02f, -0.10f, 6, -28, 34,
-            0.55f, -0.30f, -0.08f, -0.08f, 18, -36, 42,
-            0.76f, -0.10f, -0.04f, -0.02f, 6, -12, 14,
-            1.00f, 0, 0, 0, 0, 0, 0);
+            0.0f, 0, 0, 0, 0, 0, 0,
+            0.16f, 0.08f, 0.17f, 0.05f, -10, 6, -28,
+            0.3f, -0.05f, 0.1f, -0.04f, 0, -6, 15,
+            0.42f, -0.45f, -0.06f, -0.08f, 10, -16, 62,
+            0.52f, -0.62f, -0.12f, -0.06f, 12, -20, 80,
+            0.62f, -0.66f, -0.14f, -0.04f, 12, -20, 84,
+            0.8f, -0.25f, -0.05f, 0, 4, -8, 30,
+            0.92f, 0.03f, 0.01f, 0, -1, 1, -4,
+            1.0f, 0, 0, 0, 0, 0, 0);
 
-    /** sword, backhand: wound low across the body, swept back out and up, a little overshoot */
+    /** sword, backhand: wound low across the body, whipped back out and up to the sword side, a bounce back */
     public static final Clip SLASH_B = Clip.of(
-            0.00f, 0, 0, 0, 0, 0, 0,
-            0.16f, -0.28f, -0.04f, -0.07f, 10, -38, 34,
-            0.32f, -0.14f, 0.02f, -0.10f, 0, -15, 10,
-            0.46f, 0.03f, 0.08f, -0.08f, -14, 10, -22,
-            0.60f, 0.06f, 0.10f, -0.03f, -18, 14, -28,
-            0.80f, 0.02f, 0.03f, 0, -6, 4, -8,
-            1.00f, 0, 0, 0, 0, 0, 0);
+            0.0f, 0, 0, 0, 0, 0, 0,
+            0.18f, -0.40f, 0.04f, -0.06f, 4, -14, 72,
+            0.30f, -0.30f, 0.06f, -0.08f, 2, -8, 46,
+            0.42f, 0.04f, 0.14f, -0.08f, -6, 6, -20,
+            0.52f, 0.16f, 0.20f, -0.05f, -10, 10, -44,
+            0.62f, 0.18f, 0.21f, -0.03f, -11, 10, -48,
+            0.80f, 0.05f, 0.05f, 0, -3, 2, -10,
+            0.92f, -0.01f, -0.01f, 0, 1, 0, 3,
+            1.0f, 0, 0, 0, 0, 0, 0);
 
-    /** sword, third in the combo: drawn back, then a straight stab forward, held a beat */
+    /** sword, third in the combo: drawn back toward you, then thrust straight at the crosshair, held, pulled back */
     public static final Clip STAB = Clip.of(
-            0.00f, 0, 0, 0, 0, 0, 0,
-            0.18f, 0.03f, -0.02f, 0.04f, -6, 0, 6,
-            0.38f, -0.16f, 0.06f, -0.28f, 22, 10, 10,
-            0.55f, -0.16f, 0.06f, -0.26f, 20, 10, 10,
-            1.00f, 0, 0, 0, 0, 0, 0);
+            0.0f, 0, 0, 0, 0, 0, 0,
+            0.22f, 0.06f, -0.02f, 0.1f, -10, 4, 6,
+            0.4f, -0.3f, 0.1f, -0.3f, 55, 4, 10,
+            0.56f, -0.3f, 0.1f, -0.27f, 52, 4, 10,
+            0.8f, 0.02f, 0, 0.03f, -3, 0, 0,
+            1.0f, 0, 0, 0, 0, 0, 0);
 
-    /** axe: heaved up, hangs at the top, brought down hard, a small bounce off the target */
+    /** axe: heaved up high, hangs a beat, brought down hard, bounces off what it hit, settles */
     public static final Clip CHOP = Clip.of(
-            0.00f, 0, 0, 0, 0, 0, 0,
-            0.22f, 0.02f, 0.18f, -0.02f, -14, 4, -10,
-            0.30f, 0.02f, 0.19f, -0.02f, -16, 4, -10,
-            0.48f, -0.06f, -0.05f, -0.15f, 38, -6, 4,
-            0.56f, -0.06f, -0.03f, -0.14f, 32, -6, 4,
-            1.00f, 0, 0, 0, 0, 0, 0);
+            0.0f, 0, 0, 0, 0, 0, 0,
+            0.24f, -0.08f, 0.3f, 0.06f, -40, 4, -6,
+            0.36f, -0.08f, 0.32f, 0.06f, -45, 4, -6,
+            0.5f, -0.18f, -0.14f, -0.16f, 50, -6, 8,
+            0.57f, -0.18f, -0.1f, -0.15f, 42, -6, 8,
+            0.64f, -0.18f, -0.13f, -0.16f, 47, -6, 8,
+            0.86f, 0.01f, 0.01f, 0, -3, 0, 0,
+            1.0f, 0, 0, 0, 0, 0, 0);
 
-    /** pickaxe digging: a quick lift and a sharp strike into the block, again and again */
+    /** pickaxe digging (a loop while the block breaks): a lift, a sharp strike into the block, a jolt, back */
     public static final Clip MINE = Clip.of(
-            0.00f, 0, 0, 0, 0, 0, 0,
-            0.25f, 0, 0.10f, -0.01f, -12, 0, -4,
-            0.48f, -0.04f, -0.04f, -0.12f, 30, -4, 4,
-            0.56f, -0.04f, -0.02f, -0.10f, 24, -4, 4,
-            1.00f, 0, 0, 0, 0, 0, 0);
+            0.0f, 0, 0, 0, 0, 0, 0,
+            0.32f, -0.02f, 0.14f, 0.03f, -30, 2, -4,
+            0.56f, -0.12f, -0.06f, -0.18f, 40, -6, 6,
+            0.64f, -0.12f, -0.04f, -0.17f, 34, -6, 6,
+            0.72f, -0.12f, -0.05f, -0.18f, 37, -6, 6,
+            1.0f, 0, 0, 0, 0, 0, 0);
 
-    /** shovel: pulled back, pushed in, scooped up */
+    /** shovel: pulled back, driven in and down, scooped up and tipped, back */
     public static final Clip DIG = Clip.of(
             0.00f, 0, 0, 0, 0, 0, 0,
-            0.22f, 0.02f, -0.02f, 0.03f, -6, 0, -4,
-            0.45f, -0.05f, 0, -0.22f, 6, -4, 4,
-            0.62f, -0.05f, 0.06f, -0.18f, -26, -4, 4,
+            0.22f, 0.02f, 0.02f, 0.06f, -12, 0, -4,
+            0.46f, -0.06f, -0.09f, -0.26f, 20, -4, 4,
+            0.66f, -0.06f, 0.08f, -0.18f, -32, -4, 4,
+            0.86f, 0, 0.01f, 0, -2, 0, 0,
             1.00f, 0, 0, 0, 0, 0, 0);
 
-    /** hoe: raised, then pulled down toward you */
+    /** hoe: raised, then pulled down and back toward you */
     public static final Clip TILL = Clip.of(
             0.00f, 0, 0, 0, 0, 0, 0,
-            0.25f, 0, 0.12f, -0.04f, -30, 0, -4,
-            0.50f, -0.03f, -0.04f, 0.06f, 22, -4, 2,
+            0.26f, 0, 0.16f, -0.06f, -36, 0, -4,
+            0.52f, -0.04f, -0.06f, 0.08f, 26, -4, 2,
+            0.62f, -0.04f, -0.04f, 0.07f, 22, -4, 2,
             1.00f, 0, 0, 0, 0, 0, 0);
 
-    /** empty hand: a short cock back, a straight jab, back */
+    /** empty hand: a short cock back, a snappy jab at the crosshair, a beat, back */
     public static final Clip PUNCH = Clip.of(
             0.00f, 0, 0, 0, 0, 0, 0,
-            0.12f, 0.03f, -0.03f, 0.06f, 0, 0, 0,
-            0.32f, -0.20f, 0.10f, -0.42f, -10, 14, 0,
-            0.45f, -0.18f, 0.09f, -0.38f, -9, 12, 0,
+            0.14f, 0.04f, -0.04f, 0.08f, 4, -4, 0,
+            0.32f, -0.24f, 0.12f, -0.46f, -8, 16, 0,
+            0.46f, -0.22f, 0.11f, -0.42f, -7, 14, 0,
+            0.76f, 0.01f, 0, 0.03f, 0, 0, 0,
             1.00f, 0, 0, 0, 0, 0, 0);
 
-    /** putting a block down / using something: a firm push forward */
+    /** putting a block down / using something: pushed firmly forward, a squash, back with a little bounce */
     public static final Clip PLACE = Clip.of(
             0.00f, 0, 0, 0, 0, 0, 0,
-            0.35f, -0.05f, 0.04f, -0.18f, 14, -6, 0,
+            0.34f, -0.07f, 0.04f, -0.22f, 18, -8, 0,
+            0.46f, -0.07f, 0.03f, -0.20f, 14, -8, 0,
+            0.74f, 0.01f, 0, 0.03f, -3, 0, 0,
             1.00f, 0, 0, 0, 0, 0, 0);
 
-    /** snowballs, eggs, pearls: wound back over the shoulder, flung forward */
+    /** snowballs, eggs, pearls: wound right back over the shoulder, whipped forward, the arm following through
+     *  down and across, back */
     public static final Clip THROW = Clip.of(
-            0.00f, 0, 0, 0, 0, 0, 0,
-            0.25f, 0.05f, 0.12f, 0.14f, -40, 6, -6,
-            0.50f, -0.08f, 0.08f, -0.30f, 28, -6, 4,
-            1.00f, 0, 0, 0, 0, 0, 0);
+            0.0f, 0, 0, 0, 0, 0, 0,
+            0.26f, 0.12f, 0.26f, 0.2f, -55, 10, -12,
+            0.42f, -0.2f, 0.16f, -0.3f, 30, -10, 6,
+            0.56f, -0.45f, -0.22f, -0.18f, 60, -25, 20,
+            0.8f, -0.08f, -0.05f, 0, 10, -4, 4,
+            1.0f, 0, 0, 0, 0, 0, 0);
 
-    /** hitting with anything else (food, a torch, a block): a swat */
+    /** hitting with anything else (food, a torch, a block): a swat across */
     public static final Clip SWAT = Clip.of(
-            0.00f, 0, 0, 0, 0, 0, 0,
-            0.15f, 0.03f, 0.06f, 0.03f, -14, 4, -4,
-            0.40f, -0.08f, 0, -0.2f, 18, -10, 8,
-            1.00f, 0, 0, 0, 0, 0, 0);
+            0.0f, 0, 0, 0, 0, 0, 0,
+            0.18f, 0.06f, 0.1f, 0.04f, -14, 6, -14,
+            0.42f, -0.3f, -0.06f, -0.16f, 16, -14, 40,
+            0.54f, -0.34f, -0.08f, -0.14f, 18, -15, 44,
+            0.84f, 0.01f, 0, 0, -2, 0, 0,
+            1.0f, 0, 0, 0, 0, 0, 0);
 
 
     // ---------------------------------------------------------------- using things
@@ -195,6 +214,21 @@ public final class Clips {
             0.20f, 0.02f, -0.04f, 0.04f, 10, 0, 0,
             0.42f, -0.06f, 0.10f, -0.20f, -26, 10, 0,
             1.00f, 0, 0, 0, 0, 0, 0);
+
+    /** how long each plays, in ticks (the game's own swing is 6: ours take their time) */
+    public static int ticks(Clip c) {
+        if (c == SLASH_A || c == SLASH_B || c == STAB) return 10;
+        if (c == CHOP) return 13;
+        if (c == MINE) return 7;
+        if (c == DIG || c == TILL || c == THROW) return 11;
+        if (c == PUNCH) return 8;
+        if (c == PLACE) return 7;
+        if (c == SWAT) return 9;
+        if (c == POUR) return 18;
+        if (c == SCOOP || c == SPRINKLE || c == STRIP || c == CAST) return 14;
+        if (c == TOSS || c == PRESS) return 10;
+        return 12;
+    }
 
     public static final Clip[] ALL = {SLASH_A, SLASH_B, STAB, CHOP, MINE, DIG, TILL, PUNCH, PLACE, THROW, SWAT,
             POUR, SCOOP, STRIKE, SNIP, SPRINKLE, STRIP, FLATTEN, CAST, REEL, OPEN, PRESS, PULL, TOSS};

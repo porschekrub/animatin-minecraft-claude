@@ -2,6 +2,7 @@ package com.lifelikemotion.client;
 
 import com.lifelikemotion.LifelikeMotion;
 import net.minecraft.client.CameraType;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
@@ -245,6 +246,10 @@ public final class ClientSmoke {
             return t > 30;
         });
         mc.options.bobView().set(true);
+
+        // ---- films of first-person motion (for judging it as it moves)
+        film("film");
+        filmEat("filmeat");
 
         // ---- first person
         fp("fp_empty_idle", "air", null, 0);
@@ -640,6 +645,157 @@ public final class ClientSmoke {
             if (t == 26) shot(name);
             if (t == 27) com.lifelikemotion.client.fp.FirstPersonAnimator.testSwing = null;
             return t > 34;
+        });
+    }
+
+    static final int FILM = 400;
+    /** the film being shot (frames are taken every half tick, from the render loop), and the next frame's time */
+    static String filmName;
+    static float filmNext;
+    static int filmFrame;
+
+    @SubscribeEvent
+    public static void onRenderTick(TickEvent.RenderTickEvent e) {
+        if (e.phase != TickEvent.Phase.END || filmName == null) return;
+        float t = Motion.ticks + e.renderTickTime;
+        if (t < filmNext) return;
+        shot(String.format("%s_%04d", filmName, filmFrame++));
+        filmNext = (float) Math.floor(t * 2 + 1) / 2f;
+    }
+
+    static volatile long serverSleep;
+
+    /** (the built-in server is slowed down with the client, so eating and the like finish when they should) */
+    @SubscribeEvent
+    public static void onServerTick(TickEvent.ServerTickEvent e) {
+        if (e.phase != TickEvent.Phase.END || serverSleep <= 0) return;
+        try {
+            Thread.sleep(serverSleep);
+        } catch (InterruptedException ignored) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    /** slows the game's clock down (the test machine draws too few frames a second for a smooth film), or back */
+    static void slowClock(float msPerTick) {
+        serverSleep = (long) Math.max(0, msPerTick - 50);
+        try {
+            Minecraft mc = Minecraft.getInstance();
+            for (var f : Minecraft.class.getDeclaredFields()) {
+                if (f.getType() != net.minecraft.client.Timer.class) continue;
+                f.setAccessible(true);
+                Object timer = f.get(mc);
+                var ms = net.minecraft.client.Timer.class.getDeclaredField("msPerTick");
+                ms.setAccessible(true);
+                ms.setFloat(timer, msPerTick);
+            }
+        } catch (ReflectiveOperationException ex) {
+            LifelikeMotion.LOG.error("[client smoke] can't slow the clock", ex);
+        }
+    }
+
+    /**
+     * A film of first-person motion, one shot every tick ("film_0000"...): standing, walking, running with a jump,
+     * turning, a sword combo on a zombie, fists, eating, mining a block and throwing snowballs, all through the game's
+     * own input.
+     */
+    static void film(String name) {
+        if (!wanted(name)) return;
+        Minecraft mc = Minecraft.getInstance();
+        add(t -> {
+            var o = mc.options;
+            if (t == 0) {
+                o.setCameraType(CameraType.FIRST_PERSON);
+                cmd("gamemode creative");
+                cmd("kill @e[type=!player]");
+                cmd("tp @s 40 -60 30 0 10");
+                give("diamond_sword");
+                yaw = 0f;
+                pitch = 10f;
+            }
+            int f = t - 20;
+            if (f == 0) {
+                slowClock(450);
+                filmName = name;
+                filmFrame = 0;
+                filmNext = Motion.ticks;
+            }
+            if (f == FILM) {
+                filmName = null;
+                slowClock(50);
+            }
+            switch (f) {
+                case 30 -> o.keyUp.setDown(true);                                   // walk
+                case 70 -> { o.keySprint.setDown(true); mc.player.setSprinting(true); }   // run
+                case 92 -> o.keyJump.setDown(true);                                 // a jump while running
+                case 95 -> o.keyJump.setDown(false);
+                case 115 -> { o.keyUp.setDown(false); o.keySprint.setDown(false); mc.player.setSprinting(false); }
+                case 140 -> cmd("summon husk ^ ^ ^2.6 {NoAI:1b,PersistenceRequired:1b,Health:200f,Attributes:[{Name:\"generic.max_health\",Base:200}]}");
+                case 150, 164, 178 -> KeyMapping.click(o.keyAttack.getKey());       // a three-hit combo on it
+                case 196 -> give("air");
+                case 204, 213, 222, 231 -> KeyMapping.click(o.keyAttack.getKey());  // fists, in turn
+                case 240 -> { cmd("kill @e[type=husk]"); give("apple"); }
+                case 246 -> o.keyUse.setDown(true);                                 // eat
+                case 286 -> o.keyUse.setDown(false);
+                case 290 -> {
+                    cmd("gamemode survival");
+                    cmd("fill ~-1 ~ ~2 ~1 ~2 ~2 stone");
+                    give("diamond_pickaxe");
+                }
+                case 298 -> o.keyAttack.setDown(true);                              // mine the block in front
+                case 340 -> { o.keyAttack.setDown(false); give("snowball"); cmd("gamemode creative"); }
+                case 352, 370 -> KeyMapping.click(o.keyUse.getKey());               // throw
+                default -> {}
+            }
+            // a look round while standing: turn right and back
+            if (f >= 120 && f < 140) yaw = (float) (Math.sin((f - 120) / 20.0 * Math.PI) * 70);
+            if (f == 140) yaw = 0f;
+            if (f == FILM) {
+                o.keyUp.setDown(false);
+                o.keyAttack.setDown(false);
+                o.keyUse.setDown(false);
+                cmd("gamemode creative");
+                cmd("kill @e[type=!player]");
+            }
+            return f > FILM;
+        });
+    }
+
+    /** A film of eating and drinking: an apple, cooked chicken, a potion, a bowl of stew, a bucket of milk. */
+    static void filmEat(String name) {
+        if (!wanted(name)) return;
+        Minecraft mc = Minecraft.getInstance();
+        String[] food = {"apple", "cooked_chicken", "potion{Potion:\"minecraft:healing\"}", "mushroom_stew", "milk_bucket"};
+        add(t -> {
+            var o = mc.options;
+            if (t == 0) {
+                o.setCameraType(CameraType.FIRST_PERSON);
+                cmd("gamemode survival");
+                cmd("kill @e[type=!player]");
+                cmd("effect give @s minecraft:hunger 3 255 true");
+                cmd("tp @s 40 -60 30 0 10");
+                yaw = 0f;
+                pitch = 10f;
+            }
+            int f = t - 60;
+            if (f == 0) {
+                slowClock(450);
+                filmName = name;
+                filmFrame = 0;
+                filmNext = Motion.ticks;
+            }
+            int each = 60, i = f / each, g = f % each;
+            if (f >= 0 && i < food.length) {
+                if (g == 0) give(food[i]);
+                if (g == 8) o.keyUse.setDown(true);
+                if (g == 50) o.keyUse.setDown(false);
+            }
+            if (f == each * food.length) {
+                filmName = null;
+                slowClock(50);
+                cmd("gamemode creative");
+            }
+            return f > each * food.length;
         });
     }
 

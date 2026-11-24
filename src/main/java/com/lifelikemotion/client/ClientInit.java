@@ -23,6 +23,8 @@ public final class ClientInit {
         bus.addListener(Motion::onClientTick);
         bus.addListener(Motion::onInteraction);
         bus.addListener(FirstPersonAnimator::onRenderHand);
+        bus.addListener(com.lifelikemotion.client.fp.SwingFx::onAttack);
+        bus.addListener(com.lifelikemotion.client.fp.SwingFx.Camera::onAngles);
         bus.addListener(com.lifelikemotion.client.emote.Emotes::onClientTick);
         bus.addListener(com.lifelikemotion.client.fp.Flourish::onClientTick);
         bus.addListener(com.lifelikemotion.client.fp.ItemPhysics::onClientTick);

@@ -25,6 +25,8 @@ public class LMConfigScreen extends Screen {
     static final Row[] ROWS = {
             new Row(0, "First person", "Custom animations", "Your own swings, sway and bob (off: the game's)", LMConfig.FP_ENABLED),
             new Row(0, null, "Arm holds the item", "Show your arm holding what you carry", LMConfig.FP_ARMS_WITH_ITEMS),
+            new Row(0, null, "Both hands", "Both fists up when empty, your free hand at the side", LMConfig.FP_BOTH_HANDS),
+            new Row(0, null, "Swing trails", "A trail behind your blade when you swing", LMConfig.FP_TRAILS),
             new Row(0, null, "Show off when still", "Twirls, tosses and looks when you stand still (key I any time)", LMConfig.FP_IDLE_SHOW),
             new Row(0, null, "Physics", "Inertia, floating when falling, cloth, swinging lanterns, sloshing liquids", LMConfig.FP_PHYSICS),
             new Row(0, null, "Use animations", "Pouring, scooping, striking flint, shears, bone meal, casting a rod...", LMConfig.FP_USE_ANIMS),
@@ -35,6 +37,7 @@ public class LMConfigScreen extends Screen {
             new Row(1, null, "Sway", "How much your hands lag when you look around", LMConfig.FP_SWAY),
             new Row(1, null, "Bob", "How much your hands bob when you walk, run and jump", LMConfig.FP_BOB),
             new Row(1, null, "Swing size", "How big slashes, chops and punches are", LMConfig.FP_SWING),
+            new Row(1, null, "Camera kick", "The camera kicks with swings and shakes on hits", LMConfig.FP_CAMERA),
             new Row(2, "Body", "Body animations", "Lively movement in third person", LMConfig.BODY_ENABLED),
             new Row(2, null, "Other players too", "Animate other players as well", LMConfig.BODY_OTHER_PLAYERS),
             new Row(2, null, "Strength", "How strong the body animations are", LMConfig.BODY_INTENSITY),

@@ -10,7 +10,8 @@ public final class LMConfig {
 
     // first person
     public static final ForgeConfigSpec.BooleanValue FP_ENABLED;
-    public static final ForgeConfigSpec.BooleanValue FP_ARMS_WITH_ITEMS;
+    public static final ForgeConfigSpec.BooleanValue FP_ARMS_WITH_ITEMS, FP_BOTH_HANDS, FP_TRAILS;
+    public static final ForgeConfigSpec.DoubleValue FP_CAMERA;
     public static final ForgeConfigSpec.BooleanValue FP_IDLE_SHOW;
     public static final ForgeConfigSpec.BooleanValue FP_AURAS;
     public static final ForgeConfigSpec.BooleanValue FP_PHYSICS, FP_USE_ANIMS, FP_REACTIONS, FP_WORLD_ACTIONS;
@@ -32,7 +33,12 @@ public final class LMConfig {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
         b.comment("First person: your arms, what they hold and how they move").push("firstPerson");
         FP_ENABLED = b.comment("Custom first-person animations (off = the game's own)").define("enabled", true);
-        FP_ARMS_WITH_ITEMS = b.comment("Show your arm holding the item").define("showArmWithItem", false);
+        FP_ARMS_WITH_ITEMS = b.comment("Show your arm holding the item").define("armHoldsItem", true);
+        FP_BOTH_HANDS = b.comment("Both fists up when your hands are empty, and your free hand at the side of the screen")
+                .define("bothHands", true);
+        FP_TRAILS = b.comment("A trail behind your blade when you swing").define("swingTrails", true);
+        FP_CAMERA = b.comment("How much the camera kicks with your swings and shakes when you hit something (0 = never)")
+                .defineInRange("cameraKick", 1.0, 0.0, 2.0);
         FP_IDLE_SHOW = b.comment("Show off what you hold (twirls, tosses...) when you stand still for a moment; the inspect key (I) always works")
                 .define("idleShowOff", true);
         FP_AURAS = b.comment("Sparkles, embers and enchanting glyphs around legendary and enchanted things you hold").define("auras", true);

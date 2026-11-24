@@ -17,6 +17,9 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.event.RenderHandEvent;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 /**
  * First-person hands with weight: your arm holds what you carry, swings are big and readable (sword slashes that
@@ -30,8 +33,11 @@ public final class FirstPersonAnimator {
     static float lastFrameKey = Float.NaN;
     /** client test: holds a swing at this point so a screenshot catches it */
     public static Float testSwing;
-    /** where the arm sits relative to the item (x toward the arm's side, y up, z toward the camera) */
-    public static float[] TOOL_GRIP = {0, 0, 0}, SMALL_GRIP = {0, -0.08f, -0.15f};
+    /**
+     * Where a held item sits (the game's is 0.56, -0.52, -0.72) and how big it is drawn: a little higher, nearer the
+     * middle and bigger than the game's, so what you hold is there to be seen.
+     */
+    public static float HX = 0.40f, HY = -0.38f, HZ = -0.72f, SIZE = 1.4f;
 
     public static void onRenderHand(RenderHandEvent e) {
         Minecraft mc = Minecraft.getInstance();
@@ -63,12 +69,20 @@ public final class FirstPersonAnimator {
             }
             return;
         }
-        // an empty off hand is not drawn (as in the game), unless both hands are busy (swimming, climbing, reins...)
-        if (kind == ItemKind.EMPTY && hand == InteractionHand.OFF_HAND && (!Activities.bothArms(partial) || p.isInvisible())) {
+        // an empty off hand: up in a guard at the side of the screen (both fists up when both hands are empty), or not
+        // drawn at all when asked (unless both hands are busy: swimming, climbing, reins... or running, both arms pump)
+        float runArm = Mth.clamp((Motion.lerp(Motion.sprintO, Motion.sprint, partial) - 0.2f) / 0.6f, 0, 1)
+                * (p.isUsingItem() ? 0 : 1);
+        boolean offRun = kind == ItemKind.EMPTY && hand == InteractionHand.OFF_HAND && runArm > 0.01f;
+        ItemKind mainKind = ItemKind.of(p.getMainHandItem());
+        boolean guard = kind == ItemKind.EMPTY && hand == InteractionHand.OFF_HAND && LMConfig.FP_BOTH_HANDS.get()
+                && mainKind != ItemKind.SPECIAL && !(p.isUsingItem() && p.getUsedItemHand() == InteractionHand.MAIN_HAND);
+        if (kind == ItemKind.EMPTY && hand == InteractionHand.OFF_HAND && (!Activities.bothArms(partial) && !offRun && !guard || p.isInvisible())) {
             e.setCanceled(true);
             return;
         }
         PoseStack ps = e.getPoseStack();
+        Arm.captureRoot(ps);
         float swingProgress = testSwing != null && hand == InteractionHand.MAIN_HAND ? testSwing : e.getSwingProgress();
         // faster than the game's own swing if asked (never slower: the swing would be cut short)
         float speed = (float) (double) LMConfig.FP_SPEED.get();
@@ -79,18 +93,19 @@ public final class FirstPersonAnimator {
         ps.pushPose();
         try {
             rig(ps, p, s, kind, using, partial);
-            float px = kind == ItemKind.EMPTY ? 0.64f : 0.56f, py = kind == ItemKind.EMPTY ? -0.6f : -0.52f;
+            float px = kind == ItemKind.EMPTY ? 0.64f : HX, py = kind == ItemKind.EMPTY ? -0.6f : HY, pz = kind == ItemKind.EMPTY ? -0.72f : HZ;
             boolean mainHand = hand == InteractionHand.MAIN_HAND;
+            if (offRun && !guard && !Activities.bothArms(partial)) ps.translate(0, -0.55f * (1 - runArm * runArm * (3 - 2 * runArm)), 0);
             if (!p.isAutoSpinAttack()) {
                 // physics (inertia, floating, flutter, pendulum, slosh), then what you're doing with the world
                 float[] ph = ItemPhysics.pose(mainHand, partial);
-                Clip.apply(ps, new float[]{ph[0] * s, ph[1], ph[2], ph[3], ph[4] * s, ph[5] * s}, s, 1, px, py, -0.72f);
-                Clip.apply(ps, Activities.pose(p, mainHand, s, kind, partial), s, 1, px, py, -0.72f);
+                Clip.apply(ps, new float[]{ph[0] * s, ph[1], ph[2], ph[3], ph[4] * s, ph[5] * s}, s, 1, px, py, pz);
+                Clip.apply(ps, Activities.pose(p, mainHand, s, kind, partial), s, 1, px, py, pz);
             }
             if (!using && !p.isAutoSpinAttack()) {
                 // how it's carried (standing / walking / running), and a show-off move when standing still
-                Stance.apply(ps, p, kind, s, partial, px, py, -0.72f);
-                if (mainHand) Flourish.apply(ps, s, partial, px, py, -0.72f);
+                Stance.apply(ps, p, kind, s, partial, px, py, pz);
+                if (mainHand) Flourish.apply(ps, s, partial, px, py, pz);
             }
             if (kind == ItemKind.SPECIAL || (using && !eating) || p.isAutoSpinAttack()) {
                 ((ItemInHandRendererInvoker) mc.getEntityRenderDispatcher().getItemInHandRenderer()).lm$renderArmWithItem(
@@ -100,7 +115,8 @@ public final class FirstPersonAnimator {
                 float equip = Motion.equip(hand == InteractionHand.MAIN_HAND, partial);
                 ps.translate(0, -0.1f * e.getEquipProgress() * (1 - equip), 0);
                 if (kind == ItemKind.EMPTY) {
-                    if (!p.isInvisible()) emptyArm(ps, e.getMultiBufferSource(), e.getPackedLight(), p, right, swingProgress, equip);
+                    if (!p.isInvisible()) emptyArm(ps, e.getMultiBufferSource(), e.getPackedLight(), p, right, equip,
+                            hand == InteractionHand.OFF_HAND && mainKind != ItemKind.EMPTY, partial);
                 } else held(ps, e.getMultiBufferSource(), e.getPackedLight(), p, right, stack, kind, swingProgress, equip, eating, partial);
             }
         } finally {
@@ -123,41 +139,62 @@ public final class FirstPersonAnimator {
         float water = Motion.lerp(Motion.waterO, Motion.water, partial);
         float aim = using ? 0.35f : 1; // aiming a bow or eating: steadier
         float phase = Mth.lerp(partial, p.walkDistO, p.walkDist) * Mth.PI;
-        float amt = walk * bobK * (1 + sprint * 0.5f) * aim;
+        float amt = walk * bobK * (1 + sprint * 0.8f) * aim;
         float ly = Motion.lagYaw * aim, lp = Motion.lagPitch * aim;
-        // slides: trailing the camera, a soft figure of eight when walking, the jump, the landing spring, sneaking
-        ps.translate(-ly * 0.0016f + Mth.sin(phase) * 0.010f * amt,
-                lp * 0.0014f - Math.abs(Mth.cos(phase)) * 0.016f * amt - air * 0.03f * bobK + Motion.landPos * bobK
-                        - 0.02f * sneak + Mth.sin(t * 0.075f) * 0.004f * bobK
+        // each step: a bouncy dip (sharp at the footfall, round at the top) and a sway from side to side
+        float dip = (float) Math.pow(Math.abs(Mth.cos(phase)), 0.7);
+        float sway = Mth.sin(phase);
+        // slides: trailing the camera, the step, the jump, the landing spring, sneaking, breathing, treading water
+        ps.translate(-ly * 0.0018f + sway * 0.022f * amt,
+                lp * 0.0016f - dip * 0.034f * amt - air * 0.045f * bobK + Motion.landPos * 1.3f * bobK
+                        - 0.03f * sneak + Mth.sin(t * 0.075f) * 0.007f * bobK
                         + Mth.sin(t * 0.1f) * 0.012f * water,
-                0.02f * sneak);
+                0.03f * sneak + sprint * 0.02f * walk);
         // turns: about the hand
-        float yaw = ly * 0.35f;
-        float pitch = lp * 0.3f + Math.abs(Mth.cos(phase)) * 1.2f * amt + air * 4 * bobK - Motion.landPos * 60 * bobK
-                + Mth.sin(t * 0.075f + 1) * 0.5f * bobK;
-        float roll = ly * 0.25f + Mth.sin(phase) * 1.6f * amt + s * Mth.sin(t * 0.08f) * 3 * water;
-        Clip.apply(ps, new float[]{0, 0, 0, pitch, s * yaw, s * roll}, s, 1, 0.56f, -0.52f, -0.72f);
+        float yaw = ly * 0.4f + sway * 1.2f * amt;
+        float pitch = lp * 0.35f + dip * 2.6f * amt + air * 6 * bobK - Motion.landPos * 80 * bobK
+                + Mth.sin(t * 0.075f + 1) * 0.9f * bobK;
+        float roll = ly * 0.3f + sway * 3.4f * amt + s * Mth.sin(t * 0.08f) * 3 * water + Mth.sin(t * 0.05f) * 0.6f * bobK;
+        Clip.apply(ps, new float[]{0, 0, 0, pitch, s * yaw, s * roll}, s, 1, HX, HY, HZ);
     }
 
-    // ------------------------------------------------------------------ an empty hand: jab punches
-    static void emptyArm(PoseStack ps, MultiBufferSource buf, int light, AbstractClientPlayer p, boolean right, float sw, float equip) {
+    // ------------------------------------------------------------------ an empty hand: fists up
+    /** where an empty hand's fist rests (x toward its side, y up, z toward you), and the off hand's guard beside a held item */
+    public static float[] FIST = {0.30f, -0.32f, -0.70f}, GUARD = {0.56f, -0.42f, -0.68f};
+
+    static void emptyArm(PoseStack ps, MultiBufferSource buf, int light, AbstractClientPlayer p, boolean right, float equip,
+                         boolean guard, float partial) {
         float s = right ? 1 : -1;
         float k = (float) (double) LMConfig.FP_SWING.get();
-        equip(ps, s, equip, 0.64f, -0.6f, -0.72f);
-        if (sw > 0) {
-            Clip own = actionClip(Motion.action);
-            Clip c = testClip != null ? testClip : own != null ? own : Motion.action == Motion.Action.USE ? Clips.PLACE : Clips.PUNCH;
-            Clip.apply(ps, c.sample(sw), s, k, 0.64f, -0.6f, -0.72f);
-        }
-        vanillaArm(ps, buf, light, p, right);
+        float[] f = guard ? GUARD : FIST;
+        equip(ps, s, equip, f[0], f[1], f[2]);
+        ps.translate(s * f[0], f[1], f[2]);
+        // breathing: the fists rise and fall a little, each in its own time
+        float t = Motion.ticks + partial;
+        ps.translate(0, Mth.sin(t * 0.09f + (right ? 0 : 1.7f)) * 0.006f, 0);
+        float[] q = swing(p, hand(p, right), ItemKind.EMPTY, partial);
+        if (q != null) Clip.apply(ps, q, s, k, 0, 0, 0);
+        Matrix4f m = ps.last().pose();
+        Vector3f fist = Arm.toRoot(m, 0, 0, 0);
+        Arm.draw(ps, buf, light, p, right, fist, outer(m, s));
+    }
+
+    /** which way the back of the hand faces: as at rest, turned with the hand */
+    static Vector3f outer(Matrix4f m, float s) {
+        Vector3f rest = Arm.restOuter(s);
+        return Arm.dirToRoot(m, rest.x, rest.y, rest.z);
     }
 
     /** Switching to an item: it swings up into the hand from below, turning as it comes (instead of a straight drop). */
     static void equip(PoseStack ps, float s, float equip, float px, float py, float pz) {
         if (equip <= 0.001f) return;
-        float e = equip * equip * (3 - 2 * equip);
-        ps.translate(s * 0.08f * e, -0.6f * equip, 0.05f * e);
-        Clip.apply(ps, new float[]{0, 0, 0, 30 * e, -12 * e, -20 * e}, s, 1, px, py, pz);
+        // (equip runs 1 -> 0) springs up from below, overshoots a touch and settles
+        float x = 1 - equip;
+        float c1 = 1.9f, c3 = c1 + 1;
+        float back = 1 + c3 * (float) Math.pow(x - 1, 3) + c1 * (float) Math.pow(x - 1, 2);   // ease out, with overshoot
+        float e = 1 - back;
+        ps.translate(s * 0.10f * e, -0.62f * e, 0.06f * e);
+        Clip.apply(ps, new float[]{0, 0, 0, 34 * e, -14 * e, -24 * e}, s, 1, px, py, pz);
     }
 
     // ------------------------------------------------------------------ an item in the hand
@@ -165,38 +202,157 @@ public final class FirstPersonAnimator {
                      float sw, float equip, boolean eating, float partial) {
         float s = right ? 1 : -1;
         float k = (float) (double) LMConfig.FP_SWING.get();
-        if (eating) eat(ps, p, s, stack, kind, partial);
-        // the hand's place (the game's own), then the switch-in
-        equip(ps, s, equip, 0.56f, -0.52f, -0.72f);
-        ps.translate(s * 0.56f, -0.52f, -0.72f);
-        if (!eating && sw > 0) {
-            Clip c = testClip != null ? testClip : clipFor(kind);
-            Clip.apply(ps, c.sample(sw), s, kind == ItemKind.PICKAXE && Motion.action != Motion.Action.MINE ? k * 0.8f : k, 0, 0, 0);
-        }
-        if (eating && (kind == ItemKind.DRINK || soup(stack))) {
-            // a drink is tipped up to the lips; a bucket of milk much further; soup is lifted and slurped
-            float m = toMouth(p, stack, partial);
-            boolean bucket = stack.getItem() instanceof net.minecraft.world.item.MilkBucketItem;
-            float tip = bucket ? -50 : soup(stack) ? -20 : -28;
-            ps.translate(0, (bucket ? 0.12f : 0.06f) * m, 0);
-            ps.mulPose(Axis.XP.rotationDegrees(tip * m));
-            if (soup(stack)) ps.translate(0, Mth.sin((Motion.ticks + partial) * 0.6f) * 0.012f * m, 0);
-        }
-        if (kind == ItemKind.LIGHT && !ItemPhysics.hanging(hand(p, right)) || kind == ItemKind.LIGHT && !LMConfig.FP_PHYSICS.get()) {
-            // a lantern / torch swings on the hand as you turn
-            ps.mulPose(Axis.ZP.rotationDegrees(Motion.lagYaw * 0.9f));
-            ps.mulPose(Axis.XP.rotationDegrees(Motion.lagPitch * 0.7f));
-        }
-        if (LMConfig.FP_ARMS_WITH_ITEMS.get() && !p.isInvisible()) {
+        if (kind == ItemKind.PICKAXE && Motion.action != Motion.Action.MINE) k *= 0.8f;
+        // the hand's place, then the switch-in
+        equip(ps, s, equip, HX, HY, HZ);
+        ps.translate(s * HX, HY, HZ);
+        Matrix4f base = new Matrix4f(ps.last().pose());
+        float[] q = eating ? null : swing(p, hand(p, right), kind, partial);
+        if (q != null) Clip.apply(ps, q, s, k, 0, 0, 0);
+        Matrix4f afterSwing = new Matrix4f(ps.last().pose());
+        if (eating) {
+            // (the item's middle, here: eating moves and turns it about that)
             ps.pushPose();
-            float[] g = kind.tool() || kind == ItemKind.BLOCK ? TOOL_GRIP : SMALL_GRIP;
-            ps.translate(s * g[0], g[1], g[2]);
-            ps.translate(s * -0.56f, 0.52f, 0.72f);
-            holdingArm(ps, buf, light, p, right);
+            ps.scale(SIZE, SIZE, SIZE);
+            Object[] mp0 = Arm.modelPose(ps, p, stack, right);
             ps.popPose();
+            Vector3f mid = Arm.points((net.minecraft.client.resources.model.BakedModel) mp0[0], stack, kind).mid();
+            Vector4f c = new Vector4f(mid, 1);
+            ((Matrix4f) mp0[1]).transform(c);
+            new Matrix4f(ps.last().pose()).invert().transform(c);
+            eat(ps, p, s, stack, kind, partial, new Vector3f(c.x, c.y, c.z));
         }
+        wrist(ps, p, s, kind, partial);
+        ps.scale(SIZE, SIZE, SIZE);
+        // the item, and the arm whose fist closes round its grip
+        Object[] mp = Arm.modelPose(ps, p, stack, right);
+        Arm.Points pts = Arm.points((net.minecraft.client.resources.model.BakedModel) mp[0], stack, kind);
+        Matrix4f model = (Matrix4f) mp[1];
         Minecraft.getInstance().getEntityRenderDispatcher().getItemInHandRenderer().renderItem(p, stack,
                 right ? ItemDisplayContext.FIRST_PERSON_RIGHT_HAND : ItemDisplayContext.FIRST_PERSON_LEFT_HAND, !right, ps, buf, light);
+        if (LMConfig.FP_ARMS_WITH_ITEMS.get() && !p.isInvisible()) {
+            if (eating && twoHanded(stack)) {
+                // a bowl or a bucket is held in both hands, one at each side (the free hand, if it is free)
+                Vector3f a = Arm.toRoot(model, pts.lo().x, pts.lo().y, pts.lo().z), b = Arm.toRoot(model, pts.hi().x, pts.hi().y, pts.hi().z);
+                boolean aMine = a.x * s > b.x * s;
+                Arm.draw(ps, buf, light, p, right, aMine ? a : b, outer(afterSwing, s));
+                ItemStack other = right == (p.getMainArm() == HumanoidArm.RIGHT) ? p.getOffhandItem() : p.getMainHandItem();
+                if (other.isEmpty()) Arm.draw(ps, buf, light, p, !right, aMine ? b : a, Arm.restOuter(-s));
+            } else {
+                Vector3f g = pts.grip();
+                Arm.draw(ps, buf, light, p, right, Arm.toRoot(model, g.x, g.y, g.z), outer(afterSwing, s));
+            }
+        }
+        // the blade's trail while it cuts
+        if (q != null && lastClip[hand(p, right) ? 0 : 1] != null && SwingFx.trails(kind)) {
+            int h = hand(p, right) ? 0 : 1;
+            Matrix4f after = new Matrix4f(afterSwing).invert().mul(model);
+            SwingFx.trail(ps, buf, lastClip[h], lastU[h], s, k, base, after, pts, stack);
+        }
+    }
+
+    /**
+     * The wrist: what you hold has weight, so it tips behind as you turn and look up and down and wobbles with each
+     * step, a lantern or torch most of all.
+     */
+    static void wrist(PoseStack ps, AbstractClientPlayer p, float s, ItemKind kind, float partial) {
+        float sway = (float) (double) LMConfig.FP_SWAY.get();
+        float loose = kind == ItemKind.LIGHT ? 1.3f : kind.tool() ? 1f : 0.8f;
+        float walk = Motion.lerp(Motion.walkO, Motion.walk, partial) * (float) (double) LMConfig.FP_BOB.get();
+        float phase = Mth.lerp(partial, p.walkDistO, p.walkDist) * Mth.PI;
+        float roll = (-Motion.lagYaw * 1.5f + Mth.sin(phase) * 5 * walk) * loose * sway;
+        float pitch = (-Motion.lagPitch * 1.1f + Math.abs(Mth.cos(phase)) * 5 * walk) * loose * sway;
+        ps.mulPose(Axis.ZP.rotationDegrees(roll));
+        ps.mulPose(Axis.XP.rotationDegrees(pitch));
+    }
+
+    // ------------------------------------------------------------------ swings, on our own clock
+    static final long[] seenStart = {Long.MIN_VALUE, Long.MIN_VALUE};
+    static final float[][] lastPose = new float[2][6], fromPose = new float[2][6];
+    static final float[] fromAt = {-1000, -1000};
+
+    /** the mining loop's length for a clip (ticks) */
+    static int loopTicks(Clip c) {
+        return c == Clips.CHOP ? 10 : c == Clips.DIG ? 9 : Clips.ticks(c);
+    }
+
+    /** the clip each hand is playing and how far in it is (for the trail and the strike) */
+    static final Clip[] lastClip = new Clip[2];
+    static final float[] lastU = new float[2];
+
+    /**
+     * This hand's swing pose now, or null when it isn't swinging. A swing plays its clip over its own time (longer
+     * than the game's quick swing) and stops dead for a moment when it hits something; mining loops the clip for as long
+     * as a block is being broken, finishing the stroke when you stop; a new swing in the middle of one blends out of
+     * where the hand is. With both hands empty the fists punch in turn.
+     */
+    static float[] swing(AbstractClientPlayer p, boolean main, ItemKind kind, float partial) {
+        int h = main ? 0 : 1;
+        float s = main == (p.getMainArm() == HumanoidArm.RIGHT) ? 1 : -1;
+        float now = Motion.ticks + partial;
+        if (testSwing != null) {
+            if (!main) return null;
+            Clip c = testClip != null ? testClip : clipFor(kind);
+            lastClip[h] = c;
+            lastU[h] = testSwing;
+            return c.sample(testSwing);
+        }
+        float[] q = null;
+        Clip playing = null;
+        float u = 0;
+        if (main && (Motion.mining || Motion.mineStop >= Motion.mineStart)) {
+            Clip c = testClip != null ? testClip : clipFor(kind);
+            int n = loopTicks(c);
+            float a = now - Motion.mineStart;
+            long end = Motion.mining ? Long.MAX_VALUE
+                    : Motion.mineStart + (long) Math.ceil((Motion.mineStop - Motion.mineStart) / (double) n) * n;
+            if (now < end) {
+                u = (a % n) / n;
+                q = c.sample(u);
+                playing = c;
+            }
+        }
+        // whose turn: the hand that swung (with both hands empty, the fists take turns)
+        boolean mine = main != Motion.swingOffHand;
+        boolean fists = p.getMainHandItem().isEmpty() && p.getOffhandItem().isEmpty() && LMConfig.FP_BOTH_HANDS.get();
+        if (fists && Math.floorMod(Motion.swingCount, 2) == 1 && Motion.action == Motion.Action.ATTACK) mine = !mine;
+        if (q == null && mine) {
+            Clip c = testClip != null ? testClip : clipFor(kind);
+            float age = SwingFx.clock(now, Motion.swingStart) - Motion.swingStart;
+            int n = Math.max(1, Math.round(Clips.ticks(c) / Math.max(1f, (float) (double) LMConfig.FP_SPEED.get())));
+            if (age >= 0 && age < n) {
+                if (seenStart[h] != Motion.swingStart) {
+                    // a new swing: blend out of wherever the last one left the hand
+                    seenStart[h] = Motion.swingStart;
+                    System.arraycopy(lastPose[h], 0, fromPose[h], 0, 6);
+                    fromAt[h] = Motion.swingStart;
+                    lastU[h] = 0;
+                    lastClip[h] = null;
+                }
+                u = age / n;
+                q = c.sample(u);
+                playing = c;
+                float b = Mth.clamp((now - fromAt[h]) / 2.5f, 0, 1);
+                b = b * b * (3 - 2 * b);
+                for (int i = 0; i < 6; i++) q[i] = Mth.lerp(b, fromPose[h][i], q[i]);
+            }
+        }
+        if (q == null) {
+            java.util.Arrays.fill(lastPose[h], 0);
+            lastClip[h] = null;
+            return null;
+        }
+        // the strike lands: kick the camera (and, if it hit something, freeze and shake)
+        float at = SwingFx.impact(playing);
+        if (lastClip[h] == playing && at >= 0) {
+            float prev = lastU[h];
+            boolean crossed = prev < at && u >= at || prev > u && u >= at;   // (a mining loop wraps round)
+            if (crossed) SwingFx.landed(playing, s);
+        }
+        lastClip[h] = playing;
+        lastU[h] = u;
+        System.arraycopy(q, 0, lastPose[h], 0, 6);
+        return q;
     }
 
     /** The swings that belong to an action rather than to what is held (pouring, opening a door...), or null. */
@@ -225,8 +381,9 @@ public final class FirstPersonAnimator {
         Clip own = actionClip(a);
         if (own != null) return own;
         if (a == Motion.Action.USE) return kind == ItemKind.THROWABLE ? Clips.THROW : Clips.PLACE;
+        if (kind == ItemKind.EMPTY) return Clips.PUNCH;
         return switch (kind) {
-            case SWORD -> a == Motion.Action.MINE ? Clips.MINE : switch (Math.floorMod(Motion.swingCount, 3)) {
+            case SWORD -> a == Motion.Action.MINE ? Clips.MINE : switch (Math.floorMod(Motion.swingCount - 1, 3)) {
                 case 0 -> Clips.SLASH_A;
                 case 1 -> Clips.SLASH_B;
                 default -> Clips.STAB;
@@ -241,23 +398,65 @@ public final class FirstPersonAnimator {
         };
     }
 
-    /** bringing food or a drink to the mouth, chewing / sipping */
-    static void eat(PoseStack ps, AbstractClientPlayer p, float s, ItemStack stack, ItemKind kind, float partial) {
-        float f = p.getUseItemRemainingTicks() - partial + 1;
-        float f1 = f / stack.getUseDuration();
-        float f3 = 1 - (float) Math.pow(f1, 27);
-        if (f1 < 0.8f) {
-            boolean drink = kind == ItemKind.DRINK || soup(stack);
-            float bob = drink ? Mth.sin(f * 0.5f) * 0.02f
-                    : nibble(stack) ? Math.abs(Mth.cos(f / 2f * Mth.PI)) * 0.05f
-                    : Math.abs(Mth.cos(f / 4f * Mth.PI) * 0.08f);
-            ps.translate(0, bob, nibble(stack) ? -Math.abs(Mth.cos(f / 2f * Mth.PI)) * 0.03f : 0);
-            if (!drink) ps.mulPose(Axis.ZP.rotationDegrees(Mth.sin(f * (nibble(stack) ? 1.6f : 0.8f)) * 4));
+    /** a bowl of soup or a bucket of milk: held up in both hands */
+    static boolean twoHanded(ItemStack st) {
+        return soup(st) || st.getItem() instanceof net.minecraft.world.item.MilkBucketItem;
+    }
+
+    /**
+     * Eating and drinking, done properly: food is brought round to the middle, up to your mouth, and bitten into, a
+     * bite every four ticks as the game crunches (pushed in, the hand jolting, crumbs flying), with a last big bite;
+     * a bowl of soup comes up in both hands and is tipped toward you so you see into it, and gulped from; a bottle is
+     * tipped right up and drunk; a bucket of milk is lifted in both hands and tipped up. Afterwards it all drops back
+     * into the hand with a little bounce.
+     */
+    static void eat(PoseStack ps, AbstractClientPlayer p, float s, ItemStack stack, ItemKind kind, float partial, Vector3f mid) {
+        float used = p.getTicksUsingItem() + partial;
+        float total = stack.getUseDuration();
+        float left = p.getUseItemRemainingTicks() - partial;
+        boolean bowl = soup(stack);
+        boolean bucket = stack.getItem() instanceof net.minecraft.world.item.MilkBucketItem;
+        boolean drink = kind == ItemKind.DRINK && !bowl && !bucket;
+        // up to the mouth: quick, with a little overshoot
+        float x = Mth.clamp(used / 5f, 0, 1);
+        float m = 1 + 2.2f * (float) Math.pow(x - 1, 3) + 1.2f * (float) Math.pow(x - 1, 2);
+        // where its middle goes (camera space: x right, y up, z toward you): just below the middle of the screen
+        Vector3f mouth = bowl ? new Vector3f(0, -0.20f, -0.50f) : bucket ? new Vector3f(0, -0.13f, -0.68f)
+                : drink ? new Vector3f(s * 0.03f, -0.11f, -0.56f) : new Vector3f(s * 0.02f, -0.15f, -0.54f);
+        Vector4f t = new Vector4f(mouth, 1);
+        Arm.ROOT.transform(t);
+        new Matrix4f(ps.last().pose()).invert().transform(t);
+        ps.translate((t.x - mid.x) * m, (t.y - mid.y) * m, (t.z - mid.z) * m);
+        float beat = (used % 4f) / 4f;                                   // the game's crunch / gulp every four ticks
+        float hit = beat < 0.3f ? beat / 0.3f : Math.max(0, 1 - (beat - 0.3f) / 0.7f);
+        hit = hit * hit * (3 - 2 * hit) * m * Mth.clamp((used - 5) / 2f, 0, 1);
+        // everything below turns about the item's middle
+        ps.translate(mid.x, mid.y, mid.z);
+        if (bowl || bucket) {
+            // tipped toward you (you see into it), tipped further with each gulp
+            ps.mulPose(Axis.YP.rotationDegrees(-s * 10 * m));
+            ps.mulPose(Axis.XP.rotationDegrees((bucket ? 50 : 38) * m + hit * 8));
+            ps.translate(0, hit * 0.012f, hit * 0.015f);
+        } else if (drink) {
+            // the bottle tipped right up to the lips, the bottom raised; a gulp lifts it a little more
+            ps.mulPose(Axis.YP.rotationDegrees(-s * 18 * m));
+            ps.mulPose(Axis.XP.rotationDegrees(62 * m + hit * 8));
+            ps.mulPose(Axis.ZP.rotationDegrees(s * 12 * m));
+            ps.translate(0, hit * 0.01f, 0);
+        } else {
+            // food: turned to face you; each bite pushes it in and up, a jolt and a little shake
+            ps.mulPose(Axis.YP.rotationDegrees(-s * 28 * m));
+            ps.mulPose(Axis.XP.rotationDegrees(-16 * m + hit * 14));
+            ps.translate(0, hit * 0.025f, hit * 0.07f);
+            ps.mulPose(Axis.ZP.rotationDegrees(Mth.sin(used * 2.3f) * 5 * hit + s * Mth.sin(used * 0.7f) * 3 * m));
+            // the last big bite: pushed right in
+            float last = Mth.clamp(1 - left / 4f, 0, 1);
+            if (last > 0) ps.translate(0, 0.02f * last, 0.1f * last * last);
+            // eaten away a little with every bite
+            float size = 1 - 0.22f * Mth.clamp(used / total, 0, 1);
+            ps.scale(size, size, size);
         }
-        ps.translate(f3 * 0.6f * s, f3 * -0.5f, 0);
-        ps.mulPose(Axis.YP.rotationDegrees(s * f3 * 90));
-        ps.mulPose(Axis.XP.rotationDegrees(f3 * 10));
-        ps.mulPose(Axis.ZP.rotationDegrees(s * f3 * 30));
+        ps.translate(-mid.x, -mid.y, -mid.z);
     }
 
     static boolean hand(AbstractClientPlayer p, boolean right) {
@@ -285,7 +484,7 @@ public final class FirstPersonAnimator {
     // ------------------------------------------------------------------ drawing the arm
     /** Rotate about the hand (not the camera). */
     static void around(PoseStack ps, float s, Runnable rot) {
-        float bx = s * 0.56f, by = -0.52f, bz = -0.72f;
+        float bx = s * HX, by = HY, bz = HZ;
         ps.translate(bx, by, bz);
         rot.run();
         ps.translate(-bx, -by, -bz);
@@ -297,19 +496,6 @@ public final class FirstPersonAnimator {
         ps.translate(bx, by, bz);
         rot.run();
         ps.translate(-bx, -by, -bz);
-    }
-
-    /** The first-person arm turned about the shoulder so its hand grips the item. */
-    static void holdingArm(PoseStack ps, MultiBufferSource buf, int light, AbstractClientPlayer p, boolean right) {
-        float s = right ? 1 : -1;
-        float sx = s * 0.4853f, sy = -0.8315f, sz = -0.5254f;
-        ps.translate(s * -0.006f, 0.003f, 0.334f);
-        ps.translate(sx, sy, sz);
-        ps.mulPose(Axis.YP.rotationDegrees(s * 13.66f));
-        ps.mulPose(Axis.XP.rotationDegrees(18.43f));
-        ps.mulPose(Axis.ZP.rotationDegrees(s * -5.42f));
-        ps.translate(-sx, -sy, -sz);
-        vanillaArm(ps, buf, light, p, right);
     }
 
     /** The game's own first-person arm (no swing, fully raised). */

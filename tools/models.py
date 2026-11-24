@@ -401,25 +401,48 @@ def handle(m, t, top, fancy):
         m.box((6.75, 6, 6.75), (9.25, 6.5, 9.25), t.trim)
 
 
+def fuller(k, ii, jj, w, h, face):
+    """a blade's fuller: a dark groove down the middle with a bright line beside it, ending a little short of the
+    tip; and a bright bevel along both cutting edges"""
+    if face in ("north", "south") and w >= 4:
+        mid = (w - 1) / 2
+        groove = (np.abs(ii - mid) < 0.6) & (jj >= 2)
+        k = np.where(groove, k - 1.4, k)
+        k = np.where((np.abs(ii - mid - 1) < 0.6) & (jj >= 2), k + 0.9, k)
+        k = np.where((ii == 0) | (ii == w - 1), k + 1.3, k)
+    return k
+
+
 def sword(tier):
+    """a long sword: a gemmed pommel, a long wrapped grip, a heavy crossguard with quillons sweeping up and a gem in
+    its heart, and a long blade with a fuller down it, bright bevelled edges, a ricasso at the guard, narrowing in
+    steps to a sharp point (the grip sits where the old one did, so it's held the same)"""
     t, fancy = TIERS[tier], tier in FANCY
     m = Model(f"{tier}_sword")
-    m.box((6.5, 0, 6.5), (9.5, 2, 9.5), t.dark)                          # pommel
-    if t.gem:
-        m.box((7.5, 0.5, 6.25), (8.5, 1.5, 9.75), t.gem, ao=False)
-    m.box((7, 2, 7), (9, 7.5, 9), t.grip)                                # wrapped grip
-    m.box((6.75, 7, 6.75), (9.25, 7.5, 9.25), t.trim)                    # collar
-    m.box((5, 7.5, 6.5), (11, 9.5, 9.5), t.dark)                         # guard: heavy middle
-    m.box((2.5, 8, 7), (13.5, 9, 9), t.dark)                             # wings
-    m.box((1.5, 8, 7), (2.5, 10.5, 9), t.trim), m.box((13.5, 8, 7), (14.5, 10.5, 9), t.trim)  # tips sweeping up
-    if t.gem:
-        m.box((7.25, 7.75, 6.25), (8.75, 9.25, 9.75), t.gem, ao=False)
-    m.box((6, 9.5, 7.5), (10, 21, 8.5), t.head, decal=ridge)             # blade
-    m.box((5.5, 10, 7.6), (6, 20, 8.4), t.edge), m.box((10, 10, 7.6), (10.5, 20, 8.4), t.edge)
-    m.box((6.5, 21, 7.5), (9.5, 23, 8.5), t.head, decal=ridge)
-    m.box((7, 23, 7.55), (9, 24.5, 8.45), t.edge)
-    m.box((7.5, 24.5, 7.6), (8.5, 26, 8.4), t.edge)                       # the point
-    m.write(blade_held(20, 0.34, 0.0))
+    # pommel: a heavy cap with a gem (or a stud)
+    m.box((6.25, -0.5, 6.25), (9.75, 2, 9.75), t.dark)
+    m.box((6.75, -1.25, 6.75), (9.25, -0.5, 9.25), t.trim)
+    m.box((7.5, 0.25, 6.0), (8.5, 1.25, 10.0), t.gem or t.trim, ao=False)
+    # grip, wrapped, between two collars
+    m.box((7, 2, 7), (9, 7.5, 9), t.grip)
+    m.box((6.75, 2, 6.75), (9.25, 2.5, 9.25), t.trim)
+    m.box((6.75, 7, 6.75), (9.25, 7.5, 9.25), t.trim)
+    # crossguard: a heavy middle, wings, quillons sweeping up, a gem
+    m.box((4.75, 7.5, 6.4), (11.25, 9.75, 9.6), t.dark)
+    m.box((2.0, 8.0, 6.9), (14.0, 9.25, 9.1), t.dark)
+    m.box((1.0, 8.25, 7.0), (2.0, 11.0, 9.0), t.trim), m.box((14.0, 8.25, 7.0), (15.0, 11.0, 9.0), t.trim)
+    m.box((0.75, 11.0, 7.25), (1.75, 12.0, 8.75), t.trim), m.box((14.25, 11.0, 7.25), (15.25, 12.0, 8.75), t.trim)
+    m.box((7.0, 7.9, 6.15), (9.0, 9.4, 9.85), t.gem or t.trim, ao=False)
+    # the blade: ricasso, then a long, slender blade stepping in to the point
+    m.box((6.75, 9.75, 7.45), (9.25, 11.5, 8.55), t.metal)
+    m.box((6.0, 11.5, 7.5), (10.0, 26.0, 8.5), t.head, decal=fuller)
+    m.box((5.5, 12.0, 7.62), (6.0, 25.5, 8.38), t.edge), m.box((10.0, 12.0, 7.62), (10.5, 25.5, 8.38), t.edge)
+    m.box((6.5, 26.0, 7.52), (9.5, 28.5, 8.48), t.head, decal=fuller)
+    m.box((6.0, 26.0, 7.64), (6.5, 28.0, 8.36), t.edge), m.box((9.5, 26.0, 7.64), (10.0, 28.0, 8.36), t.edge)
+    m.box((7.0, 28.5, 7.55), (9.0, 30.25, 8.45), t.edge)
+    m.box((7.4, 30.25, 7.6), (8.6, 31.4, 8.4), t.edge)
+    m.box((7.7, 31.4, 7.66), (8.3, 32.0, 8.34), t.edge)                     # the point
+    m.write(blade_held(20, 0.31, 0.0))
 
 
 def axe(tier):
