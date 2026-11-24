@@ -122,24 +122,84 @@ def hanging_sign(wood):
 
 
 # ---------------------------------------------------------------- beds
+BED_WOOD = ["3a2412", "553519", "714822", "8c5c2c", "a87238", "c08a48"]
+
+
+def quilt(k, ii, jj, w, h, face):
+    """a quilted cover: stitched in squares, each puffed up and catching the light, a lighter trim round the top,
+    and on the sides, soft folds hanging down to a hem"""
+    if face == "up":
+        line = (ii % 3 == 0) | (jj % 3 == 0)
+        k = np.where(line, k - 0.9, k)                                    # stitched in squares,
+        k = np.where((ii % 3 == 1) & (jj % 3 == 1), k + 0.6, k)           # each one puffed up
+        edge = (ii == 0) | (jj == 0) | (jj == h - 1) | (ii == w - 1)
+        k = np.where(edge, 4.2, k)                                       # the trim
+    elif face != "down":
+        k = np.where(ii % 3 == 1, k - 0.6, k)                             # folds where it hangs
+        k = np.where(jj == h - 1, 4.2, k)                                 # the hem
+        k = np.where(jj == 0, k + 0.5, k)
+    return k
+
+
+def pillow(k, ii, jj, w, h, face):
+    """a plump pillow: a seam round its edge and a soft sheen"""
+    if face == "up":
+        k = np.where((ii == 0) | (ii == w - 1) | (jj == 0) | (jj == h - 1), k - 0.7, k)
+        k = np.where((ii == 1) & (jj >= 1) & (jj <= 2), 99, k)
+    elif face != "down" and h >= 2:
+        k = np.where(jj == h // 2, k - 0.8, k)                             # the seam along its side
+    return k
+
+
+def panel(k, ii, jj, w, h, face):
+    """a framed wooden panel: a darker frame round a raised middle"""
+    if face in ("east", "west") and w >= 4 and h >= 4:
+        inner = (ii >= 1) & (ii <= w - 2) & (jj >= 1) & (jj <= h - 2)
+        k = np.where(inner, k + 0.6, k - 0.4)
+        k = np.where((ii == 1) & inner, k + 0.8, k)
+        k = np.where((jj == h - 2) & inner, k - 0.7, k)
+    return k
+
+
 def bed(colour):
+    """a proper bed: a wooden bedstead with tall capped posts and a panelled headboard, a white mattress, a quilted
+    cover in the bed's colour draping over the sides with the top sheet turned down over it, two plump pillows and
+    a little cushion in the cover's colour"""
     name = f"{colour}_bed"
     m = Model(name)
-    wood = Mat(WOODS["oak"], base=2.6, kind="wood", bevel=0.5)
-    sheet = Mat(WOOL_WHITE, base=3.2, kind="organic", bevel=0.4)
-    blanket = Mat(ramp(DYES[colour]), base=3.0, kind="organic", bevel=0.5)
-    fold = Mat(ramp(DYES[colour]), base=4.0, bevel=0.4)
-    for x in (0.5, 14):                                                               # legs
-        for z in (4, 10.5):
-            m.box((x, 0, z), (x + 1.5, 2, z + 1.5), wood)
-    m.box((0.5, 1.5, 4), (15.5, 3, 12), wood)                                         # the frame
-    m.box((0.7, 3, 4.2), (15.3, 4.4, 11.8), sheet)                                    # mattress
-    m.box((5, 3.2, 3.8), (15.6, 5.0, 12.2), blanket, decal=stripes(3, -0.6, axis="v", faces=("up",)))
-    m.box((5, 4.6, 3.7), (6.6, 5.3, 12.3), fold)                                      # its turned-down edge
-    m.box((1.0, 4.4, 5.0), (4.4, 5.9, 11.0), sheet, decal=shine)                      # the pillow
-    m.box((-0.2, 1.5, 3.8), (0.7, 8.0, 12.2), wood)                                   # headboard
-    m.box((-0.4, 8.0, 3.6), (0.9, 8.6, 12.4), Mat(WOODS["oak"], base=1.6, kind="wood", bevel=0.4))
-    m.box((15.3, 1.5, 3.8), (16.2, 5.6, 12.2), wood)                                  # footboard
+    pal = ["7a7e84", "9ea2a6", "bfc3c6", "dadcde", "eceeef", "fbfcfc"] if colour == "white" else ramp(DYES[colour])
+    wood = Mat(BED_WOOD, base=3.0, kind="wood", bevel=0.5)
+    trim = Mat(BED_WOOD, base=1.8, kind="wood", bevel=0.4)
+    cap = Mat(BED_WOOD, base=4.0, bevel=0.5)
+    sheet = Mat(WOOL_WHITE, base=3.4, bevel=0.3)
+    cover = Mat(pal, base=3.0, bevel=0)
+    soft = Mat(WOOL_WHITE, base=3.8, bevel=0)
+    for (x0, x1, top) in ((0, 1.5, 9.5), (14.5, 16, 6.2)):                           # the four posts, capped
+        for (z0, z1) in ((3.2, 4.7), (11.3, 12.8)):
+            m.box((x0, 0, z0), (x1, top, z1), wood)
+            m.box((x0 - 0.2, top, z0 - 0.2), (x1 + 0.2, top + 0.6, z1 + 0.2), cap)
+            m.box((x0 + 0.35, top + 0.6, z0 + 0.35), (x1 - 0.35, top + 1.1, z1 - 0.35), cap)
+    m.box((0.25, 2.2, 4.7), (1.25, 8.6, 11.3), wood, decal=panel)                    # the headboard
+    m.box((0.05, 8.6, 4.7), (1.45, 9.2, 11.3), trim)
+    m.box((0.15, 9.2, 6.4), (1.35, 9.9, 9.6), trim)                                   # its raised crest
+    m.box((14.75, 2.2, 4.7), (15.75, 5.2, 11.3), wood, decal=panel)                  # the footboard
+    m.box((14.55, 5.2, 4.7), (15.95, 5.8, 11.3), trim)
+    for (z0, z1) in ((3.35, 4.55), (11.45, 12.65)):                                   # side rails
+        m.box((1.5, 1.8, z0), (14.5, 3.0, z1), trim)
+    m.box((1.5, 2.0, 4.55), (14.5, 2.9, 11.45), trim)                                 # the slats under it
+    m.box((1.3, 2.9, 4.4), (14.6, 4.7, 11.6), sheet,                                  # mattress, in its sheet
+          decal=lambda k, ii, jj, w, h, face: np.where((face != "up") & (face != "down") & (jj == 1), k - 0.8, k))
+    m.box((5.6, 2.7, 3.95), (14.62, 5.5, 12.05), cover, decal=quilt)                  # the quilted cover
+    m.box((5.1, 5.45, 3.9), (7.0, 5.75, 12.1), soft, ao=False)                       # top sheet turned down
+    m.box((5.1, 2.7, 3.9), (5.6, 5.45, 4.0), soft, ao=False)                         # and hanging at the sides
+    m.box((5.1, 2.7, 12.0), (5.6, 5.45, 12.1), soft, ao=False)
+    m.box((6.55, 5.47, 3.85), (6.85, 5.78, 12.15), Mat(pal, base=4.0, bevel=0), ao=False)   # a band along it
+    for (z0, z1) in ((4.8, 7.85), (8.15, 11.2)):                                     # two plump pillows,
+        lean = (22.5, "z", (3.0, 4.7, (z0 + z1) / 2))                                 # leaning on the headboard
+        m.box((1.6, 4.7, z0), (4.4, 6.5, z1), sheet, decal=pillow, rot=lean)
+        m.box((1.9, 6.5, z0 + 0.3), (4.1, 6.9, z1 - 0.3), sheet, decal=shine, rot=lean)
+    m.box((3.6, 4.7, 6.7), (5.3, 6.9, 9.3), Mat(pal, base=3.6, bevel=0.4), rot=(-22.5, "z", (4.4, 4.7, 8)),
+          decal=lambda k, ii, jj, w, h, face: np.where((ii + jj) % 2 == 0, k + 0.5, k))   # a little cushion
     m.write(upright(scale=0.42, lift=6.0, tilt=28))
     # the inventory keeps the game's own little bed, drawn by the game
     model = {"loader": "forge:separate_transforms", "textures": {"particle": f"minecraft:block/{colour}_wool"},
