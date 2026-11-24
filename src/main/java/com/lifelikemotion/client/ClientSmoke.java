@@ -250,9 +250,10 @@ public final class ClientSmoke {
         // ---- films of first-person motion (for judging it as it moves)
         film("film");
         filmEat("filmeat");
+        filmChop("filmchop");
         swingStills("still_mine", "diamond_pickaxe", com.lifelikemotion.client.fp.Clips.MINE, 0, 0.2f, 0.36f, 0.48f, 0.56f, 0.7f, 0.85f);
-        swingStills("still_slasha", "diamond_sword", com.lifelikemotion.client.fp.Clips.SLASH_A, 0.2f, 0.3f, 0.36f, 0.42f, 0.5f, 0.7f);
-        swingStills("still_slashb", "diamond_sword", com.lifelikemotion.client.fp.Clips.SLASH_B, 0.2f, 0.36f, 0.42f, 0.5f, 0.7f);
+        swingStills("still_slasha", "diamond_sword", com.lifelikemotion.client.fp.Clips.SLASH_A, 0.18f, 0.3f, 0.38f, 0.44f, 0.5f, 0.6f, 0.75f);
+        swingStills("still_slashb", "diamond_sword", com.lifelikemotion.client.fp.Clips.SLASH_B, 0.18f, 0.38f, 0.44f, 0.5f, 0.6f);
         swingStills("still_stab", "diamond_sword", com.lifelikemotion.client.fp.Clips.STAB, 0.22f, 0.4f);
         swingStills("still_chop", "diamond_axe", com.lifelikemotion.client.fp.Clips.CHOP, 0.26f, 0.38f, 0.45f, 0.5f, 0.6f);
         swingStills("still_dig", "diamond_shovel", com.lifelikemotion.client.fp.Clips.DIG, 0.22f, 0.46f, 0.66f);
@@ -788,6 +789,41 @@ public final class ClientSmoke {
                 com.lifelikemotion.client.fp.FirstPersonAnimator.testClip = null;
             }
             return t > 22 + us.length * 3;
+        });
+    }
+
+    /** A film of chopping a tree trunk with an axe (held down, so it chops again and again). */
+    static void filmChop(String name) {
+        if (!wanted(name)) return;
+        Minecraft mc = Minecraft.getInstance();
+        add(t -> {
+            var o = mc.options;
+            if (t == 0) {
+                o.setCameraType(CameraType.FIRST_PERSON);
+                cmd("gamemode survival");
+                cmd("kill @e[type=!player]");
+                cmd("tp @s 60 -60 30 0 10");
+                give("diamond_axe");
+                yaw = 0f;
+                pitch = 10f;
+            }
+            if (t == 10) cmd("fill 59 -60 32 61 -55 37 oak_log");
+            int f = t - 30;
+            if (f == 0) {
+                slowClock(450);
+                filmName = name;
+                filmFrame = 0;
+                filmNext = Motion.ticks;
+            }
+            if (f == 6) o.keyAttack.setDown(true);
+            if (f == 70) o.keyAttack.setDown(false);
+            if (f == 80) {
+                filmName = null;
+                slowClock(50);
+                cmd("gamemode creative");
+                cmd("fill 59 -60 32 61 -55 37 air");
+            }
+            return f > 80;
         });
     }
 

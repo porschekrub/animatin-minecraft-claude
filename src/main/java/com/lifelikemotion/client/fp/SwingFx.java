@@ -31,11 +31,11 @@ public final class SwingFx {
     // ------------------------------------------------------------------ the strike: when it lands, how the camera moves
     /** where in each swing it lands (0..1), and the camera's kick then (pitch, yaw, roll, in degrees a second) */
     static float impact(Clip c) {
-        if (c == Clips.SLASH_A) return 0.40f;
+        if (c == Clips.SLASH_A) return 0.42f;
         if (c == Clips.SLASH_B) return 0.42f;
         if (c == Clips.STAB) return 0.38f;
         if (c == Clips.CHOP) return 0.48f;
-        if (c == Clips.MINE) return 0.54f;
+        if (c == Clips.MINE) return 0.56f;
         if (c == Clips.PUNCH) return 0.32f;
         if (c == Clips.SWAT) return 0.44f;
         if (c == Clips.DIG) return 0.46f;
@@ -46,8 +46,8 @@ public final class SwingFx {
     }
 
     static float[] kick(Clip c) {
-        if (c == Clips.SLASH_A) return new float[]{10, -26, -30};
-        if (c == Clips.SLASH_B) return new float[]{6, 26, 30};
+        if (c == Clips.SLASH_A) return new float[]{6, -36, -14};
+        if (c == Clips.SLASH_B) return new float[]{6, 36, 14};
         if (c == Clips.STAB) return new float[]{22, 0, 0};
         if (c == Clips.CHOP) return new float[]{45, 0, -6};
         if (c == Clips.MINE) return new float[]{10, 0, 0};
@@ -116,8 +116,8 @@ public final class SwingFx {
     // ------------------------------------------------------------------ the trail behind a blade
     /** where in each swing the blade leaves a trail (from, to), or null */
     static float[] trailWindow(Clip c) {
-        if (c == Clips.SLASH_A) return new float[]{0.28f, 0.54f};
-        if (c == Clips.SLASH_B) return new float[]{0.30f, 0.56f};
+        if (c == Clips.SLASH_A) return new float[]{0.28f, 0.58f};
+        if (c == Clips.SLASH_B) return new float[]{0.28f, 0.58f};
         if (c == Clips.STAB) return new float[]{0.24f, 0.42f};
         if (c == Clips.CHOP) return new float[]{0.36f, 0.52f};
         if (c == Clips.SWAT) return new float[]{0.24f, 0.50f};

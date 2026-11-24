@@ -12,23 +12,23 @@ public final class Clips {
      *  past and laid over, then a little bounce back to rest */
     public static final Clip SLASH_A = Clip.arm(
             0.00f, 0, 0, 0, 0, 0, 0, 0,
-            0.20f, 12, 6, 0, -36, 22, 0, 0.06f,
-            0.30f, 14, 5, 0, -30, 20, 0, 0.05f,
-            0.40f, 34, -2, 0, 50, 30, 0.05f, 0,
-            0.50f, 62, -6, 0, 80, 34, 0.06f, 0,
-            0.60f, 72, -8, 0, 86, 34, 0.05f, 0,
-            0.82f, -3, 1, 0, -3, -2, 0, 0,
+            0.18f, -4, 2, -24, 62, 20, 0, -0.01f,
+            0.28f, -5, 2, -26, 64, 20, 0, -0.01f,
+            0.40f, 6, 0, 14, 68, 22, 0.06f, 0.02f,
+            0.50f, 12, -2, 38, 72, 22, 0.06f, 0.05f,
+            0.60f, 14, -2, 42, 74, 22, 0.05f, 0.05f,
+            0.82f, -2, 0, -3, -2, -1, 0, 0,
             1.00f, 0, 0, 0, 0, 0, 0, 0);
 
     /** sword, backhand: wound low across the body, whipped back out and up to the sword side, a bounce back */
     public static final Clip SLASH_B = Clip.arm(
             0.00f, 0, 0, 0, 0, 0, 0, 0,
-            0.20f, 40, 0, 0, 80, 30, 0, 0.05f,
-            0.30f, 36, 1, 0, 76, 30, 0.02f, 0.05f,
-            0.40f, 14, 4, 0, 20, 28, 0.05f, 0.07f,
-            0.50f, -6, 8, 0, -36, 22, 0.05f, 0.07f,
-            0.60f, -9, 8, 0, -42, 20, 0.04f, 0.06f,
-            0.82f, 3, 0, 0, 4, -1, 0, 0,
+            0.18f, 12, 0, 32, 72, 22, 0.04f, 0.04f,
+            0.28f, 13, 0, 34, 73, 22, 0.04f, 0.04f,
+            0.40f, 4, 2, 4, 66, 20, 0.06f, 0.01f,
+            0.50f, -6, 3, -28, 60, 18, 0.04f, -0.01f,
+            0.60f, -7, 3, -32, 58, 18, 0.03f, -0.01f,
+            0.82f, 2, 0, 3, 2, 1, 0, 0,
             1.00f, 0, 0, 0, 0, 0, 0, 0);
 
     /** sword, third in the combo: drawn back toward you, then thrust straight at the crosshair, held, pulled back */
@@ -54,11 +54,11 @@ public final class Clips {
     /** pickaxe digging (a loop while the block breaks): a lift, a sharp strike into the block, a jolt, back */
     public static final Clip MINE = Clip.arm(
             0.00f, 0, 0, 0, 0, 0, 0, 0,
-            0.32f, -4, 6, 0, -28, 30, 0, 0.12f,
-            0.42f, -5, 7, 0, -32, 33, 0, 0.13f,
-            0.56f, 8, -4, 0, 46, 10, 0.04f, -0.02f,
-            0.62f, 7, -3, 0, 40, 10, 0.03f, -0.01f,
-            0.70f, 8, -4, 0, 43, 10, 0.04f, -0.02f,
+            0.34f, -1, 3, 0, -16, 24, 0, 0.03f,
+            0.44f, -1, 3, 0, -18, 26, 0, 0.03f,
+            0.58f, 4, -3, 0, 30, -6, 0.04f, 0,
+            0.64f, 4, -2, 0, 26, -4, 0.035f, 0,
+            0.72f, 4, -3, 0, 28, -5, 0.04f, 0,
             1.00f, 0, 0, 0, 0, 0, 0, 0);
 
     /** shovel: pulled back, driven in and down, scooped up and tipped, back */
@@ -221,7 +221,7 @@ public final class Clips {
         if (c == SLASH_A || c == SLASH_B) return 11;
         if (c == STAB) return 10;
         if (c == CHOP) return 13;
-        if (c == MINE) return 8;
+        if (c == MINE) return 7;
         if (c == DIG || c == TILL || c == THROW) return 11;
         if (c == PUNCH) return 8;
         if (c == PLACE) return 7;
