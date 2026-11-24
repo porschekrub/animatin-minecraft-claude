@@ -1,0 +1,1 @@
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:block/redstone_torch"},"base":{"parent":"lifelikemotion:item3d/redstone_torch"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:block/redstone_torch"}}}}

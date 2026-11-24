@@ -70,6 +70,19 @@ public final class ClientSmoke {
             "totem_of_undying", "lead", "name_tag", "saddle", "brush", "goat_horn", "book", "writable_book",
             "written_book", "enchanted_book", "knowledge_book", "map", "firework_rocket",
             "crossbow{Charged:1b,ChargedProjectiles:[{id:\"minecraft:arrow\",Count:1b}]}"};
+    /** batch 7 (kept in step with tools/models_armor.py) */
+    static final String[] ARMOR_3D = {
+            "torch", "soul_torch", "redstone_torch", "lantern", "soul_lantern", "chain", "candle", "white_candle",
+            "orange_candle", "magenta_candle", "light_blue_candle", "yellow_candle", "lime_candle", "pink_candle",
+            "gray_candle", "light_gray_candle", "cyan_candle", "purple_candle", "blue_candle", "brown_candle",
+            "green_candle", "red_candle", "black_candle", "leather_helmet", "leather_chestplate", "leather_leggings",
+            "leather_boots", "chainmail_helmet", "chainmail_chestplate", "chainmail_leggings", "chainmail_boots",
+            "iron_helmet", "iron_chestplate", "iron_leggings", "iron_boots", "golden_helmet", "golden_chestplate",
+            "golden_leggings", "golden_boots", "diamond_helmet", "diamond_chestplate", "diamond_leggings",
+            "diamond_boots", "netherite_helmet", "netherite_chestplate", "netherite_leggings", "netherite_boots",
+            "turtle_helmet", "iron_chestplate{Trim:{material:\"minecraft:gold\",pattern:\"minecraft:coast\"}}",
+            "diamond_helmet{Trim:{material:\"minecraft:amethyst\",pattern:\"minecraft:sentry\"}}",
+            "leather_chestplate{display:{color:3949738}}"};
     static final String[] ITEMS_3D = items3d();
 
     static String[] items3d() {
@@ -81,6 +94,7 @@ public final class ClientSmoke {
         l.addAll(java.util.List.of(MATERIALS_3D));
         l.addAll(java.util.List.of(DROPS_3D));
         l.addAll(java.util.List.of(SPECIAL_3D));
+        l.addAll(java.util.List.of(ARMOR_3D));
         return l.toArray(new String[0]);
     }
 

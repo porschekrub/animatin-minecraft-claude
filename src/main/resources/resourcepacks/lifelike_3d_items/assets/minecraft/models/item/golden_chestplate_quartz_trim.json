@@ -1,0 +1,1 @@
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:trims/items/chestplate_trim_quartz"},"base":{"parent":"lifelikemotion:item3d/golden_chestplate_quartz_trim"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/golden_chestplate","layer1":"minecraft:trims/items/chestplate_trim_quartz"}}}}

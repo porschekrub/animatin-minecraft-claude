@@ -1,0 +1,1 @@
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:trims/items/leggings_trim_netherite"},"base":{"parent":"lifelikemotion:item3d/golden_leggings_netherite_trim"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/golden_leggings","layer1":"minecraft:trims/items/leggings_trim_netherite"}}}}

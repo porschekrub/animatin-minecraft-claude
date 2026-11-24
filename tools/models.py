@@ -486,7 +486,9 @@ if __name__ == "__main__":
     ITEMS.update(models_drops.DROPS)
     only = set(sys.argv[1:])
     import models_special  # noqa: E402  (batch 6: special items, each writes its own item models)
-    for name, make in list(ITEMS.items()) + list(models_special.SPECIAL.items()):
+    import models_armor  # noqa: E402  (batch 7: armour with trims, torches, lanterns, candles, chain)
+    ITEMS.update(models_armor.LIGHTS)
+    for name, make in list(ITEMS.items()) + list(models_special.SPECIAL.items()) + list(models_armor.ARMOR.items()):
         if only and name not in only:
             continue
         if make() is not False:   # special items write their own item models and return False
