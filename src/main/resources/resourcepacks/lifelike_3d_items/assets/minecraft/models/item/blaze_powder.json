@@ -1,0 +1,1 @@
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/blaze_powder"},"base":{"parent":"lifelikemotion:item3d/blaze_powder"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/blaze_powder"}}}}

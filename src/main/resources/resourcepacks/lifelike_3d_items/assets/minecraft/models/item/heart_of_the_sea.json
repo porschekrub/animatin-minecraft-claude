@@ -1,0 +1,1 @@
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/heart_of_the_sea"},"base":{"parent":"lifelikemotion:item3d/heart_of_the_sea"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/heart_of_the_sea"}}}}

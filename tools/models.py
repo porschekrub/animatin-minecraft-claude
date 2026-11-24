@@ -462,8 +462,10 @@ if __name__ == "__main__":
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import models_food  # noqa: E402  (batch 2: food)
     import models_vessels  # noqa: E402  (batch 3: bottles and buckets)
+    import models_materials  # noqa: E402  (batch 4: gems and materials)
     ITEMS.update(models_food.FOOD)
     ITEMS.update(models_vessels.VESSELS)
+    ITEMS.update(models_materials.MATERIALS)
     only = set(sys.argv[1:])
     for name, make in ITEMS.items():
         if only and name not in only:

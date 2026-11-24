@@ -1,0 +1,1 @@
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/netherite_ingot"},"base":{"parent":"lifelikemotion:item3d/netherite_ingot"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/netherite_ingot"}}}}

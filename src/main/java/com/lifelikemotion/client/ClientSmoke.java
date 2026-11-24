@@ -49,6 +49,14 @@ public final class ClientSmoke {
             "cod_bucket", "salmon_bucket", "tropical_fish_bucket", "pufferfish_bucket", "axolotl_bucket", "tadpole_bucket",
             "potion{Potion:\"minecraft:water\"}", "glass_bottle", "splash_potion{Potion:\"minecraft:healing\"}",
             "lingering_potion{Potion:\"minecraft:poison\"}", "experience_bottle", "dragon_breath"};
+    /** batch 4 (kept in step with tools/models_materials.py) */
+    static final String[] MATERIALS_3D = {
+            "diamond", "emerald", "lapis_lazuli", "amethyst_shard", "quartz", "echo_shard", "prismarine_shard",
+            "prismarine_crystals", "coal", "charcoal", "flint", "clay_ball", "raw_iron", "raw_gold", "raw_copper",
+            "iron_ingot", "gold_ingot", "copper_ingot", "netherite_ingot", "netherite_scrap", "iron_nugget",
+            "gold_nugget", "redstone", "glowstone_dust", "gunpowder", "sugar", "blaze_powder", "bone_meal",
+            "ender_pearl", "ender_eye", "heart_of_the_sea", "nether_star", "blaze_rod", "brick", "nether_brick",
+            "slime_ball", "magma_cream"};
     static final String[] ITEMS_3D = items3d();
 
     static String[] items3d() {
@@ -57,6 +65,7 @@ public final class ClientSmoke {
             for (String k : new String[]{"sword", "pickaxe", "axe", "shovel", "hoe"}) l.add(t + "_" + k);
         l.addAll(java.util.List.of(FOOD_3D));
         l.addAll(java.util.List.of(VESSELS_3D));
+        l.addAll(java.util.List.of(MATERIALS_3D));
         return l.toArray(new String[0]);
     }
 
