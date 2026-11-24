@@ -555,6 +555,8 @@ if __name__ == "__main__":
     ITEMS.update(models_vehicles.VEHICLES)
     import models_discs  # noqa: E402  (batch 9: music discs, spawn eggs, dyes)
     ITEMS.update(models_discs.MISC)
+    import models_relics  # noqa: E402  (batch 10: smithing templates, pottery sherds)
+    ITEMS.update(models_relics.RELICS)
     for name, make in list(ITEMS.items()) + list(models_special.SPECIAL.items()) + list(models_armor.ARMOR.items()):
         if only and name not in only:
             continue

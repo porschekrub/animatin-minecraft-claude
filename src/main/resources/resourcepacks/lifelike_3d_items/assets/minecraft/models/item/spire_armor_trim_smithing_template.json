@@ -1,0 +1,1 @@
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/spire_armor_trim_smithing_template"},"base":{"parent":"lifelikemotion:item3d/spire_armor_trim_smithing_template"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/spire_armor_trim_smithing_template"}}}}

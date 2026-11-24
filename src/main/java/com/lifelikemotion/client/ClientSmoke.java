@@ -98,6 +98,21 @@ public final class ClientSmoke {
             "sniffer_spawn_egg", "white_dye", "orange_dye", "magenta_dye", "light_blue_dye", "yellow_dye", "lime_dye",
             "pink_dye", "gray_dye", "light_gray_dye", "cyan_dye", "purple_dye", "blue_dye", "brown_dye", "green_dye",
             "red_dye", "black_dye"};
+    static final String[] RELICS_3D = {
+            "coast_armor_trim_smithing_template", "dune_armor_trim_smithing_template",
+            "eye_armor_trim_smithing_template", "host_armor_trim_smithing_template",
+            "netherite_upgrade_smithing_template", "raiser_armor_trim_smithing_template",
+            "rib_armor_trim_smithing_template", "sentry_armor_trim_smithing_template",
+            "shaper_armor_trim_smithing_template", "silence_armor_trim_smithing_template",
+            "snout_armor_trim_smithing_template", "spire_armor_trim_smithing_template",
+            "tide_armor_trim_smithing_template", "vex_armor_trim_smithing_template",
+            "ward_armor_trim_smithing_template", "wayfinder_armor_trim_smithing_template",
+            "wild_armor_trim_smithing_template", "angler_pottery_sherd", "archer_pottery_sherd",
+            "arms_up_pottery_sherd", "blade_pottery_sherd", "brewer_pottery_sherd", "burn_pottery_sherd",
+            "danger_pottery_sherd", "explorer_pottery_sherd", "friend_pottery_sherd", "heart_pottery_sherd",
+            "heartbreak_pottery_sherd", "howl_pottery_sherd", "miner_pottery_sherd", "mourner_pottery_sherd",
+            "plenty_pottery_sherd", "prize_pottery_sherd", "sheaf_pottery_sherd", "shelter_pottery_sherd",
+            "skull_pottery_sherd", "snort_pottery_sherd"};
     static final String[] ITEMS_3D = items3d();
 
     static String[] items3d() {
@@ -112,6 +127,7 @@ public final class ClientSmoke {
         l.addAll(java.util.List.of(ARMOR_3D));
         l.addAll(java.util.List.of(VEHICLES_3D));
         l.addAll(java.util.List.of(MISC_3D));
+        l.addAll(java.util.List.of(RELICS_3D));
         return l.toArray(new String[0]);
     }
 
