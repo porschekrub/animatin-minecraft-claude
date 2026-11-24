@@ -1,0 +1,1 @@
+{"loader":"forge:separate_transforms","textures":{"particle":"minecraft:item/birch_boat"},"base":{"parent":"lifelikemotion:item3d/birch_boat"},"perspectives":{"gui":{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/birch_boat"}}}}

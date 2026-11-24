@@ -550,6 +550,8 @@ if __name__ == "__main__":
     import models_special  # noqa: E402  (batch 6: special items, each writes its own item models)
     import models_armor  # noqa: E402  (batch 7: armour with trims, torches, lanterns, candles, chain)
     ITEMS.update(models_armor.LIGHTS)
+    import models_vehicles  # noqa: E402  (batch 8: boats, minecarts, horse armour)
+    ITEMS.update(models_vehicles.VEHICLES)
     for name, make in list(ITEMS.items()) + list(models_special.SPECIAL.items()) + list(models_armor.ARMOR.items()):
         if only and name not in only:
             continue

@@ -83,6 +83,13 @@ public final class ClientSmoke {
             "turtle_helmet", "iron_chestplate{Trim:{material:\"minecraft:gold\",pattern:\"minecraft:coast\"}}",
             "diamond_helmet{Trim:{material:\"minecraft:amethyst\",pattern:\"minecraft:sentry\"}}",
             "leather_chestplate{display:{color:3949738}}"};
+    static final String[] VEHICLES_3D = {
+            "oak_boat", "oak_chest_boat", "spruce_boat", "spruce_chest_boat", "birch_boat", "birch_chest_boat",
+            "jungle_boat", "jungle_chest_boat", "acacia_boat", "acacia_chest_boat", "dark_oak_boat",
+            "dark_oak_chest_boat", "mangrove_boat", "mangrove_chest_boat", "cherry_boat", "cherry_chest_boat",
+            "bamboo_raft", "bamboo_chest_raft", "minecart", "chest_minecart", "furnace_minecart", "hopper_minecart",
+            "tnt_minecart", "command_block_minecart", "leather_horse_armor", "iron_horse_armor",
+            "golden_horse_armor", "diamond_horse_armor", "leather_horse_armor{display:{color:3949738}}"};
     static final String[] ITEMS_3D = items3d();
 
     static String[] items3d() {
@@ -95,6 +102,7 @@ public final class ClientSmoke {
         l.addAll(java.util.List.of(DROPS_3D));
         l.addAll(java.util.List.of(SPECIAL_3D));
         l.addAll(java.util.List.of(ARMOR_3D));
+        l.addAll(java.util.List.of(VEHICLES_3D));
         return l.toArray(new String[0]);
     }
 
