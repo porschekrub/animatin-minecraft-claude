@@ -17,8 +17,6 @@ from models import (Mat, Model, upright, blade_held, item_model, vanilla_layers,
                     LEATHER, GOLD, IRON, DIAMOND, DIAMOND_DARK, NETHERITE, EMBER, TINTED, STRING)
 from models_food import shine, stripes, spots, chain
 from models_drops import STICK
-from models import PACK
-import flames
 
 RUBY = ["4a0510", "7d0c1c", "b5172c", "e2324a", "ff7a8a"]
 CHAIN = ["2a2c30", "44474c", "62666c", "868a90", "aaaeb4", "d0d3d6"]
@@ -179,9 +177,30 @@ SOUL_FLAME = ["1a8aa0", "2ec0d0", "70e8f0", "c0fcff", "f0ffff"]
 REDSTONE_GLOW = ["6a0606", "b01010", "f02a20", "ff7a5a", "ffd0c0"]
 
 
-def torch_like(name, fire=None, ember=FLAME, head=None):
-    """a wooden torch with a cloth-wrapped head, glowing embers and real flickering fire (the game's own animated
-    fire texture on crossed planes) rising from it"""
+FLAME_PAL = ["c8281a", "ec4a1e", "fa7424", "ffa02e", "ffc840", "ffe680"]
+SOUL_PAL = ["1a4ab8", "2270d8", "2a9ae8", "40c4f2", "78e2fa", "c0f6ff"]
+
+
+def blocky_flame(m, pal, y0, lean=0.3):
+    """a solid flame built from blocks, glowing evenly (no side shading): a teardrop narrow at the base, widest a
+    third of the way up, a golden heart going orange and a red tip that leans a little; a small tongue beside it
+    and embers floating above. pal runs tip colour -> heart colour"""
+    mats = [Mat(pal, base=b, bevel=0.0, glow=True, grad=0.0, shade=False) for b in range(len(pal))]
+    layers = ((0.9, 0.9, 4), (1.3, 1.5, 4), (1.3, 1.4, 4), (1.1, 1.1, 3), (1.0, 0.75, 2), (0.9, 0.45, 1),
+              (0.7, 0.2, 0))
+    y = y0
+    for k, (h, w, c) in enumerate(layers):
+        dx = lean * max(0, k - 2)
+        m.box((8 - w + dx, y, 8 - w), (8 + w + dx, y + h, 8 + w), mats[c], ao=False)
+        y += h
+    m.box((6.1, y0 + 1.6, 7.6), (6.9, y0 + 3.2, 8.4), mats[3], ao=False)             # a small tongue beside it
+    m.box((6.25, y0 + 3.2, 7.75), (6.75, y0 + 4.0, 8.25), mats[1], ao=False)
+    m.box((9.9, y - 1.4, 7.85), (10.25, y - 1.05, 8.2), mats[4], ao=False)           # embers rising
+    m.box((7.0, y + 0.6, 7.9), (7.3, y + 0.9, 8.2), mats[3], ao=False)
+
+
+def torch_like(name, flame_pal=None, ember=FLAME, head=None):
+    """a wooden torch with a cloth-wrapped head, glowing embers and a solid, glowing flame"""
     m = Model(name)
     stick = Mat(STICK, base=3.0, kind="wood", bevel=0.5)
     cloth = Mat(["2a2016", "4a3a28", "6e5a40", "927a5a"], base=1.6, kind="wrap", bevel=0.5)
@@ -194,47 +213,71 @@ def torch_like(name, fire=None, ember=FLAME, head=None):
         m.box((7.4, 10.2, 7.4), (8.6, 10.8, 8.6), head)
     else:
         m.box((6.8, 7.6, 6.8), (9.2, 10.2, 9.2), cloth, decal=spots(0.18, 99, seed=name))   # charred cloth
-        m.box((7.1, 10.2, 7.1), (8.9, 10.6, 8.9), embers, ao=False)            # glowing embers on top
-    if fire:
-        m.flame(5.25, 9.8, 10.75, 17.5, texture=fire, planes=3)
+        m.box((7.1, 10.2, 7.1), (8.9, 10.5, 8.9), embers, ao=False)            # glowing embers on top
+    if flame_pal:
+        blocky_flame(m, flame_pal, 10.4)
     m.write(blade_held(-15, 0.5, 2.0), particle=vanilla_layers(name)[0])
 
 
 def torch():
-    torch_like("torch", flames.flame_texture(PACK, "flame", flames.FIRE))
+    torch_like("torch", FLAME_PAL)
 
 
 def soul_torch():
-    torch_like("soul_torch", flames.flame_texture(PACK, "soul_flame", flames.SOUL, seed=2.0), ember=SOUL_FLAME)
+    torch_like("soul_torch", SOUL_PAL, ember=SOUL_FLAME)
 
 
 def redstone_torch():
     torch_like("redstone_torch", head=Mat(REDSTONE_GLOW, base=2.4, bevel=0.4, glow=True))
 
 
-def lantern_like(name, glow_pal):
-    """an iron lantern: a base, four corner posts, clear glass panes, a vented cap and a hanging ring, filled with a
-    warm glow of light"""
+BRASS = ["4a3006", "7a5210", "a8761c", "d09c34", "eac462", "fbe6a4"]
+SILVER = ["3a4048", "5a626c", "7e8894", "a6b0ba", "ced6de", "f0f4f8"]
+
+
+def lantern_like(name, glow_pal, trim_pal):
+    """an elegant iron lantern: a stepped base with a trim band, slim corner posts with capped ends, warm glowing
+    glass with a light streak, a soft orb of light inside, a stepped roof with a finial and a curved handle"""
     m = Model(name)
-    frame = Mat(["24262a", "36383e", "4c4f56", "666a72", "82868e"], base=2.2, kind="metal", bevel=0.7)
-    glass = Mat(["a8b4bc", "c8d4dc", "e8f0f4", "ffffff"], base=1.4, kind="glass", alpha=28, bevel=0.3)
-    halo = Mat(glow_pal, base=1.8, bevel=0.0, alpha=205, glow=True, grad=0.6)
-    core = Mat(glow_pal, base=len(glow_pal) - 1.5, bevel=0.0, glow=True)
-    m.box((6.75, 4.0, 6.75), (9.25, 7.0, 9.25), core, ao=False)                # a bright heart of light...
-    m.box((5.5, 2.25, 5.5), (10.5, 9.25, 10.5), halo, ao=False)                # ...in a soft glow (before the glass)
-    for x, z in ((4.5, 4.5), (10.5, 4.5), (4.5, 10.5), (10.5, 10.5)):
-        m.box((x, 1.5, z), (x + 1.0, 9.5, z + 1.0), frame)                      # corner posts
-    m.box((4.25, 0.5, 4.25), (11.75, 2.0, 11.75), frame)                        # the base
-    m.box((4.25, 9.5, 4.25), (11.75, 10.5, 11.75), frame)                       # the rim
-    m.box((5.25, 10.5, 5.25), (10.75, 11.5, 10.75), frame,
-          decal=lambda k, ii, jj, w, h, face: np.where((face != "up") & (ii % 2 == 1), k - 1.6, k))   # vented cap
-    m.box((6.5, 11.5, 6.5), (9.5, 12.25, 9.5), frame)
-    m.box((7.5, 12.25, 7.6), (8.5, 13.0, 8.4), frame)
-    m.box((6.75, 13.0, 7.6), (9.25, 13.75, 8.4), frame), m.box((6.75, 13.75, 7.6), (7.5, 15.0, 8.4), frame)
-    m.box((8.5, 13.75, 7.6), (9.25, 15.0, 8.4), frame), m.box((6.75, 15.0, 7.6), (9.25, 15.75, 8.4), frame)   # ring
-    for (a, b) in (((5.5, 2, 5.0), (10.5, 9.5, 5.25)), ((5.5, 2, 10.75), (10.5, 9.5, 11.0)),
-                   ((5.0, 2, 5.5), (5.25, 9.5, 10.5)), ((10.75, 2, 5.5), (11.0, 9.5, 10.5))):
-        m.box(a, b, glass, ao=False)                                            # glass panes, last
+    iron = Mat(["1c1d20", "2a2c30", "3c3f45", "53575e", "6e737b"], base=1.8, kind="metal", bevel=0.8)
+    trim = Mat(trim_pal, base=3.2, kind="metal", bevel=0.6)
+    core = Mat(glow_pal, base=3.0, bevel=0.0, glow=True, grad=0.0, shade=False)
+    halo = Mat(glow_pal, base=2.2, bevel=0.0, alpha=80, glow=True, grad=0.0, shade=False)
+
+    def streak(k, ii, jj, w, h, face):
+        return np.where((ii == 1) & (jj >= 1) & (jj <= h - 2), k + 2.5, k) if w > 3 else k
+
+    glass = Mat(glow_pal, base=3.6, kind="glass", alpha=34, bevel=0.2, glow=True, shade=False)
+    # the light inside: a bright heart in a soft glow (drawn before the glass)
+    m.box((6.75, 4.0, 6.75), (9.25, 7.0, 9.25), core, ao=False)
+    m.box((7.25, 3.25, 7.25), (8.75, 7.75, 8.75), core, ao=False)
+    m.box((6.25, 4.5, 7.25), (9.75, 6.5, 8.75), core, ao=False)
+    m.box((7.25, 4.5, 6.25), (8.75, 6.5, 9.75), core, ao=False)
+    m.box((5.75, 2.5, 5.75), (10.25, 9.0, 10.25), halo, ao=False)
+    # base
+    m.box((4.0, 0, 4.0), (12.0, 1.0, 12.0), iron)
+    m.box((4.5, 1.0, 4.5), (11.5, 1.75, 11.5), trim)
+    m.box((3.5, -0.5, 3.5), (12.5, 0, 12.5), iron)
+    # slim corner posts with little capped ends
+    for x, z in ((4.75, 4.75), (10.5, 4.75), (4.75, 10.5), (10.5, 10.5)):
+        m.box((x, 1.75, z), (x + 0.75, 9.25, z + 0.75), iron)
+        m.box((x - 0.15, 9.0, z - 0.15), (x + 0.9, 9.6, z + 0.9), trim)
+    # trim band round the top of the glass, and the stepped roof
+    m.box((4.5, 9.25, 4.5), (11.5, 10.0, 11.5), trim)
+    m.box((4.0, 10.0, 4.0), (12.0, 10.75, 12.0), iron)
+    m.box((5.0, 10.75, 5.0), (11.0, 11.5, 11.0), iron)
+    m.box((6.0, 11.5, 6.0), (10.0, 12.25, 10.0), iron)
+    m.box((7.0, 12.25, 7.0), (9.0, 13.0, 9.0), trim)
+    m.box((7.5, 13.0, 7.5), (8.5, 13.75, 8.5), trim)                            # the finial
+    # a curved handle arching over the top
+    for (a, b) in (((4.25, 10.75, 7.6), (5.0, 12.5, 8.4)), ((11.0, 10.75, 7.6), (11.75, 12.5, 8.4)),
+                   ((4.75, 12.5, 7.6), (5.75, 14.0, 8.4)), ((10.25, 12.5, 7.6), (11.25, 14.0, 8.4)),
+                   ((5.5, 14.0, 7.6), (10.5, 14.75, 8.4))):
+        m.box(a, b, iron)
+    # the glass panes, last, so the light shows through them
+    for (a, b) in (((5.5, 1.75, 5.0), (10.5, 9.25, 5.25)), ((5.5, 1.75, 10.75), (10.5, 9.25, 11.0)),
+                   ((5.0, 1.75, 5.5), (5.25, 9.25, 10.5)), ((10.75, 1.75, 5.5), (11.0, 9.25, 10.5))):
+        m.box(a, b, glass, decal=streak, ao=False)
     d = blade_held(0, 0.5, tp=0.6)
     for k in ("firstperson_righthand", "firstperson_lefthand"):
         d[k]["rotation"] = [0, d[k]["rotation"][1], 0]
@@ -242,16 +285,16 @@ def lantern_like(name, glow_pal):
     m.write(d, translucent=True)
 
 
-LIGHT = ["c8701a", "eca040", "fcc868", "ffe4a0", "fff4d4", "ffffff"]
-SOUL_LIGHT = ["1a7a98", "36b0cc", "6cd8ea", "a8f0f8", "dcfcff", "ffffff"]
+LIGHT = ["c86a10", "ec9020", "fab238", "ffcc5a", "ffe28c", "fff2c0"]
+SOUL_LIGHT = ["1478a0", "1ea4cc", "3ccae8", "78e2f6", "b8f4ff", "e8fcff"]
 
 
 def lantern():
-    lantern_like("lantern", LIGHT)
+    lantern_like("lantern", LIGHT, BRASS)
 
 
 def soul_lantern():
-    lantern_like("soul_lantern", SOUL_LIGHT)
+    lantern_like("soul_lantern", SOUL_LIGHT, SILVER)
 
 
 DYES = {"": "e8dcc0", "white": "f0f0f0", "orange": "f07a1a", "magenta": "c040c0", "light_blue": "5aaef0",

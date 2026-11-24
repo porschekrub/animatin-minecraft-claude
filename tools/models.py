@@ -37,11 +37,13 @@ class Mat:
     """a material: its palette (dark to light, hand-picked), which palette step is its middle, its kind of surface
     (which decides the pattern) and how strongly it's bevelled"""
 
-    def __init__(self, pal, base=None, kind="plain", bevel=1.0, alpha=255, tint=False, glow=False, grad=1.0, shine=1.0):
+    def __init__(self, pal, base=None, kind="plain", bevel=1.0, alpha=255, tint=False, glow=False, grad=1.0, shine=1.0,
+                 shade=True):
         self.pal = [hexc(c) for c in pal]
         self.base = (len(self.pal) - 1) / 2 if base is None else base
         self.kind, self.bevel, self.alpha, self.tint, self.glow, self.grad = kind, bevel, alpha, tint, glow, grad
         self.shine = shine
+        self.shade = shade   # False: the game doesn't darken its sides (light sources: evenly bright all round)
 
 
 # ---------------------------------------------------------------- the face painter
@@ -232,6 +234,8 @@ class Model:
                 el["faces"][face] = f
             if mat.glow:
                 el["forge_data"] = {"block_light": 15, "sky_light": 15}
+            if not mat.shade:
+                el["shade"] = False
             els.append(el)
         tp = os.path.join(PACK, "assets", NS, "textures", "item", "model", self.name + ".png")
         os.makedirs(os.path.dirname(tp), exist_ok=True)
