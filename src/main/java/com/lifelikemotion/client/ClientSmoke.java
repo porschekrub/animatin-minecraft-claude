@@ -44,14 +44,19 @@ public final class ClientSmoke {
             "mutton", "cooked_mutton", "rabbit", "cooked_rabbit", "chicken", "cooked_chicken", "rotten_flesh",
             "spider_eye", "dried_kelp", "cod", "cooked_cod", "salmon", "cooked_salmon", "tropical_fish", "pufferfish",
             "mushroom_stew", "rabbit_stew", "beetroot_soup", "suspicious_stew", "honey_bottle"};
+    /** batch 3 (kept in step with tools/models_vessels.py) */
+    static final String[] VESSELS_3D = {"bucket", "water_bucket", "lava_bucket", "milk_bucket", "powder_snow_bucket",
+            "cod_bucket", "salmon_bucket", "tropical_fish_bucket", "pufferfish_bucket", "axolotl_bucket", "tadpole_bucket",
+            "potion{Potion:\"minecraft:water\"}", "glass_bottle", "splash_potion{Potion:\"minecraft:healing\"}",
+            "lingering_potion{Potion:\"minecraft:poison\"}", "experience_bottle", "dragon_breath"};
     static final String[] ITEMS_3D = items3d();
 
     static String[] items3d() {
         java.util.List<String> l = new java.util.ArrayList<>();
         for (String t : new String[]{"wooden", "stone", "iron", "golden", "diamond", "netherite"})
             for (String k : new String[]{"sword", "pickaxe", "axe", "shovel", "hoe"}) l.add(t + "_" + k);
-        l.addAll(java.util.List.of("potion{Potion:\"minecraft:water\"}", "water_bucket"));
         l.addAll(java.util.List.of(FOOD_3D));
+        l.addAll(java.util.List.of(VESSELS_3D));
         return l.toArray(new String[0]);
     }
 

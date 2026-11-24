@@ -425,71 +425,8 @@ def hoe(tier):
 
 
 # ---------------------------------------------------------------- beautiful things
-def potion():
-    """a glass bottle you can see the potion through (coloured by the game: blue for water), string round the neck and
-    a cork"""
-    m = Model("potion")
-    glass = Mat(GLASS, base=1.6, kind="glass", alpha=70, bevel=0.6)
-    liquid = Mat(TINTED, base=3.0, tint=True, bevel=0.5)
-    cork = Mat(CORK, base=2.4, kind="wood", bevel=0.7)
-    string = Mat(STRING, base=2.0, bevel=0.3)
-
-    def surface(k, ii, jj, w, h, face):
-        if face == "up":
-            k = k + 1.2
-            k = np.where((ii == 1) & (jj == 1), k + 1.5, k)
-        return k
-
-    m.box((5, 0.5, 5), (11, 5.5, 11), liquid, decal=surface, ao=False)   # the potion inside
-    m.box((4.5, 0, 4.5), (11.5, 7, 11.5), glass, ao=False)               # body
-    m.box((5.5, 7, 5.5), (10.5, 8, 10.5), glass, ao=False)               # shoulder
-    m.box((6.5, 8, 6.5), (9.5, 10.5, 9.5), glass, ao=False)              # neck
-    m.box((6, 10.5, 6), (10, 11.5, 10), glass, ao=False)                 # lip
-    m.box((6.75, 10.25, 6.75), (9.25, 13, 9.25), cork)
-    m.box((6.25, 8.5, 6.25), (9.75, 9.25, 9.75), string)
-    m.box((9.75, 6.5, 7.5), (10.25, 8.75, 8.5), string)                  # its loose end
-    m.write(upright(0.34, 5.0), translucent=True)
-
-
-def water_bucket():
-    """an iron bucket with a rolled rim and a band, side lugs, a carry handle with a wooden grip, and water"""
-    m = Model("water_bucket")
-    iron = Mat(IRON, base=3.6, kind="metal", bevel=0.8, shine=0.45)
-    inner = Mat(IRON, base=2.2, bevel=0.3)
-    band = Mat(IRON, base=1.8, kind="metal", bevel=0.8, shine=0.5)
-    rim = Mat(IRON, base=4.4, kind="metal", bevel=0.9, shine=0.4)
-    water = Mat(WATER, base=3.3, bevel=0.0)
-    wood = Mat(WOOD, base=2.6, kind="wood", bevel=0.6)
-
-    def ripples(k, ii, jj, w, h, face):
-        if face == "up":
-            band = (ii + jj >= 3) & (ii + jj <= 5)
-            k = np.where(band, k + 1.3, k)                               # the sky reflected across the water
-            k = np.where((ii + jj == 9) & (ii >= 4) & (ii <= 5), k + 1.0, k)
-            k = np.where((ii == 2) & (jj == 2), k + 3, k)                # a glint
-        return k
-
-    m.box((3.5, 0, 3.5), (12.5, 1, 12.5), iron)                          # bottom
-    m.box((3, 1, 3), (13, 10, 4), iron), m.box((3, 1, 12), (13, 10, 13), iron)   # walls
-    m.box((3, 1, 4), (4, 10, 12), iron), m.box((12, 1, 4), (13, 10, 12), iron)
-    m.box((4, 1, 4), (12, 9, 12), water, decal=ripples)                  # water
-    m.box((2.5, 10, 2.5), (13.5, 11, 3.5), rim), m.box((2.5, 10, 12.5), (13.5, 11, 13.5), rim)  # rolled rim
-    m.box((2.5, 10, 3.5), (3.5, 11, 12.5), rim), m.box((12.5, 10, 3.5), (13.5, 11, 12.5), rim)
-    m.box((2.75, 3.5, 2.75), (13.25, 4.5, 13.25), band)                  # band
-    m.box((1.75, 8, 7), (3, 10, 9), band), m.box((13, 8, 7), (14.25, 10, 9), band)  # lugs
-    # the carry handle: up from the lugs, leaning in, across the top with a wooden grip
-    m.box((2, 10, 7.6), (2.8, 13, 8.4), band)
-    m.box((13.2, 10, 7.6), (14, 13, 8.4), band)
-    m.box((2, 12.5, 7.6), (2.8, 16.5, 8.4), band, rot=(-45, "z", (2.4, 12.6, 8)))
-    m.box((13.2, 12.5, 7.6), (14, 16.5, 8.4), band, rot=(45, "z", (13.6, 12.6, 8)))
-    m.box((5.1, 15.3, 7.6), (10.9, 16.1, 8.4), band)
-    m.box((6, 15, 7.25), (10, 16.5, 8.75), wood)
-    m.write(upright(0.3, 5.0))
-
-
 TOOLS = {"sword": sword, "pickaxe": pickaxe, "axe": axe, "shovel": shovel, "hoe": hoe}
 ITEMS = {f"{tier}_{kind}": (lambda f=f, tier=tier: f(tier)) for tier in TIERS for kind, f in TOOLS.items()}
-ITEMS.update({"potion": potion, "water_bucket": water_bucket})
 GUI_LAYERS = {"potion": ["minecraft:item/potion_overlay", "minecraft:item/potion"]}
 
 
@@ -523,8 +460,10 @@ def item_model(name):
 
 if __name__ == "__main__":
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    import models_food  # noqa: E402  (the food batch)
+    import models_food  # noqa: E402  (batch 2: food)
+    import models_vessels  # noqa: E402  (batch 3: bottles and buckets)
     ITEMS.update(models_food.FOOD)
+    ITEMS.update(models_vessels.VESSELS)
     only = set(sys.argv[1:])
     for name, make in ITEMS.items():
         if only and name not in only:
