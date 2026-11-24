@@ -20,8 +20,19 @@ TINT = (0.22, 0.42, 0.9, 1)  # a sample potion colour (water)
 
 
 def tex_path(ref):
+    """a texture file: from the pack, or the game's own (from the jar; animated strips cut to their first frame)"""
     ns, path = ref.split(":") if ":" in ref else ("minecraft", ref)
-    return os.path.join(PACK, "assets", ns, "textures", path + ".png")
+    p = os.path.join(PACK, "assets", ns, "textures", path + ".png")
+    if os.path.exists(p):
+        return p
+    import io
+    import zipfile
+    out = f"/tmp/claude-0/mctex/{ns}/{path}.png"
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    with zipfile.ZipFile(os.environ.get("MC_JAR", "/tmp/mcjar/client.jar")) as z:
+        im = Image.open(io.BytesIO(z.read(f"assets/{ns}/textures/{path}.png"))).convert("RGBA")
+    im.crop((0, 0, im.width, im.width)).save(out)
+    return out
 
 
 def corners_for(face, f, t):
@@ -41,10 +52,52 @@ def corners_for(face, f, t):
 def load(name):
     with open(os.path.join(PACK, "assets", NS, "models", "item3d", name + ".json")) as fh:
         model = json.load(fh)
-    img = bpy.data.images.load(tex_path(model["textures"]["0"]))
+    order = []
     mats = {}
-    for tinted in (False, True):
-        m = bpy.data.materials.new(f"{name}_{tinted}")
+    for key, ref in model["textures"].items():
+        if key == "particle":
+            continue
+        img = bpy.data.images.load(tex_path(ref))
+        for tinted in (False, True):
+            mats[(key, tinted)] = make_mat(f"{name}_{key}_{tinted}", img, tinted)
+            order.append((key, tinted))
+    bm = bmesh.new()
+    uvl = bm.loops.layers.uv.new("uv")
+    s = 1 / 16
+    for el in model["elements"]:
+        rot = el.get("rotation")
+        R = Matrix.Identity(4)
+        if rot:
+            o = Vector(rot["origin"])
+            R = Matrix.Translation(o) @ Matrix.Rotation(math.radians(rot["angle"]), 4, rot["axis"].upper()) \
+                @ Matrix.Translation(-o)
+        for face, fd in el["faces"].items():
+            u0, v0, u1, v1 = [c / 16 for c in fd["uv"]]
+            cs = corners_for(face, el["from"], el["to"])
+            vs = []
+            for c in cs:
+                p = R @ Vector(c)
+                vs.append(bm.verts.new((p.x * s, 1 - p.z * s, p.y * s)))  # MC -> Blender axes
+            try:
+                fc = bm.faces.new(vs)
+            except ValueError:
+                continue
+            fc.material_index = order.index((fd["texture"][1:], "tintindex" in fd))
+            for loop, (u, v) in zip(fc.loops, ((u0, v0), (u1, v0), (u1, v1), (u0, v1))):
+                loop[uvl].uv = (u, 1 - v)
+    me = bpy.data.meshes.new(name)
+    bm.to_mesh(me)
+    bm.free()
+    ob = bpy.data.objects.new(name, me)
+    bpy.context.collection.objects.link(ob)
+    for k in order:
+        me.materials.append(mats[k])
+    return ob
+
+
+def make_mat(mname, img, tinted):
+    if True:
+        m = bpy.data.materials.new(mname)
         m.use_nodes = True
         nt = m.node_tree
         bsdf = nt.nodes["Principled BSDF"]
@@ -64,36 +117,7 @@ def load(name):
             last = mix.outputs[2]
         nt.links.new(last, bsdf.inputs["Base Color"])
         nt.links.new(tx.outputs["Alpha"], bsdf.inputs["Alpha"])
-        mats[tinted] = m
-    bm = bmesh.new()
-    uvl = bm.loops.layers.uv.new("uv")
-    s = 1 / 16
-    for el in model["elements"]:
-        rot = el.get("rotation")
-        R = Matrix.Identity(4)
-        if rot:
-            o = Vector(rot["origin"])
-            R = Matrix.Translation(o) @ Matrix.Rotation(math.radians(rot["angle"]), 4, rot["axis"].upper()) \
-                @ Matrix.Translation(-o)
-        for face, fd in el["faces"].items():
-            u0, v0, u1, v1 = [c / 16 for c in fd["uv"]]
-            cs = corners_for(face, el["from"], el["to"])
-            vs = []
-            for c in cs:
-                p = R @ Vector(c)
-                vs.append(bm.verts.new((p.x * s, 1 - p.z * s, p.y * s)))  # MC -> Blender axes
-            fc = bm.faces.new(vs)
-            fc.material_index = 1 if "tintindex" in fd else 0
-            for loop, (u, v) in zip(fc.loops, ((u0, v0), (u1, v0), (u1, v1), (u0, v1))):
-                loop[uvl].uv = (u, 1 - v)
-    me = bpy.data.meshes.new(name)
-    bm.to_mesh(me)
-    bm.free()
-    ob = bpy.data.objects.new(name, me)
-    bpy.context.collection.objects.link(ob)
-    me.materials.append(mats[False])
-    me.materials.append(mats[True])
-    return ob
+        return m
 
 
 def render(ob, out):

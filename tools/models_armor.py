@@ -177,62 +177,76 @@ SOUL_FLAME = ["1a8aa0", "2ec0d0", "70e8f0", "c0fcff", "f0ffff"]
 REDSTONE_GLOW = ["6a0606", "b01010", "f02a20", "ff7a5a", "ffd0c0"]
 
 
-def torch_like(name, flame_pal, head=None):
+def torch_like(name, fire=None, ember=FLAME, head=None):
+    """a wooden torch with a cloth-wrapped head, glowing embers and real flickering fire (the game's own animated
+    fire texture on crossed planes) rising from it"""
     m = Model(name)
     stick = Mat(STICK, base=3.0, kind="wood", bevel=0.5)
-    cloth = Mat(["5a4a34", "7e6a4e", "a08a68", "c0aa86"], base=2.0, kind="wrap", bevel=0.5)
+    cloth = Mat(["2a2016", "4a3a28", "6e5a40", "927a5a"], base=1.6, kind="wrap", bevel=0.5)
     band = Mat(IRON, base=2.4, kind="metal", bevel=0.4)
-    flame = Mat(flame_pal, base=2.0, bevel=0.3, glow=True)
-    core = Mat(flame_pal, base=len(flame_pal) - 1, bevel=0, glow=True)
+    embers = Mat(ember, base=len(ember) - 2, bevel=0.2, glow=True)
     m.box((7.25, -3.0, 7.25), (8.75, 8.0, 8.75), stick)
     m.box((7.05, 1.0, 7.05), (8.95, 1.8, 8.95), band)
     if head:
         m.box((6.9, 8, 6.9), (9.1, 10.2, 9.1), head)                            # a glowing redstone head
+        m.box((7.4, 10.2, 7.4), (8.6, 10.8, 8.6), head)
     else:
-        m.box((6.8, 7.6, 6.8), (9.2, 10.2, 9.2), cloth)
-    m.box((7.0, 10.2, 7.0), (9.0, 11.8, 9.0), flame, ao=False)
-    m.box((7.3, 11.8, 7.3), (8.7, 13.0, 8.7), flame, ao=False)
-    m.box((7.6, 13.0, 7.6), (8.4, 14.2, 8.4), core, ao=False)
+        m.box((6.8, 7.6, 6.8), (9.2, 10.2, 9.2), cloth, decal=spots(0.18, 99, seed=name))   # charred cloth
+        m.box((7.1, 10.2, 7.1), (8.9, 10.6, 8.9), embers, ao=False)            # glowing embers on top
+    if fire:
+        m.flame(5.5, 9.6, 10.5, 16.5, texture=fire)
     m.write(blade_held(-15, 0.5, 2.0), particle=vanilla_layers(name)[0])
 
 
 def torch():
-    torch_like("torch", FLAME)
+    torch_like("torch", "minecraft:block/fire_0")
 
 
 def soul_torch():
-    torch_like("soul_torch", SOUL_FLAME)
+    torch_like("soul_torch", "minecraft:block/soul_fire_0", ember=SOUL_FLAME)
 
 
 def redstone_torch():
-    torch_like("redstone_torch", REDSTONE_GLOW, head=Mat(REDSTONE_GLOW, base=2.4, bevel=0.4, glow=True))
+    torch_like("redstone_torch", head=Mat(REDSTONE_GLOW, base=2.4, bevel=0.4, glow=True))
 
 
-def lantern_like(name, glow_pal):
+def lantern_like(name, fire, glow_pal):
+    """an iron lantern: a base, four corner posts, clear glass panes, a vented cap and a hanging ring, with a wick
+    burning real fire inside"""
     m = Model(name)
-    frame = Mat(["2a2c30", "3e4046", "55585e", "70737a"], base=1.8, kind="metal", bevel=0.6)
-    glass = Mat(glow_pal, base=2.6, bevel=0.2, glow=True)
-    m.box((5.0, 2.0, 5.0), (11.0, 9.0, 11.0), glass, ao=False)
-    for x, z in ((4.6, 4.6), (10.4, 4.6), (4.6, 10.4), (10.4, 10.4)):
-        m.box((x, 1.6, z), (x + 1.0, 9.4, z + 1.0), frame)
-    m.box((4.4, 0.6, 4.4), (11.6, 2.0, 11.6), frame)
-    m.box((4.4, 9.0, 4.4), (11.6, 10.4, 11.6), frame)
-    m.box((6.0, 10.4, 6.0), (10.0, 11.4, 10.0), frame)
-    m.box((7.4, 11.4, 7.6), (8.6, 14.0, 8.4), frame)
-    m.box((7.0, 13.6, 7.6), (9.0, 14.4, 8.4), frame)
-    d = blade_held(0, 0.55, tp=0.6)
+    frame = Mat(["24262a", "36383e", "4c4f56", "666a72", "82868e"], base=2.2, kind="metal", bevel=0.7)
+    glass = Mat(["a8b4bc", "c8d4dc", "e8f0f4", "ffffff"], base=1.4, kind="glass", alpha=40, bevel=0.3)
+    wick = Mat(glow_pal, base=len(glow_pal) - 2, bevel=0.2, glow=True)
+    holder = Mat(IRON, base=2.0, kind="metal", bevel=0.4)
+    m.flame(5.25, 3.0, 10.75, 9.2, texture=fire)                              # the fire, drawn before the glass
+    m.box((6.5, 2.0, 6.5), (9.5, 3.0, 9.5), holder)                            # the burner
+    m.box((7.6, 3.0, 7.6), (8.4, 3.6, 8.4), wick, ao=False)
+    for x, z in ((4.5, 4.5), (10.5, 4.5), (4.5, 10.5), (10.5, 10.5)):
+        m.box((x, 1.5, z), (x + 1.0, 9.5, z + 1.0), frame)                      # corner posts
+    m.box((4.25, 0.5, 4.25), (11.75, 2.0, 11.75), frame)                        # the base
+    m.box((4.25, 9.5, 4.25), (11.75, 10.5, 11.75), frame)                       # the rim
+    m.box((5.25, 10.5, 5.25), (10.75, 11.5, 10.75), frame,
+          decal=lambda k, ii, jj, w, h, face: np.where((face != "up") & (ii % 2 == 1), k - 1.6, k))   # vented cap
+    m.box((6.5, 11.5, 6.5), (9.5, 12.25, 9.5), frame)
+    m.box((7.5, 12.25, 7.6), (8.5, 13.0, 8.4), frame)
+    m.box((6.75, 13.0, 7.6), (9.25, 13.75, 8.4), frame), m.box((6.75, 13.75, 7.6), (7.5, 15.0, 8.4), frame)
+    m.box((8.5, 13.75, 7.6), (9.25, 15.0, 8.4), frame), m.box((6.75, 15.0, 7.6), (9.25, 15.75, 8.4), frame)   # ring
+    for (a, b) in (((5.5, 2, 5.0), (10.5, 9.5, 5.25)), ((5.5, 2, 10.75), (10.5, 9.5, 11.0)),
+                   ((5.0, 2, 5.5), (5.25, 9.5, 10.5)), ((10.75, 2, 5.5), (11.0, 9.5, 10.5))):
+        m.box(a, b, glass, ao=False)                                            # glass panes, last
+    d = blade_held(0, 0.5, tp=0.6)
     for k in ("firstperson_righthand", "firstperson_lefthand"):
         d[k]["rotation"] = [0, d[k]["rotation"][1], 0]
-        d[k]["translation"] = [0, 4.5, 0]
-    m.write(d)
+        d[k]["translation"] = [0, 7.5, 0]
+    m.write(d, translucent=True)
 
 
 def lantern():
-    lantern_like("lantern", FLAME)
+    lantern_like("lantern", "minecraft:block/fire_0", FLAME)
 
 
 def soul_lantern():
-    lantern_like("soul_lantern", SOUL_FLAME)
+    lantern_like("soul_lantern", "minecraft:block/soul_fire_0", SOUL_FLAME)
 
 
 DYES = {"": "e8dcc0", "white": "f0f0f0", "orange": "f07a1a", "magenta": "c040c0", "light_blue": "5aaef0",
@@ -261,17 +275,18 @@ def candle(colour):
 
 
 def chain_item():
+    """a long iron chain of eight links, each turned to the one before"""
     m = Model("chain")
     iron = Mat(CHAIN, base=3.0, kind="metal", bevel=0.6)
-    for k in range(4):
-        y = 1 + k * 3.5
-        if k % 2 == 0:                                                          # links, each turned to the last
+    for k in range(8):
+        y = -6 + k * 3.25
+        if k % 2 == 0:
             m.box((6.5, y, 7.6), (9.5, y + 0.75, 8.4), iron), m.box((6.5, y + 3, 7.6), (9.5, y + 3.75, 8.4), iron)
             m.box((6.5, y, 7.6), (7.25, y + 3.75, 8.4), iron), m.box((8.75, y, 7.6), (9.5, y + 3.75, 8.4), iron)
         else:
             m.box((7.6, y, 6.5), (8.4, y + 0.75, 9.5), iron), m.box((7.6, y + 3, 6.5), (8.4, y + 3.75, 9.5), iron)
             m.box((7.6, y, 6.5), (8.4, y + 3.75, 7.25), iron), m.box((7.6, y, 8.75), (8.4, y + 3.75, 9.5), iron)
-    m.write(upright(scale=0.42, lift=5.0))
+    m.write(upright(scale=0.4, lift=4.0))
 
 
 LIGHTS = {"torch": torch, "soul_torch": soul_torch, "redstone_torch": redstone_torch, "lantern": lantern,

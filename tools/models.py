@@ -97,6 +97,29 @@ class Model:
     def __init__(self, name):
         self.name = name
         self.els = []
+        self.raw = []        # parts showing one of the game's own textures (animated fire), drawn first
+        self.tex = {}
+
+    def flame(self, x0, y0, x1, y1, texture="minecraft:block/fire_0", cx=8.0, cz=8.0, planes=4):
+        """real, animated fire: the game's own flickering fire texture on crossed planes (like the fire block),
+        glowing at full light; x0/x1 is the width across the middle, y0/y1 the height"""
+        key = "fire" + str(len(self.tex))
+        self.tex[key] = texture
+        hw = (x1 - x0) / 2
+        face = {"uv": [0, 0, 16, 16], "texture": "#" + key}
+        for k in range(planes):
+            ang = (45, -45, 0, 0)[k]
+            if k == 3:   # the last plane runs front to back
+                frm, to = [cx, y0, cz - hw], [cx, y1, cz + hw]
+                faces = {"east": face, "west": face}
+            else:
+                frm, to = [cx - hw, y0, cz], [cx + hw, y1, cz]
+                faces = {"north": face, "south": face}
+            el = {"from": frm, "to": to, "shade": False, "faces": faces,
+                  "forge_data": {"block_light": 15, "sky_light": 15}}
+            if ang:
+                el["rotation"] = {"angle": ang, "axis": "y", "origin": [cx, y0, cz]}
+            self.raw.append(el)
 
     def box(self, frm, to, mat, rot=None, faces=None, decal=None, ao=True):
         """a part from frm to to (pixels, 16 a block); rot = (angle, axis, origin); decal(k, i, j, w, h, face) -> k"""
@@ -213,8 +236,9 @@ class Model:
         tp = os.path.join(PACK, "assets", NS, "textures", "item", "model", self.name + ".png")
         os.makedirs(os.path.dirname(tp), exist_ok=True)
         tex.save(tp)
-        model = {"textures": {"0": f"{NS}:item/model/{self.name}", "particle": particle or vanilla_layers(self.name)[-1]},
-                 "elements": els, "display": display}
+        model = {"textures": {"0": f"{NS}:item/model/{self.name}", "particle": particle or vanilla_layers(self.name)[-1],
+                              **self.tex},
+                 "elements": self.raw + els, "display": display}
         if gui_light:
             model["gui_light"] = gui_light
         if translucent:
