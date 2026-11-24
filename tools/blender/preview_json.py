@@ -16,6 +16,7 @@ from PIL import Image
 
 PACK, OUT, NAMES = sys.argv[1], sys.argv[2], sys.argv[3:]
 NS = "lifelikemotion"
+RES = int(os.environ.get("PV_RES", "420"))
 TINT = (0.22, 0.42, 0.9, 1)  # a sample potion colour (water)
 
 
@@ -24,7 +25,14 @@ def tex_path(ref):
     ns, path = ref.split(":") if ":" in ref else ("minecraft", ref)
     p = os.path.join(PACK, "assets", ns, "textures", path + ".png")
     if os.path.exists(p):
-        return p
+        im = Image.open(p)
+        if im.height <= im.width:
+            return p
+        fr = int(os.environ.get("PV_FRAME", "0")) % (im.height // im.width)   # an animation: one of its frames
+        out = f"/tmp/claude-0/mctex/{ns}/{path}_f{fr}.png"
+        os.makedirs(os.path.dirname(out), exist_ok=True)
+        im.crop((0, fr * im.width, im.width, (fr + 1) * im.width)).save(out)
+        return out
     import io
     import zipfile
     out = f"/tmp/claude-0/mctex/{ns}/{path}.png"
@@ -64,7 +72,8 @@ def load(name):
     bm = bmesh.new()
     uvl = bm.loops.layers.uv.new("uv")
     s = 1 / 16
-    for el in model["elements"]:
+    elements = model.get("elements") or [el for ch in model.get("children", {}).values() for el in ch["elements"]]
+    for el in elements:
         rot = el.get("rotation")
         R = Matrix.Identity(4)
         if rot:
@@ -126,7 +135,7 @@ def render(ob, out):
     sc.cycles.samples = 64
     sc.cycles.use_denoising = False
     sc.view_settings.view_transform = "Standard"
-    sc.render.resolution_x = sc.render.resolution_y = 420
+    sc.render.resolution_x = sc.render.resolution_y = RES
     w = bpy.data.worlds.new("w")
     w.use_nodes = True
     w.node_tree.nodes["Background"].inputs[0].default_value = (0.42, 0.5, 0.62, 1)
@@ -152,11 +161,11 @@ pics = []
 for n in NAMES:
     bpy.ops.wm.read_factory_settings(use_empty=True)
     ob = load(n)
-    p = f"/tmp/claude-0/pv_{n}.png"
+    p = f"/tmp/claude-0/pv_{n}_{os.environ.get('PV_FRAME', '0')}.png"
     render(ob, p)
     pics.append(p)
 ims = [Image.open(p).convert("RGB") for p in pics]
-sheet = Image.new("RGB", (420 * len(ims), 420))
+sheet = Image.new("RGB", (RES * len(ims), RES))
 for i, im in enumerate(ims):
-    sheet.paste(im, (420 * i, 0))
+    sheet.paste(im, (RES * i, 0))
 sheet.save(OUT)

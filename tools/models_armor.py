@@ -177,26 +177,85 @@ SOUL_FLAME = ["1a8aa0", "2ec0d0", "70e8f0", "c0fcff", "f0ffff"]
 REDSTONE_GLOW = ["6a0606", "b01010", "f02a20", "ff7a5a", "ffd0c0"]
 
 
-FLAME_PAL = ["c8281a", "ec4a1e", "fa7424", "ffa02e", "ffc840", "ffe680"]
-SOUL_PAL = ["1a4ab8", "2270d8", "2a9ae8", "40c4f2", "78e2fa", "c0f6ff"]
+FLAME_PAL = ["8a1a08", "c42e10", "e8501a", "f87a20", "fda02c", "ffc23a", "ffdc50", "fff08a"]
+SOUL_PAL = ["0e2a78", "1442a8", "1c66cc", "2a92e4", "44bcf0", "78dcf8", "b4f0ff", "eafcff"]
 
 
-def blocky_flame(m, pal, y0, lean=0.3):
-    """a solid flame built from blocks, glowing evenly (no side shading): a teardrop narrow at the base, widest a
-    third of the way up, a golden heart going orange and a red tip that leans a little; a small tongue beside it
-    and embers floating above. pal runs tip colour -> heart colour"""
-    mats = [Mat(pal, base=b, bevel=0.0, glow=True, grad=0.0, shade=False) for b in range(len(pal))]
-    layers = ((0.9, 0.9, 4), (1.3, 1.5, 4), (1.3, 1.4, 4), (1.1, 1.1, 3), (1.0, 0.75, 2), (0.9, 0.45, 1),
-              (0.7, 0.2, 0))
-    y = y0
-    for k, (h, w, c) in enumerate(layers):
-        dx = lean * max(0, k - 2)
-        m.box((8 - w + dx, y, 8 - w), (8 + w + dx, y + h, 8 + w), mats[c], ao=False)
+def heat(y0, y1, fb, ft, lo, hi, alpha=None):
+    """paints one block of a flame: hottest (palette step hi) at the flame's foot fb, cooling to step lo at its tip
+    ft, with bright waves rising through it as the texture animates; alpha(v, t, yy) -> 0..1 sets how see-through
+    it is at height v (0 foot .. 1 tip)"""
+    import models
+
+    def f(k, ii, jj, w, h, face):
+        t = models.T_ANIM
+        if face in ("up", "down"):
+            yy = np.full((h, w), y1 if face == "up" else y0, float)
+        else:
+            yy = y1 - (jj + 0.5) / h * (y1 - y0)
+        v = np.clip((yy - fb) / (ft - fb), 0, 1)
+        k = hi - (hi - lo) * v ** 0.9
+        mid = np.abs(ii - (w - 1) / 2) / max((w - 1) / 2, 0.5)
+        k = k + 0.35 * (mid < 0.5) - 0.35 * (mid > 0.95)                    # a little hotter in the middle
+        k = k + 0.6 * np.sin(2 * np.pi * (2 * t) - yy * 1.3 + ii * 0.5)      # waves of heat rising
+        return k if alpha is None else (k, alpha(v, t, yy))
+    return f
+
+
+def stack(layers, y0):
+    """(height, half width, sway) layers piled up from y0 -> (bottom, top, half width, sway) each"""
+    out, y = [], y0
+    for (h, hw, dx) in layers:
+        out.append((y, y + h, hw, dx))
         y += h
-    m.box((6.1, y0 + 1.6, 7.6), (6.9, y0 + 3.2, 8.4), mats[3], ao=False)             # a small tongue beside it
-    m.box((6.25, y0 + 3.2, 7.75), (6.75, y0 + 4.0, 8.25), mats[1], ao=False)
-    m.box((9.9, y - 1.4, 7.85), (10.25, y - 1.05, 8.2), mats[4], ao=False)           # embers rising
-    m.box((7.0, y + 0.6, 7.9), (7.3, y + 0.9, 8.2), mats[3], ao=False)
+    return out
+
+
+ALL_BUT_DOWN = ("up", "north", "south", "east", "west")
+
+
+def tongue(m, mat, yb, layers, decal):
+    """one tongue of flame: (height, half width, sway x, sway z) blocks piled up from yb, each turned 45 degrees so
+    the flame shows an edge to the front, like a cut gem; each block's underside is left off (it sits on the one
+    below)"""
+    y = yb
+    for n, (h, hw, dx, dz) in enumerate(layers):
+        m.box((8 - hw + dx, y, 8 - hw + dz), (8 + hw + dx, y + h, 8 + hw + dz), mat, decal=decal(y, y + h), ao=False,
+              faces=None if n == 0 else ALL_BUT_DOWN, rot=(45, "y", (8, y, 8)))
+        y += h
+    return y
+
+
+def lumen_flame(m, pal, y0):
+    """a flame: a bright solid heart inside a glowing, slightly see-through teardrop that leans as it rises and
+    whose tip flickers, two smaller tongues licking up beside it as they flare and die down, and sparks that rise
+    and fade"""
+    mat = Mat(pal, base=0, bevel=0.0, glow=True, grad=0.0, shade=False)
+    core = ((0.5, 0.7, 0, 0), (0.9, 0.8, 0, 0), (0.9, 0.68, 0.08, 0), (0.8, 0.5, 0.18, 0), (0.6, 0.32, 0.28, 0),
+            (0.4, 0.16, 0.32, 0))
+    main = ((0.3, 0.95, 0, 0), (1.0, 1.2, 0, 0), (1.1, 1.12, 0.08, 0), (1.0, 0.9, 0.2, 0), (0.9, 0.66, 0.34, 0),
+            (0.8, 0.44, 0.44, 0), (0.6, 0.26, 0.5, 0), (0.5, 0.12, 0.46, 0))
+    sides = ((y0 + 0.9, ((0.8, 0.42, -0.95, 0.15), (0.7, 0.26, -1.15, 0.15), (0.5, 0.12, -1.2, 0.15))),
+             (y0 + 0.6, ((0.9, 0.42, 0.95, -0.2), (0.7, 0.26, 1.15, -0.2), (0.5, 0.12, 1.15, -0.2))))
+    ft = y0 + sum(l[0] for l in main)
+    ct = y0 + 0.05 + sum(l[0] for l in core)
+    tongue(m, mat, y0 + 0.05, core, lambda a, b: heat(a, b, y0, ct, 5.4, 7.6))     # the heart: drawn first, solid
+
+    for n, (yb, layers) in enumerate(sides):
+        def flare(v, t, yy, n=n):
+            return np.clip(0.6 + 0.45 * np.sin(2 * np.pi * (t + n / len(sides))) - 0.2 * v, 0, 0.92)
+        tongue(m, mat, yb, layers, lambda a, b, flare=flare: heat(a, b, y0, ft, 0.6, 5.2, flare))
+
+    def body_alpha(v, t, yy):
+        a = 0.76 + 0.2 * v
+        tip = np.clip((v - 0.72) / 0.28, 0, 1)                    # the tip comes and goes
+        return a * (1 - tip * (0.5 + 0.5 * np.sin(2 * np.pi * t * 2 - yy * 0.9)))
+    tongue(m, mat, y0, main, lambda a, b: heat(a, b, y0, ft, 0.6, 5.2, body_alpha))
+    for n, (x, y, z) in enumerate(((9.5, ft - 1.4, 8.3), (6.9, ft - 0.2, 7.7), (8.6, ft + 0.9, 8.2))):
+        def spark(k, ii, jj, w, h, face, n=n):
+            import models
+            return np.full_like(k, len(pal) - 2), np.full_like(k, max(0.0, np.sin(2 * np.pi * (models.T_ANIM + n / 3))))
+        m.box((x, y, z), (x + 0.3, y + 0.3, z + 0.3), mat, decal=spark, ao=False)
 
 
 def torch_like(name, flame_pal=None, ember=FLAME, head=None):
@@ -215,8 +274,9 @@ def torch_like(name, flame_pal=None, ember=FLAME, head=None):
         m.box((6.8, 7.6, 6.8), (9.2, 10.2, 9.2), cloth, decal=spots(0.18, 99, seed=name))   # charred cloth
         m.box((7.1, 10.2, 7.1), (8.9, 10.5, 8.9), embers, ao=False)            # glowing embers on top
     if flame_pal:
-        blocky_flame(m, flame_pal, 10.4)
-    m.write(blade_held(-15, 0.5, 2.0), particle=vanilla_layers(name)[0])
+        lumen_flame(m, flame_pal, 10.52)
+    m.write(blade_held(-15, 0.5, 2.0), particle=vanilla_layers(name)[0], frames=16 if flame_pal else 1,
+            unlit=bool(flame_pal))
 
 
 def torch():

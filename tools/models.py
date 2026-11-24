@@ -90,11 +90,14 @@ def paint_face(mat, face, w, h, seed, decal=None):
             rim[:, -1] += 0.3
         k += rim * mat.bevel
     if decal:
-        k = decal(k, ii, jj, w, h, face)
+        k = decal(k, ii, jj, w, h, face)   # may also give an alpha per texel (0..1): (k, alpha)
     return k
 
 
 # ---------------------------------------------------------------- models
+T_ANIM = 0.0  # while an animated texture is painted: where in its loop (0..1) the frame being painted is
+
+
 class Model:
     def __init__(self, name):
         self.name = name
@@ -183,7 +186,9 @@ class Model:
                 out[j, i] = hits / len(dirs)
         return out
 
-    def write(self, display, translucent=False, particle=None, gui_light=None):
+    def write(self, display, translucent=False, particle=None, gui_light=None, frames=1, frametime=2, unlit=False):
+        """frames > 1: the texture is painted that many times as an animation (decals read T_ANIM, 0..1 round the
+        loop) and the game blends smoothly between the frames"""
         dims = {"north": (0, 1), "south": (0, 1), "east": (2, 1), "west": (2, 1), "up": (0, 2), "down": (0, 2)}
         pieces = []
         for ei, e in enumerate(self.els):
@@ -206,7 +211,32 @@ class Model:
                 shelf = max(shelf, h)
             if ok:
                 break
-        tex = Image.new("RGBA", (T, T), (0, 0, 0, 0))
+        global T_ANIM
+        tex = Image.new("RGBA", (T, T * frames), (0, 0, 0, 0))
+        occs = {}
+        for fr in range(frames):
+            T_ANIM = fr / frames
+            for ei, e in enumerate(self.els):
+                mat = e["mat"]
+                for face in FACES:
+                    if (ei, face) not in place:
+                        continue
+                    x, y, w, h = place[(ei, face)]
+                    k = paint_face(mat, face, w, h, seed=ei * 31 + FACES.index(face), decal=e["decal"])
+                    k, amul = k if isinstance(k, tuple) else (k, None)
+                    if (ei, face) not in occs:
+                        occs[(ei, face)] = self.occlusion(ei, face, w, h) if e["ao"] else np.zeros((h, w))
+                    occ = occs[(ei, face)]
+                    pal = mat.pal
+                    for j in range(h):
+                        for i in range(w):
+                            idx = int(round(min(max(k[j, i], 0), len(pal) - 1)))
+                            c = np.array(pal[idx], float) * (1 - 0.55 * occ[j, i])
+                            a = mat.alpha if amul is None else int(round(mat.alpha * min(max(amul[j, i], 0), 1)))
+                            if mat.kind == "glass" and (i == 1 or j == 0) and w > 3:
+                                a = min(255, a + 60)
+                            tex.putpixel((x + i, y + j + fr * T), (*[int(round(v)) for v in c], a))
+        T_ANIM = 0.0
         els = []
         for ei, e in enumerate(self.els):
             mat = e["mat"]
@@ -217,17 +247,6 @@ class Model:
                 if (ei, face) not in place:
                     continue
                 x, y, w, h = place[(ei, face)]
-                k = paint_face(mat, face, w, h, seed=ei * 31 + FACES.index(face), decal=e["decal"])
-                occ = self.occlusion(ei, face, w, h) if e["ao"] else np.zeros((h, w))
-                pal = mat.pal
-                for j in range(h):
-                    for i in range(w):
-                        idx = int(round(min(max(k[j, i], 0), len(pal) - 1)))
-                        c = np.array(pal[idx], float) * (1 - 0.55 * occ[j, i])
-                        a = mat.alpha
-                        if mat.kind == "glass" and (i == 1 or j == 0) and w > 3:
-                            a = min(255, a + 60)
-                        tex.putpixel((x + i, y + j), (*[int(round(v)) for v in c], a))
                 f = {"uv": [x * 16 / T, y * 16 / T, (x + w) * 16 / T, (y + h) * 16 / T], "texture": "#0"}
                 if mat.tint:
                     f["tintindex"] = 0
@@ -240,9 +259,24 @@ class Model:
         tp = os.path.join(PACK, "assets", NS, "textures", "item", "model", self.name + ".png")
         os.makedirs(os.path.dirname(tp), exist_ok=True)
         tex.save(tp)
-        model = {"textures": {"0": f"{NS}:item/model/{self.name}", "particle": particle or vanilla_layers(self.name)[-1],
-                              **self.tex},
-                 "elements": self.raw + els, "display": display}
+        if frames > 1:
+            with open(tp + ".mcmeta", "w") as fh:
+                json.dump({"animation": {"frametime": frametime, "interpolate": True}}, fh)
+        elif os.path.exists(tp + ".mcmeta"):
+            os.remove(tp + ".mcmeta")
+        textures = {"0": f"{NS}:item/model/{self.name}", "particle": particle or vanilla_layers(self.name)[-1], **self.tex}
+        model = {"textures": textures, "elements": self.raw + els, "display": display}
+        if unlit:
+            # two parts: the glowing ones (shade off) drawn unlit, so they keep their full colour from every side
+            # and in the dark; the rest lit as usual
+            glow = [el for el in els if el.get("shade") is False]
+            rest = [el for el in self.raw + els if el.get("shade") is not False]
+            model = {"loader": "forge:composite", "textures": textures, "display": display,
+                     "children": {"body": {"textures": textures, "elements": rest,
+                                           "render_type": "minecraft:translucent" if translucent else "minecraft:cutout"},
+                                  "glow": {"textures": textures, "elements": glow, "render_type": "forge:item_unlit"}},
+                     "item_render_order": ["body", "glow"]}
+            translucent = False
         if gui_light:
             model["gui_light"] = gui_light
         if translucent:
