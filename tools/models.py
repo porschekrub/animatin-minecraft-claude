@@ -3,7 +3,7 @@
 well-shaped parts (boxes, some turned), and every face is hand-painted pixel art at Minecraft's own detail (16 pixels
 to a block). The painting is done here by rules tuned per material: a small hand-picked palette per material, light
 from above, a one-pixel bevel (light top and left rims, dark bottom and right), clean details (a ridge down a blade,
-a wrapped grip, gem facets, a label on a bottle) and soft shadows painted in wherever parts meet (each texel looks
+a wrapped grip, gem facets, string round a bottle's neck) and soft shadows painted in wherever parts meet (each texel looks
 around for nearby parts).
 
 Writes plain Minecraft item models (assets/lifelikemotion/models/item3d/<name>.json), one texture per item
@@ -73,7 +73,7 @@ def paint_face(mat, face, w, h, seed, decal=None):
     elif mat.kind == "organic":
         k += np.array([[0.7 * (rnd.random() < 0.06) - 0.7 * (rnd.random() < 0.05) for _ in range(w)] for _ in range(h)])
     elif mat.kind == "glass":
-        k += np.where(ii == 1, 2.2, 0) if (w > 3 and side) else 0         # a tall highlight
+        k += np.where(ii == 1, 1.5, 0) if w > 3 else 0                   # a tall highlight
     # bevel: a light rim along the top and left, a dark one along the bottom and right
     if mat.bevel and w >= 3 and h >= 3:
         rim = np.zeros((h, w))
@@ -200,9 +200,8 @@ class Model:
                         idx = int(round(min(max(k[j, i], 0), len(pal) - 1)))
                         c = np.array(pal[idx], float) * (1 - 0.55 * occ[j, i])
                         a = mat.alpha
-                        if mat.kind == "glass" and w > 3 and face not in ("up", "down") and \
-                                (i == 1 or k[j, i] > len(pal) - 1.2):
-                            a = min(255, a + 120)                     # light streaks catch the eye; the rest stays clear
+                        if mat.kind == "glass" and (i == 1 or j == 0) and w > 3:
+                            a = min(255, a + 60)
                         tex.putpixel((x + i, y + j), (*[int(round(v)) for v in c], a))
                 f = {"uv": [x * 16 / T, y * 16 / T, (x + w) * 16 / T, (y + h) * 16 / T], "texture": "#0"}
                 if mat.tint:
@@ -263,12 +262,10 @@ APPLE = ["4a060b", "6e0b12", "98111a", "c01b22", "dd2e2b", "ef5236", "f9874f", "
 LEAF = ["1f4a14", "2c661c", "3f8a27", "58ad35", "7fcf4e", "aee77a"]
 STEM = ["24160a", "3a2512", "54391d", "6f4f2b"]
 CORK = ["5e3a1c", "7d5229", "9e6d3b", "be8c52", "d9ad72"]
-LABEL = ["2a6fd6", "8f7a52", "c0a878", "e0cfa4", "f2e8cc", "fffaf0"]  # paper, with a blue drop at step 0
-GLASS = ["6d97b4", "95bfd8", "c0e2f2", "e6f7ff", "ffffff"]
+GLASS = ["5f8aa6", "86b2cc", "b4d7e9", "e0f3fc", "ffffff"]
 WATER = ["123b8c", "1a52b8", "2468d6", "3c84ea", "62a3f5", "a9d2ff", "e6f3ff"]
-TINTED = ["6a6a6a", "868686", "a4a4a4", "c4c4c4", "e2e2e2", "ffffff"]  # coloured by the game (the potion)
+TINTED = ["5a5a5a", "7a7a7a", "9a9a9a", "bcbcbc", "dcdcdc", "f4f4f4"]  # coloured by the game (the potion)
 STRING = ["6e5a36", "9a8152", "c4ab78", "e3cfa0"]
-WAX = ["4a0a0e", "7a1218", "a81d22", "d03a34", "ef6a5a"]
 
 
 # ---------------------------------------------------------------- cool things
@@ -381,58 +378,29 @@ def apple():
 
 
 def potion():
-    """a round glass flask you can see the potion through (coloured by the game: blue for water): a rounded belly, a
-    slim neck and flared lip, light streaks on the glass, bubbles in the drink, a gold ribbon tied in a bow at the
-    neck and a cork sealed with red wax"""
+    """a glass bottle you can see the potion through (coloured by the game: blue for water), string round the neck and
+    a cork"""
     m = Model("potion")
-    glass = Mat(GLASS, base=1.2, kind="glass", alpha=48, bevel=0.35, grad=0.4)
-    liquid = Mat(TINTED, base=3.2, tint=True, bevel=0.3)
+    glass = Mat(GLASS, base=1.6, kind="glass", alpha=70, bevel=0.6)
+    liquid = Mat(TINTED, base=3.0, tint=True, bevel=0.5)
     cork = Mat(CORK, base=2.4, kind="wood", bevel=0.7)
-    wax = Mat(WAX, base=2.6, bevel=0.6)
-    ribbon = Mat(GOLD, base=3.2, bevel=0.5)
+    string = Mat(STRING, base=2.0, bevel=0.3)
 
-    def drink(k, ii, jj, w, h, face):
+    def surface(k, ii, jj, w, h, face):
         if face == "up":
-            k = k + 1.6                                                   # the bright surface
-            k = np.where((ii == 1) & (jj <= 1), k + 1.5, k)
-        elif face != "down":
-            k = np.where((jj == 0), k + 1.2, k)                           # light just under the surface
-            bub = ((ii == 1) & (jj == h - 2)) | ((ii == w - 2) & (jj == h // 2)) | ((ii == w // 2) & (jj == 2))
-            k = np.where(bub & (w > 3) & (h > 3), k + 1.3, k)             # bubbles
+            k = k + 1.2
+            k = np.where((ii == 1) & (jj == 1), k + 1.5, k)
         return k
 
-    def sparkle(k, ii, jj, w, h, face):
-        # a second, thinner light streak and a glint near the top of the lit faces
-        if face in ("south", "west") and w > 4:
-            k = np.where((ii == 3) & (jj >= 1) & (jj <= h - 3), k + 0.9, k)
-            k = np.where((ii == w - 2) & (jj == 1), k + 2.5, k)
-        return k
-
-    # the drink: the same rounded shape as the glass, a little inside it
-    m.box((5, 1, 5), (11, 5.5, 11), liquid, decal=drink, ao=False)
-    m.box((4, 2, 5.5), (5, 5.5, 10.5), liquid, decal=drink, ao=False, faces=("west", "up", "north", "south", "down"))
-    m.box((11, 2, 5.5), (12, 5.5, 10.5), liquid, decal=drink, ao=False, faces=("east", "up", "north", "south", "down"))
-    m.box((5.5, 2, 4), (10.5, 5.5, 5), liquid, decal=drink, ao=False, faces=("north", "up", "east", "west", "down"))
-    m.box((5.5, 2, 11), (10.5, 5.5, 12), liquid, decal=drink, ao=False, faces=("south", "up", "east", "west", "down"))
-    # the glass: a rounded belly (a middle and four rounded sides), shoulders, a slim neck, a flared lip
-    m.box((4.5, 0, 4.5), (11.5, 7.5, 11.5), glass, decal=sparkle, ao=False)
-    m.box((3.5, 1.5, 5), (4.5, 6.5, 11), glass, ao=False, faces=("west", "up", "down", "north", "south"))
-    m.box((11.5, 1.5, 5), (12.5, 6.5, 11), glass, ao=False, faces=("east", "up", "down", "north", "south"))
-    m.box((5, 1.5, 3.5), (11, 6.5, 4.5), glass, ao=False, faces=("north", "up", "down", "east", "west"))
-    m.box((5, 1.5, 11.5), (11, 6.5, 12.5), glass, decal=sparkle, ao=False, faces=("south", "up", "down", "east", "west"))
-    m.box((5.5, 7.5, 5.5), (10.5, 8.5, 10.5), glass, ao=False, faces=("up", "north", "south", "east", "west"))
-    m.box((6.75, 8.5, 6.75), (9.25, 11, 9.25), glass, ao=False, faces=("north", "south", "east", "west"))
-    m.box((6.25, 11, 6.25), (9.75, 12, 9.75), glass, ao=False)
-    # cork, sealed with wax that runs down a little
-    m.box((7, 10.5, 7), (9, 13.5, 9), cork)
-    m.box((6.85, 13.5, 6.85), (9.15, 14, 9.15), wax)
-    m.box((8.6, 12.5, 9.15), (9.1, 13.5, 9.4), wax)                     # a drip down the cork
-    # a gold ribbon round the neck, tied in a small bow at the front with two tails
-    m.box((6.5, 9.5, 6.5), (9.5, 10, 9.5), ribbon)
-    m.box((6.75, 9.5, 9.5), (7.75, 10.5, 9.85), ribbon), m.box((8.25, 9.5, 9.5), (9.25, 10.5, 9.85), ribbon)
-    m.box((7.75, 9.6, 9.5), (8.25, 10.4, 10.0), ribbon)
-    m.box((7.35, 8.25, 9.55), (7.75, 9.5, 9.75), ribbon), m.box((8.25, 8.0, 9.55), (8.65, 9.5, 9.75), ribbon)
-    m.write(upright(0.4, 4.5), translucent=True)
+    m.box((5, 0.5, 5), (11, 5.5, 11), liquid, decal=surface, ao=False)   # the potion inside
+    m.box((4.5, 0, 4.5), (11.5, 7, 11.5), glass, ao=False)               # body
+    m.box((5.5, 7, 5.5), (10.5, 8, 10.5), glass, ao=False)               # shoulder
+    m.box((6.5, 8, 6.5), (9.5, 10.5, 9.5), glass, ao=False)              # neck
+    m.box((6, 10.5, 6), (10, 11.5, 10), glass, ao=False)                 # lip
+    m.box((6.75, 10.25, 6.75), (9.25, 13, 9.25), cork)
+    m.box((6.25, 8.5, 6.25), (9.75, 9.25, 9.75), string)
+    m.box((9.75, 6.5, 7.5), (10.25, 8.75, 8.5), string)                  # its loose end
+    m.write(upright(0.34, 5.0), translucent=True)
 
 
 def water_bucket():
