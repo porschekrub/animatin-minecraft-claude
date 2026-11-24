@@ -125,20 +125,144 @@ def hanging_sign(wood):
 BED_WOOD = ["3a2412", "553519", "714822", "8c5c2c", "a87238", "c08a48"]
 
 
-def quilt(k, ii, jj, w, h, face):
-    """a quilted cover: stitched in squares, each puffed up and catching the light, a lighter trim round the top,
-    and on the sides, soft folds hanging down to a hem"""
-    if face == "up":
-        line = (ii % 3 == 0) | (jj % 3 == 0)
-        k = np.where(line, k - 0.9, k)                                    # stitched in squares,
-        k = np.where((ii % 3 == 1) & (jj % 3 == 1), k + 0.6, k)           # each one puffed up
-        edge = (ii == 0) | (jj == 0) | (jj == h - 1) | (ii == w - 1)
-        k = np.where(edge, 4.2, k)                                       # the trim
-    elif face != "down":
-        k = np.where(ii % 3 == 1, k - 0.6, k)                             # folds where it hangs
-        k = np.where(jj == h - 1, 4.2, k)                                 # the hem
-        k = np.where(jj == 0, k + 0.5, k)
-    return k
+# ---------------------------------------------------------------- blankets: a design of its own for every colour
+# Each design paints palette steps: 0..5 are the colour's own shades (3 its true colour), 6 and 7 two accent
+# colours of its own. The face's light is added to the shades (never to the accents). On the cover's top, ii runs
+# from the pillows to the foot and jj across the bed, so little pictures are drawn upright for someone looking at
+# the side of the bed, as it's held (their rows run across the bed, along jj).
+def _tile(mask, every_u, every_v, shift=0):
+    """a little picture (rows of 0/1/2...) repeated across the cover, every other row shifted"""
+    mask = np.array(mask)
+    mh, mw = mask.shape
+
+    def at(ii, jj):
+        row = jj // every_v
+        u = (ii + row * shift) % every_u
+        v = jj % every_v
+        inside = (u < mw) & (v < mh)
+        return np.where(inside, mask[np.minimum(v, mh - 1), np.minimum(u, mw - 1)], 0)
+    return at
+
+
+HEART = _tile([[1, 0, 1], [1, 1, 1], [0, 1, 0]], 5, 5, shift=2)
+FLOWER_M = _tile([[0, 1, 0], [1, 2, 1], [0, 1, 0]], 5, 4, shift=2)
+TREE = _tile([[0, 1, 0], [1, 1, 1], [1, 1, 1], [0, 2, 0]], 5, 5, shift=2)
+CLOUD = _tile([[0, 1, 1, 0, 0], [1, 1, 1, 1, 0]], 6, 4, shift=3)
+MOON = _tile([[0, 1, 1], [1, 0, 0], [1, 0, 0], [0, 1, 1]], 99, 99)
+STARS = _tile([[0, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 2, 0], [0, 0, 0, 0, 0, 0],
+               [0, 0, 0, 2, 0, 0], [2, 0, 0, 0, 0, 1]], 6, 6, shift=3)
+
+
+def _diamonds(ii, jj, w, h):                      # white: a classic quilt, stitched in diamonds, puffed between
+    line = ((ii + jj) % 4 == 0) | ((ii - jj) % 4 == 0)
+    return np.where(line, 2.4, np.where(((ii + jj) % 4 == 2) & ((ii - jj) % 4 == 2), 5, 4))
+
+
+def _sunset(ii, jj, w, h):                        # orange: sunset stripes, cream between
+    return np.array([2, 3, 4, 3, 6])[ii % 5] + 0 * jj
+
+
+def _flowers(ii, jj, w, h):                       # magenta: little flowers with gold hearts
+    f = FLOWER_M(ii, jj)
+    return np.where(f == 2, 6, np.where(f == 1, 5, 3))
+
+
+def _clouds(ii, jj, w, h):                        # light blue: white clouds drifting over the sky
+    return np.where(CLOUD(ii, jj) == 1, 6, np.where((jj % 4 == 2) & (ii % 7 == 5), 4, 3))
+
+
+def _gingham(ii, jj, w, h):                       # yellow: gingham checks with white
+    a, b = (ii // 2) % 2, (jj // 2) % 2
+    return np.where(a & b, 2.0, np.where(a | b, 3.4, 6))
+
+
+def _chevron(ii, jj, w, h):                       # lime: zigzags
+    z = (jj + np.abs(ii % 4 - 2)) % 4
+    return np.where(z == 0, 1.6, np.where(z == 2, 5, 3))
+
+
+def _hearts(ii, jj, w, h):                        # pink: red hearts
+    return np.where(HEART(ii, jj) == 1, 7, np.where((ii + jj) % 2 == 0, 3.3, 3))
+
+
+def _knit(ii, jj, w, h):                          # gray: a chunky knit, with a pale band near the foot
+    k = np.where((ii % 2) == (jj % 2), 3.6, 2.6)
+    return np.where((ii >= w - 3) & (ii <= w - 2), 6, k)
+
+
+def _pinstripe(ii, jj, w, h):                     # light gray: pinstripes with one navy stripe
+    return np.where(ii % 6 == 4, 6, np.where(ii % 3 == 1, 2.0, 3.6))
+
+
+def _waves(ii, jj, w, h):                         # cyan: rolling waves with white crests
+    z = (jj + np.array([0, 1, 2, 2, 1, 0])[ii % 6]) % 4                # rows of waves rolling along the bed
+    return np.where(z == 0, 6, np.where(z == 1, 4.4, np.where(z == 2, 2.6, 3.2)))
+
+
+def _night(ii, jj, w, h):                         # purple: a night sky of gold stars
+    s = STARS(ii, jj)
+    return np.where(s == 1, 6, np.where(s == 2, 5, np.where((ii * 3 + jj * 5) % 11 == 0, 3, 1.8)))
+
+
+def _tartan(ii, jj, w, h):                        # blue: a dark tartan, with fine green and pale blue lines
+    n = (ii % 5 < 2).astype(int) + (jj % 5 < 2).astype(int)
+    k = np.where(n == 2, 1.0, np.where(n == 1, 2.2, 3.2))
+    return np.where(ii % 5 == 3, 6, np.where(jj % 5 == 3, 4.6, k))
+
+
+def _patchwork(ii, jj, w, h):                     # brown: patchwork of different cloths, stitched together
+    pid = (ii // 3) * 7 + (jj // 3) * 3
+    patch = np.array([2.2, 6, 3.6, 7, 4.4, 1.6, 6.0])[pid % 7]
+    dots = (patch == 6) & ((ii + jj) % 2 == 0)
+    k = np.where(dots, 3.0, patch)
+    return np.where((ii % 3 == 0) | (jj % 3 == 0), 1.0, k)
+
+
+def _forest(ii, jj, w, h):                        # green: a forest of little pine trees
+    t = TREE(ii, jj)
+    return np.where(t == 2, 6, np.where(t == 1, 1.4, 4))
+
+
+def _buffalo(ii, jj, w, h):                       # red: buffalo check, red and black
+    a, b = (ii // 3) % 2, (jj // 3) % 2
+    return np.where(a & b, 6, np.where(a | b, 1.8, 3.4))
+
+
+def _starry(ii, jj, w, h):                        # black: stars and a crescent moon
+    s = STARS(ii + 2, jj + 1)
+    moon = MOON(ii - 6, jj - 1) == 1                                      # and a crescent moon
+    return np.where(moon, 7, np.where(s == 1, 6, np.where(s == 2, 4, 0.8)))
+
+
+BLANKETS = {   # colour: (design, accent colours)
+    "white": (_diamonds, ["fbfcfc", "e4e8ec"]), "orange": (_sunset, ["fff0d0", "f8c070"]),
+    "magenta": (_flowers, ["f8d840", "ffffff"]), "light_blue": (_clouds, ["f8fcff", "ffffff"]),
+    "yellow": (_gingham, ["fffdf0", "ffffff"]), "lime": (_chevron, ["f0ffd0", "ffffff"]),
+    "pink": (_hearts, ["fff4f8", "d8304c"]), "gray": (_knit, ["c8ccd0", "ffffff"]),
+    "light_gray": (_pinstripe, ["2c3a68", "ffffff"]), "cyan": (_waves, ["eafffc", "ffffff"]),
+    "purple": (_night, ["ffe070", "ffffff"]), "blue": (_tartan, ["1e5a36", "ffffff"]),
+    "brown": (_patchwork, ["e8d8b0", "8a2a20"]), "green": (_forest, ["5a3a1c", "ffffff"]),
+    "red": (_buffalo, ["1a1416", "ffffff"]), "black": (_starry, ["fff8d8", "f0d070"]),
+}
+
+
+def blanket(colour, cushion=False):
+    """the cover's decal: its colour's own design on top, carried down the sides where it hangs (with soft folds)
+    to a hem; the face's light shades the colour's own steps"""
+    design, _ = BLANKETS[colour]
+
+    def f(k, ii, jj, w, h, face):
+        if face == "down":
+            return k
+        light = k - 3.0
+        if face == "up" or cushion:
+            p = design(ii, jj, w, h).astype(float)
+        else:                                                             # the sides: the design runs on down
+            p = design(ii, jj + 3, w, h).astype(float)
+            p = np.where((ii % 3 == 1) & (p < 6), p - 0.5, p)              # folds where it hangs
+            p = np.where(jj == h - 1, 4.6, p)                              # the hem
+        return np.where(p >= 6, p, np.clip(p + 0.7 * light, 0, 5))
+    return f
 
 
 def pillow(k, ii, jj, w, h, face):
@@ -162,17 +286,18 @@ def panel(k, ii, jj, w, h, face):
 
 
 def bed(colour):
-    """a proper bed: a wooden bedstead with tall capped posts and a panelled headboard, a white mattress, a quilted
-    cover in the bed's colour draping over the sides with the top sheet turned down over it, two plump pillows and
-    a little cushion in the cover's colour"""
+    """a proper bed: a wooden bedstead with tall capped posts and a panelled headboard, a white mattress, a cover
+    in the bed's colour and its own design (hearts, tartan, clouds...) draping over the sides with the top sheet
+    turned down over it, two plump pillows and a little cushion to match the cover"""
     name = f"{colour}_bed"
     m = Model(name)
     pal = ["7a7e84", "9ea2a6", "bfc3c6", "dadcde", "eceeef", "fbfcfc"] if colour == "white" else ramp(DYES[colour])
+    cloth = pal + BLANKETS[colour][1]                                  # its shades, then its two accents
     wood = Mat(BED_WOOD, base=3.0, kind="wood", bevel=0.5)
     trim = Mat(BED_WOOD, base=1.8, kind="wood", bevel=0.4)
     cap = Mat(BED_WOOD, base=4.0, bevel=0.5)
     sheet = Mat(WOOL_WHITE, base=3.4, bevel=0.3)
-    cover = Mat(pal, base=3.0, bevel=0)
+    cover = Mat(cloth, base=3.0, bevel=0)
     soft = Mat(WOOL_WHITE, base=3.8, bevel=0)
     for (x0, x1, top) in ((0, 1.5, 9.5), (14.5, 16, 6.2)):                           # the four posts, capped
         for (z0, z1) in ((3.2, 4.7), (11.3, 12.8)):
@@ -189,7 +314,7 @@ def bed(colour):
     m.box((1.5, 2.0, 4.55), (14.5, 2.9, 11.45), trim)                                 # the slats under it
     m.box((1.3, 2.9, 4.4), (14.6, 4.7, 11.6), sheet,                                  # mattress, in its sheet
           decal=lambda k, ii, jj, w, h, face: np.where((face != "up") & (face != "down") & (jj == 1), k - 0.8, k))
-    m.box((5.6, 2.7, 3.95), (14.62, 5.5, 12.05), cover, decal=quilt)                  # the quilted cover
+    m.box((5.6, 2.7, 3.95), (14.62, 5.5, 12.05), cover, decal=blanket(colour))        # the cover, in its design
     m.box((5.1, 5.45, 3.9), (7.0, 5.75, 12.1), soft, ao=False)                       # top sheet turned down
     m.box((5.1, 2.7, 3.9), (5.6, 5.45, 4.0), soft, ao=False)                         # and hanging at the sides
     m.box((5.1, 2.7, 12.0), (5.6, 5.45, 12.1), soft, ao=False)
@@ -198,8 +323,8 @@ def bed(colour):
         lean = (22.5, "z", (3.0, 4.7, (z0 + z1) / 2))                                 # leaning on the headboard
         m.box((1.6, 4.7, z0), (4.4, 6.5, z1), sheet, decal=pillow, rot=lean)
         m.box((1.9, 6.5, z0 + 0.3), (4.1, 6.9, z1 - 0.3), sheet, decal=shine, rot=lean)
-    m.box((3.6, 4.7, 6.7), (5.3, 6.9, 9.3), Mat(pal, base=3.6, bevel=0.4), rot=(-22.5, "z", (4.4, 4.7, 8)),
-          decal=lambda k, ii, jj, w, h, face: np.where((ii + jj) % 2 == 0, k + 0.5, k))   # a little cushion
+    m.box((3.6, 4.7, 6.7), (5.3, 6.9, 9.3), Mat(cloth, base=3.0, bevel=0), rot=(-22.5, "z", (4.4, 4.7, 8)),
+          decal=blanket(colour, cushion=True))                                         # a cushion to match
     m.write(upright(scale=0.42, lift=6.0, tilt=28))
     # the inventory keeps the game's own little bed, drawn by the game
     model = {"loader": "forge:separate_transforms", "textures": {"particle": f"minecraft:block/{colour}_wool"},
