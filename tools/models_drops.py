@@ -30,6 +30,7 @@ SNOW = ["a6b8cc", "c4d4e4", "dde8f2", "eef5fb", "ffffff"]
 FLINT_HEAD = ["101012", "1c1c20", "2c2c32", "40404a", "5c5c68", "8a8a98"]
 SPECTRAL = ["8a5a04", "c08a0a", "eab41a", "fcd640", "fff090", "fffbe0"]
 FIRE = ["1a0a04", "3a1406", "6a2208", "b0400c", "f07818", "ffb840", "fff0b0"]
+PALE_WOOD = ["5a4024", "7a5a34", "9c7a4a", "bc9a62", "d6b87e", "ecd4a0"]
 CANE = ["2a4a14", "3e6a1e", "56902a", "74b23a", "9ad25a", "c8f088"]
 
 HELD = dict(scale=0.42, lift=7.0)
@@ -44,12 +45,43 @@ def blade(name, build, turn=45, held=None):
 
 # ---------------------------------------------------------------- long things
 def stick():
+    """a real stick off a tree: a branch with a slight crook, tapering as it goes up, in rough bark with a bark-peeled
+    patch, a knot, pale freshly broken ends showing their rings, a side twig with two leaves, and a snapped-off stub"""
     def b(m):
-        w = Mat(STICK, base=2.4, kind="wood", bevel=0.6)
-        m.box((7.25, 0, 7.25), (8.75, 15, 8.75), w)
-        m.box((7, 6, 7), (9, 7, 9), w)                                    # a knot
-        m.box((8.75, 9, 7.6), (9.5, 12, 8.4), w, rot=(-45, "z", (8.75, 9, 8)))   # a little twig
-        m.box((9.5, 12.5, 7.4), (11, 13.25, 8.6), Mat(VINE, base=2.2, bevel=0.3), ao=False)   # with one leaf
+        bark = Mat(STICK, base=2.3, kind="wood", bevel=0.5)
+        pale = Mat(PALE_WOOD, base=3.0, bevel=0.3)
+        dark = Mat(STICK, base=0.9, bevel=0.3)
+
+        def peeled(k, ii, jj, w, h, face):
+            if face == "south" and h >= 5:
+                k = np.where((jj >= 1) & (jj <= 3) & (ii >= 1), 4.0, k)          # a patch where the bark came off
+            return k
+
+        def rings(k, ii, jj, w, h, face):
+            if face in ("up", "down"):
+                ring = (ii == 0) | (jj == 0) | (ii == w - 1) | (jj == h - 1)
+                k = np.where(ring, 0.8, k)                                        # the bark round the edge
+                k = np.where((np.abs(ii - (w - 1) / 2) < 0.6) & (np.abs(jj - (h - 1) / 2) < 0.6), 1.6, k)
+            return k
+        # the branch: three lengths, each a little thinner and set a little off the last, for a gentle crook
+        m.box((7.15, 0, 7.15), (8.85, 5.6, 8.85), bark)
+        m.box((7.45, 5.2, 7.25), (9.05, 10.8, 8.75), bark, decal=peeled)
+        m.box((7.3, 10.4, 7.35), (8.7, 15.2, 8.65), bark)
+        m.box((7.15, -0.3, 7.15), (8.85, 0, 8.85), pale, decal=rings, ao=False)          # broken ends, pale wood
+        m.box((7.3, 15.2, 7.35), (8.7, 15.5, 8.65), pale, decal=rings, ao=False)
+        m.box((6.8, 3.0, 7.55), (7.15, 4.2, 8.45), dark, ao=False)                       # a knot
+        m.box((6.65, 3.3, 7.75), (6.8, 3.9, 8.25), pale, ao=False)
+        # a side twig reaching up and out, with two leaves at its end
+        tw = (-45, "z", (8.9, 8.2, 8.0))
+        m.box((8.45, 8.2, 7.6), (9.35, 12.6, 8.4), bark, rot=tw)
+        leaf = Mat(VINE, base=2.6, bevel=0.3)
+        vein = lambda k, ii, jj, w, h, face: np.where(ii == w // 2, k - 0.9, k)
+        m.box((11.6, 10.9, 7.75), (12.8, 13.9, 8.25), leaf, rot=(-22.5, "z", (12.2, 10.9, 8.0)), decal=vein, ao=False)
+        m.box((11.9, 10.4, 7.8), (13.0, 12.8, 8.2), leaf, rot=(-45, "z", (12.4, 10.4, 8.0)), decal=vein, ao=False)
+        # a snapped-off stub on the other side, its end pale
+        st = (45, "z", (7.4, 12.0, 8.0))
+        m.box((7.05, 12.0, 7.65), (7.75, 14.2, 8.35), bark, rot=st)
+        m.box((7.05, 14.2, 7.65), (7.75, 14.45, 8.35), pale, rot=st, ao=False)
     blade("stick", b)
 
 
