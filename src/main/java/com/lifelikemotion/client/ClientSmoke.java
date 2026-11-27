@@ -285,7 +285,7 @@ public final class ClientSmoke {
         use("food_eat_apple", "apple", 14);
         use("food_eat_stew", "mushroom_stew", 14);
         // every show-off move, frozen at eight points in time, with an item it belongs to
-        String[][] showItems = {{"sword_inspect", "diamond_sword"}, {"tool_inspect", "diamond_axe"}, {"sword_twirl_wipe", "iron_sword"}, {"sword_flip", "diamond_sword"}, {"tool_toss", "iron_axe"},
+        String[][] showItems = {{"sword_inspect", "diamond_sword"}, {"sword_toss", "diamond_sword"}, {"sword_salute", "diamond_sword"}, {"tool_inspect", "diamond_axe"}, {"tool_flip", "diamond_pickaxe"}, {"tool_spin_rest", "diamond_shovel"}, {"sword_twirl_wipe", "iron_sword"}, {"sword_flip", "diamond_sword"}, {"tool_toss", "iron_axe"},
                 {"tool_shoulder", "diamond_pickaxe"}, {"tool_twirl", "iron_pickaxe"}, {"shovel_spin", "iron_shovel"}, {"rod_flick", "fishing_rod"},
                 {"small_toss", "oak_planks"}, {"turn_over", "bread"}, {"juggle", "snowball"}, {"light_raise", "lantern"},
                 {"hand_flex", "air"}, {"hand_crack", "air"}, {"bow_pluck", "bow"}, {"shield_brace", "shield"}, {"trident_spin", "trident"},
@@ -831,11 +831,12 @@ public final class ClientSmoke {
         });
     }
 
-    /** A film of the show-off key (Y) with a sword, then an axe, then a pickaxe. */
+    /** A film of the show-off key (Y): each of its moves in turn with a sword, then an axe, then a pickaxe. */
     static void filmShow(String name) {
         if (!wanted(name)) return;
         Minecraft mc = Minecraft.getInstance();
-        String[] items = {"diamond_sword", "diamond_axe", "diamond_pickaxe", "diamond_shovel", "diamond_hoe", "apple"};
+        String[] items = {"diamond_sword", "diamond_axe", "diamond_pickaxe"};
+        int each = 96, per = 3;
         add(t -> {
             if (t == 0) {
                 mc.options.setCameraType(CameraType.FIRST_PERSON);
@@ -845,7 +846,7 @@ public final class ClientSmoke {
                 yaw = 0f;
                 pitch = 10f;
             }
-            int f = t - 20, each = 110, i = f / each, g = f % each;
+            int f = t - 20, i = f / (each * per), g = f % each;
             if (f == 0) {
                 slowClock(450);
                 filmName = name;
@@ -853,14 +854,14 @@ public final class ClientSmoke {
                 filmNext = Motion.ticks;
             }
             if (f >= 0 && i < items.length) {
-                if (g == 0) give(items[i]);
-                if (g == 12) KeyMapping.click(com.lifelikemotion.client.fp.Flourish.KEY.getKey());
+                if (f % (each * per) == 0) give(items[i]);
+                if (g == 8) KeyMapping.click(com.lifelikemotion.client.fp.Flourish.KEY.getKey());
             }
-            if (f == each * items.length) {
+            if (f == each * per * items.length) {
                 filmName = null;
                 slowClock(50);
             }
-            return f > each * items.length;
+            return f > each * per * items.length;
         });
     }
 

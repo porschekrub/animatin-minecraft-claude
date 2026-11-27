@@ -224,11 +224,24 @@ public final class FirstPersonAnimator {
         }
         wrist(ps, p, s, kind, partial);
         float size = size(kind);
+        // a show-off move that throws the item: the hand stays where it is (and the fist closes round where the grip
+        // was), the item flies on its own
+        float[] thrown = hand(p, right) && !eating ? Flourish.itemPose(partial) : null;
+        Matrix4f handModel = null;
+        if (thrown != null) {
+            ps.pushPose();
+            ps.scale(size, size, size);
+            handModel = (Matrix4f) Arm.modelPose(ps, p, stack, right)[1];
+            ps.popPose();
+            float[] pv = Flourish.pivot(stack);
+            Clip.apply(ps, thrown, s, 1, pv[0], pv[1], pv[2]);
+        }
         ps.scale(size, size, size);
         // the item, and the arm whose fist closes round its grip
         Object[] mp = Arm.modelPose(ps, p, stack, right);
         Arm.Points pts = Arm.points((net.minecraft.client.resources.model.BakedModel) mp[0], stack, kind);
         Matrix4f model = (Matrix4f) mp[1];
+        if (handModel == null) handModel = model;
         Minecraft.getInstance().getEntityRenderDispatcher().getItemInHandRenderer().renderItem(p, stack,
                 right ? ItemDisplayContext.FIRST_PERSON_RIGHT_HAND : ItemDisplayContext.FIRST_PERSON_LEFT_HAND, !right, ps, buf, light);
         // your arm holds it while you eat, while you show it off (it comes up from below to take it) or always if asked
@@ -243,9 +256,19 @@ public final class FirstPersonAnimator {
                 if (other.isEmpty()) Arm.draw(ps, buf, light, p, !right, aMine ? b : a, Arm.restOuter(-s));
             } else {
                 Vector3f g = pts.grip();
-                Vector3f fist = Arm.toRoot(model, g.x, g.y, g.z);
+                Vector3f fist = Arm.toRoot(handModel, g.x, g.y, g.z);
                 if (!LMConfig.FP_ARMS_WITH_ITEMS.get() && !eating) fist.y -= 0.7f * (1 - showing);
                 Arm.draw(ps, buf, light, p, right, fist, outer(afterSwing, s));
+                // a show-off move with your other hand on it (running along a blade, polishing a head), if it's free
+                float[] off = hand(p, right) && !eating ? Flourish.offHand(partial) : null;
+                ItemStack other = right == (p.getMainArm() == HumanoidArm.RIGHT) ? p.getOffhandItem() : p.getMainHandItem();
+                if (off != null && other.isEmpty()) {
+                    Vector3f along = new Vector3f(pts.grip()).lerp(pts.tip(), 0.12f + 0.88f * off[0]);
+                    Vector3f at = Arm.toRoot(model, along.x, along.y, along.z).add(0, -0.03f, 0.035f);
+                    // (it comes in from below its own side of the screen)
+                    Vector3f from = new Vector3f(-s * 0.55f, -0.75f, -0.55f);
+                    Arm.draw(ps, buf, light, p, !right, from.lerp(at, off[1]), Arm.restOuter(-s));
+                }
             }
         }
         // the blade's trail while it cuts

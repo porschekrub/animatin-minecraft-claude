@@ -15,8 +15,11 @@ Everything you do gets an animation.
   pump when you walk and sprint, trail your jumps and dip when you land; lanterns and torches swing.
 - **Every item has its own stance** – how it's held standing, walking and running: tools go over the shoulder when you
   run, a sword is held up and ready, a torch or lantern is held out to light the way, fists pump.
-- **Show off (Y)** – press **Y** with a sword, pickaxe, axe, shovel or hoe and your arm comes up to show it off: sword
-  twirls, blade wipes and flips, tool tosses, spins and resting it on your shoulder.
+- **Show off (Y)** – press **Y** with a sword, pickaxe, axe, shovel or hoe and show it off; press again for the next
+  move. A sword is laid across in front of you while your other hand runs along the blade, tossed up spinning and
+  caught, or spun like a wheel and raised in a salute before being flicked clean. A tool's head gets polished, it's
+  flipped end over end and caught by the handle, or twirled round its handle, raised and slammed down. Every move has
+  its own whooshes, scrapes and catches.
 - **Using things** – buckets are tipped out or dipped to scoop, flint and steel is struck (sparks), shears snip, bone
   meal and seeds are shaken out, a hoe tills (soil flies), an axe shaves a log, a shovel presses a path, a rod is cast
   and reeled in. Soup is slurped from the bowl, carrots nibbled, milk chugged. A bow held drawn too long trembles; a
