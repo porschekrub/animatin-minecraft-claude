@@ -250,10 +250,12 @@ public final class ClientSmoke {
         // ---- films of first-person motion (for judging it as it moves)
         film("film");
         filmEat("filmeat");
-        filmChop("filmchop");
+        filmChop("filmchop", "diamond_axe", "oak_log");
+        filmChop("filmdig", "diamond_shovel", "dirt");
         filmShow("filmshow");
-        swingStills("still_hit_a", "diamond_sword", com.lifelikemotion.client.fp.Clips.SLASH_A, 0f, 0.28f, 0.46f, 0.56f);
-        swingStills("still_hit_b", "diamond_sword", com.lifelikemotion.client.fp.Clips.SLASH_B, 0.28f, 0.46f, 0.56f);
+        swingStills("still_hit_a", "diamond_sword", com.lifelikemotion.client.fp.Clips.SLASH_A, 0.18f, 0.3f, 0.4f, 0.5f, 0.6f);
+        swingStills("still_hit_b", "diamond_sword", com.lifelikemotion.client.fp.Clips.SLASH_B, 0.18f, 0.3f, 0.4f, 0.5f, 0.6f);
+        swingStills("still_stab", "diamond_sword", com.lifelikemotion.client.fp.Clips.STAB, 0.22f, 0.4f, 0.56f);
         swingStills("still_axehit", "diamond_axe", com.lifelikemotion.client.fp.Clips.AXE_HIT, 0.32f, 0.52f, 0.62f);
         swingStills("still_mine", "diamond_pickaxe", com.lifelikemotion.client.fp.Clips.MINE, 0.38f, 0.5f, 0.58f, 0.66f);
         swingStills("still_chop", "diamond_axe", com.lifelikemotion.client.fp.Clips.CHOP, 0.35f, 0.48f, 0.58f);
@@ -283,7 +285,7 @@ public final class ClientSmoke {
         use("food_eat_apple", "apple", 14);
         use("food_eat_stew", "mushroom_stew", 14);
         // every show-off move, frozen at eight points in time, with an item it belongs to
-        String[][] showItems = {{"sword_twirl_wipe", "iron_sword"}, {"sword_flip", "diamond_sword"}, {"tool_toss", "iron_axe"},
+        String[][] showItems = {{"sword_inspect", "diamond_sword"}, {"tool_inspect", "diamond_axe"}, {"sword_twirl_wipe", "iron_sword"}, {"sword_flip", "diamond_sword"}, {"tool_toss", "iron_axe"},
                 {"tool_shoulder", "diamond_pickaxe"}, {"tool_twirl", "iron_pickaxe"}, {"shovel_spin", "iron_shovel"}, {"rod_flick", "fishing_rod"},
                 {"small_toss", "oak_planks"}, {"turn_over", "bread"}, {"juggle", "snowball"}, {"light_raise", "lantern"},
                 {"hand_flex", "air"}, {"hand_crack", "air"}, {"bow_pluck", "bow"}, {"shield_brace", "shield"}, {"trident_spin", "trident"},
@@ -795,7 +797,7 @@ public final class ClientSmoke {
     }
 
     /** A film of chopping a tree trunk with an axe (held down, so it chops again and again). */
-    static void filmChop(String name) {
+    static void filmChop(String name, String tool, String block) {
         if (!wanted(name)) return;
         Minecraft mc = Minecraft.getInstance();
         add(t -> {
@@ -805,11 +807,11 @@ public final class ClientSmoke {
                 cmd("gamemode survival");
                 cmd("kill @e[type=!player]");
                 cmd("tp @s 60 -60 30 0 10");
-                give("diamond_axe");
+                give(tool);
                 yaw = 0f;
                 pitch = 10f;
             }
-            if (t == 10) cmd("fill 59 -60 32 61 -55 37 oak_log");
+            if (t == 10) cmd("fill 59 -60 32 61 -55 37 " + block);
             int f = t - 30;
             if (f == 0) {
                 slowClock(450);
@@ -833,7 +835,7 @@ public final class ClientSmoke {
     static void filmShow(String name) {
         if (!wanted(name)) return;
         Minecraft mc = Minecraft.getInstance();
-        String[] items = {"diamond_sword", "diamond_axe", "diamond_pickaxe"};
+        String[] items = {"diamond_sword", "diamond_axe", "diamond_pickaxe", "diamond_shovel", "diamond_hoe", "apple"};
         add(t -> {
             if (t == 0) {
                 mc.options.setCameraType(CameraType.FIRST_PERSON);

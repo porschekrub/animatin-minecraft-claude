@@ -11,6 +11,24 @@ public final class Flourishes {
 
     // ---------------------------------------------------------------- swords
     /** brought up in front, spun round like a propeller, then laid flat and run along the blade, twice */
+    /** brought up in front of you and laid over to look along the blade, turned to see its other side, back down */
+    public static final Move SWORD_INSPECT = new Move("sword_inspect", Clip.of(
+            0.00f, 0, 0, 0, 0, 0, 0,
+            0.16f, -0.20f, 0.12f, 0.10f, -6, 140, 52,
+            0.30f, -0.21f, 0.13f, 0.10f, -6, 146, 52,
+            0.50f, -0.20f, 0.12f, 0.10f, -6, 200, 52,
+            0.68f, -0.21f, 0.13f, 0.10f, -6, 206, 52,
+            0.84f, -0.04f, 0.02f, 0.02f, 0, 340, 6,
+            1.00f, 0, 0, 0, 0, 360, 0), 60);
+    /** a tool brought up in front of you and tipped over to look at its head, turned round, back down */
+    public static final Move TOOL_INSPECT = new Move("tool_inspect", Clip.of(
+            0.00f, 0, 0, 0, 0, 0, 0,
+            0.16f, -0.18f, 0.12f, 0.10f, -6, 140, 42,
+            0.30f, -0.19f, 0.13f, 0.10f, -6, 146, 42,
+            0.50f, -0.18f, 0.12f, 0.10f, -6, 200, 42,
+            0.68f, -0.19f, 0.13f, 0.10f, -6, 206, 42,
+            0.84f, -0.04f, 0.02f, 0.02f, 0, 340, 5,
+            1.00f, 0, 0, 0, 0, 360, 0), 56);
     public static final Move SWORD_TWIRL_WIPE = new Move("sword_twirl_wipe", Clip.of(
             0.00f, 0, 0, 0, 0, 0, 0,
             0.10f, -0.20f, 0.20f, -0.04f, -8, 8, 0,
@@ -256,7 +274,7 @@ public final class Flourishes {
             0.90f, 0, 0, 0, -180, 0, 3,
             1.00f, 0, 0, 0, -180, 0, 0), 54);
 
-    public static final Move[] ALL = {SWORD_TWIRL_WIPE, SWORD_FLIP, TOOL_TOSS, TOOL_SHOULDER, TOOL_TWIRL, SHOVEL_SPIN, ROD_FLICK,
+    public static final Move[] ALL = {SWORD_INSPECT, TOOL_INSPECT, SWORD_TWIRL_WIPE, SWORD_FLIP, TOOL_TOSS, TOOL_SHOULDER, TOOL_TWIRL, SHOVEL_SPIN, ROD_FLICK,
             SMALL_TOSS, TURN_OVER, JUGGLE, LIGHT_RAISE, HAND_FLEX, HAND_CRACK, BOW_PLUCK, SHIELD_BRACE, TRIDENT_SPIN,
             COMPASS_LOOK, BOOK_READ, BUCKET_SHAKE, FLINT_STRIKE, SPYGLASS_PEEK, TOTEM_RAISE, EGG_TOSS};
 }

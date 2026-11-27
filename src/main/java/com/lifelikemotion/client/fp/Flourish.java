@@ -54,35 +54,11 @@ public final class Flourish {
     /** The moves that suit an item (one is picked in turn). */
     static Flourishes.Move[] movesFor(ItemStack s) {
         Item i = s.getItem();
-        if (i instanceof BowItem || i instanceof CrossbowItem) return new Flourishes.Move[]{Flourishes.BOW_PLUCK};
-        if (i instanceof ShieldItem) return new Flourishes.Move[]{Flourishes.SHIELD_BRACE};
-        if (i instanceof TridentItem) return new Flourishes.Move[]{Flourishes.TRIDENT_SPIN};
-        // the items with a move of their own
-        if (i instanceof CompassItem || s.is(Items.RECOVERY_COMPASS)) return new Flourishes.Move[]{Flourishes.COMPASS_LOOK};
-        if (i instanceof BookItem || i instanceof WritableBookItem || i instanceof WrittenBookItem || i instanceof EnchantedBookItem
-                || s.is(Items.KNOWLEDGE_BOOK))
-            return new Flourishes.Move[]{Flourishes.BOOK_READ};
-        if (i instanceof BucketItem b && b.getFluid() != net.minecraft.world.level.material.Fluids.EMPTY || i instanceof MilkBucketItem
-                || i instanceof SolidBucketItem)
-            return new Flourishes.Move[]{Flourishes.BUCKET_SHAKE};
-        if (i instanceof FlintAndSteelItem) return new Flourishes.Move[]{Flourishes.FLINT_STRIKE};
-        if (i instanceof SpyglassItem) return new Flourishes.Move[]{Flourishes.SPYGLASS_PEEK};
-        if (s.is(Items.TOTEM_OF_UNDYING)) return new Flourishes.Move[]{Flourishes.TOTEM_RAISE};
-        if (i instanceof EggItem) return new Flourishes.Move[]{Flourishes.EGG_TOSS};
-        return switch (ItemKind.of(s)) {
-            case SWORD -> new Flourishes.Move[]{Flourishes.SWORD_TWIRL_WIPE, Flourishes.SWORD_FLIP};
-            case AXE -> new Flourishes.Move[]{Flourishes.TOOL_TOSS, Flourishes.TOOL_SHOULDER};
-            case PICKAXE, HOE -> new Flourishes.Move[]{Flourishes.TOOL_TWIRL, Flourishes.TOOL_SHOULDER, Flourishes.TOOL_TOSS};
-            case SHOVEL -> new Flourishes.Move[]{Flourishes.SHOVEL_SPIN, Flourishes.TOOL_SHOULDER};
-            case ROD -> new Flourishes.Move[]{Flourishes.ROD_FLICK};
-            case BLOCK -> new Flourishes.Move[]{Flourishes.SMALL_TOSS, Flourishes.TURN_OVER};
-            case FOOD, DRINK -> new Flourishes.Move[]{Flourishes.TURN_OVER, Flourishes.SMALL_TOSS};
-            case THROWABLE -> new Flourishes.Move[]{Flourishes.JUGGLE, Flourishes.SMALL_TOSS};
-            case LIGHT -> new Flourishes.Move[]{Flourishes.LIGHT_RAISE};
-            case EMPTY -> new Flourishes.Move[]{Flourishes.HAND_FLEX, Flourishes.HAND_CRACK};
-            case OTHER -> new Flourishes.Move[]{Flourishes.TURN_OVER, Flourishes.SMALL_TOSS};
-            case SPECIAL -> new Flourishes.Move[0];
-        };
+        // only swords and the four tools show off
+        if (i instanceof SwordItem) return new Flourishes.Move[]{Flourishes.SWORD_INSPECT, Flourishes.SWORD_TWIRL_WIPE};
+        if (i instanceof AxeItem || i instanceof PickaxeItem || i instanceof HoeItem || i instanceof ShovelItem)
+            return new Flourishes.Move[]{Flourishes.TOOL_INSPECT, Flourishes.TOOL_TOSS, Flourishes.TOOL_SHOULDER};
+        return new Flourishes.Move[0];
     }
 
     public static void onClientTick(TickEvent.ClientTickEvent e) {

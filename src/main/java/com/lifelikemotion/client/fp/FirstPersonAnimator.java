@@ -410,7 +410,11 @@ public final class FirstPersonAnimator {
         boolean job = a == Motion.Action.MINE;
         if (kind == ItemKind.EMPTY) return Clips.PUNCH;
         return switch (kind) {
-            case SWORD -> job ? Clips.HACK : Math.floorMod(Motion.swingCount, 2) == 1 ? Clips.SLASH_A : Clips.SLASH_B;
+            case SWORD -> job ? Clips.HACK : switch (Math.floorMod(Motion.swingCount - 1, 3)) {
+                case 0 -> Clips.SLASH_A;
+                case 1 -> Clips.SLASH_B;
+                default -> Clips.STAB;
+            };
             case AXE -> job ? Clips.CHOP : Clips.AXE_HIT;
             case PICKAXE -> job ? Clips.MINE : Clips.SLASH_A;
             case SHOVEL -> job ? Clips.DIG : Clips.SLASH_A;

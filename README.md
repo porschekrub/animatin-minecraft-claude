@@ -7,17 +7,16 @@ Everything you do gets an animation.
   own hand-tuned pixel-art textures. A built-in resource pack, *Lifelike 3D Items*, switched on the first time you
   start the game; the inventory keeps the usual flat icons. Made by `tools/models.py` (preview:
   `tools/blender/preview_json.py`).
-- **Weighty first person** – hitting and working are different moves: hit something and you swing what you hold as a
-  weapon (a sword is raised and struck down, one way then the other, an axe comes down in a heavy blow); break a block
-  and the tool does its own job, again and again while the block breaks (a pickaxe picks, an axe chops, a shovel digs, a
-  hoe hoes, a sword cuts). The hands lag when you turn, bob and pump when you walk and sprint, trail your jumps and dip
-  when you land; lanterns and torches swing.
+- **Weighty first person** – your arm always holds what you carry, and hitting and working are different moves. Hit
+  something with a sword and it's a three-hit combo: a flat swipe right to left, the blade flipped round for a swipe back
+  left to right (the tip always leads the way it moves), then a thrust. Other tools swing as weapons (an axe comes down
+  in a heavy blow). Break a block and the tool does its own job, again and again while the block breaks (a pickaxe
+  picks, an axe chops, a shovel plunges in and lifts, a hoe hoes, a sword cuts). The hands lag when you turn, bob and
+  pump when you walk and sprint, trail your jumps and dip when you land; lanterns and torches swing.
 - **Every item has its own stance** – how it's held standing, walking and running: tools go over the shoulder when you
   run, a sword is held up and ready, a torch or lantern is held out to light the way, fists pump.
-- **Show off (Y)** – press **Y** and your arm comes up to show off what you hold: sword twirls and blade wipes, axe and
-  tool tosses, spins, juggling a snowball, turning food over to look at it, raising a lantern, cracking your knuckles.
-  Some items have a move of their own: checking a compass, reading a book, sloshing a bucket, striking flint and steel
-  (with sparks), peeking through a spyglass, holding up a totem, tossing an egg.
+- **Show off (Y)** – press **Y** with a sword, pickaxe, axe, shovel or hoe and your arm comes up to show it off: sword
+  twirls, blade wipes and flips, tool tosses, spins and resting it on your shoulder.
 - **Using things** – buckets are tipped out or dipped to scoop, flint and steel is struck (sparks), shears snip, bone
   meal and seeds are shaken out, a hoe tills (soil flies), an axe shaves a log, a shovel presses a path, a rod is cast
   and reeled in. Soup is slurped from the bowl, carrots nibbled, milk chugged. A bow held drawn too long trembles; a

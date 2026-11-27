@@ -33,8 +33,8 @@ public final class LMConfig {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
         b.comment("First person: your arms, what they hold and how they move").push("firstPerson");
         FP_ENABLED = b.comment("Custom first-person animations (off = the game's own)").define("enabled", true);
-        FP_ARMS_WITH_ITEMS = b.comment("Always show your arm holding what you carry (otherwise only while eating or showing it off with Y)")
-                .define("armAlwaysHoldsItem", false);
+        FP_ARMS_WITH_ITEMS = b.comment("Show your arm holding what you carry (off: only while eating or showing it off with Y)")
+                .define("armHoldsItems", true);
         FP_BOTH_HANDS = b.comment("Both fists up when your hands are empty, and your free hand at the side of the screen")
                 .define("bothFistsUp", false);
         FP_TRAILS = b.comment("A trail behind your blade when you swing").define("swingTrails", false);

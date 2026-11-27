@@ -43,7 +43,7 @@ public final class Arm {
      * the shoulder (x toward the arm's own side) and how big the arm is drawn. The shoulder sits low and close, so at
      * rest the arm reaches up and out to the hand the way the game's own first-person arm does.
      */
-    public static float SX = 0.92f, SY = -0.88f, SZ = -0.38f, SCALE = 0.9f;
+    public static float SX = 1.06f, SY = -1.0f, SZ = -0.32f, SCALE = 0.78f;
 
     /** the game's own first-person arm's turn (model space to the hand's camera space) */
     static Quaternionf vanilla(float s) {
