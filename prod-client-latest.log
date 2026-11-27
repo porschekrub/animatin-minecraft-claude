@@ -1,0 +1,511 @@
+[15:05:55] [main/INFO]: ModLauncher running: args [--launchTarget, forgeclient, --fml.forgeVersion, 47.4.29, --fml.mcVersion, 1.20.1, --fml.forgeGroup, net.minecraftforge, --fml.mcpVersion, 20230612.114412, --username, Dev, --version, forge-1.20.1-47.4.29, --gameDir, /home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/mc, --assetsDir, /home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/assets, --assetIndex, 5, --uuid, 380df991f603344ca090369bad2a924a, --accessToken, ❄❄❄❄❄❄❄❄, --clientId, , --xuid, , --userType, , --versionType, release, --width, 960, --height, 540, --quickPlaySingleplayer, smoke]
+[15:05:55] [main/INFO]: ModLauncher 10.0.9+10.0.9+main.dcd20f30 starting: java version 17.0.21 by Eclipse Adoptium; OS Linux arch amd64 version 7.0.0-1020-azure
+[15:05:55] [main/WARN]: Configuration file /home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/mc/config/fml.toml is not correct. Correcting
+[15:05:55] [main/INFO]: Incorrect key [earlyWindowHeight] was corrected from null to 480
+[15:05:55] [main/INFO]: Incorrect key [versionCheck] was corrected from null to true
+[15:05:55] [main/INFO]: Incorrect key [earlyWindowFBScale] was corrected from null to 1
+[15:05:55] [main/INFO]: Incorrect key [earlyWindowProvider] was corrected from null to fmlearlywindow
+[15:05:55] [main/INFO]: Incorrect key [earlyWindowWidth] was corrected from null to 854
+[15:05:55] [main/INFO]: Incorrect key [earlyWindowMaximized] was corrected from null to false
+[15:05:55] [main/INFO]: Incorrect key [defaultConfigPath] was corrected from null to defaultconfigs
+[15:05:55] [main/INFO]: Incorrect key [disableOptimizedDFU] was corrected from null to true
+[15:05:55] [main/INFO]: Incorrect key [earlyWindowSkipGLVersions] was corrected from null to []
+[15:05:55] [main/INFO]: Incorrect key [earlyWindowLogHelpMessage] was corrected from null to true
+[15:05:55] [main/INFO]: Incorrect key [maxThreads] was corrected from null to -1
+[15:05:55] [main/INFO]: Incorrect key [earlyWindowSquir] was corrected from null to false
+[15:05:55] [main/INFO]: Incorrect key [earlyWindowShowCPU] was corrected from null to false
+[15:05:55] [main/INFO]: ImmediateWindowProvider not loading because splash screen is disabled
+[15:05:55] [main/INFO]: SpongePowered MIXIN Subsystem Version=0.8.5 Source=union:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/spongepowered/mixin/0.8.5/mixin-0.8.5.jar%2388!/ Service=ModLauncher Env=CLIENT
+[15:05:55] [main/INFO]: Found mod file lifelikemotion-forge-1.20.1-0.5.0-preview7.jar of type MOD with provider {mods folder locator at /home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/mc/mods}
+[15:05:55] [main/WARN]: Mod file /home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/minecraftforge/fmlcore/1.20.1-47.4.29/fmlcore-1.20.1-47.4.29.jar is missing mods.toml file
+[15:05:55] [main/WARN]: Mod file /home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/minecraftforge/javafmllanguage/1.20.1-47.4.29/javafmllanguage-1.20.1-47.4.29.jar is missing mods.toml file
+[15:05:55] [main/WARN]: Mod file /home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/minecraftforge/lowcodelanguage/1.20.1-47.4.29/lowcodelanguage-1.20.1-47.4.29.jar is missing mods.toml file
+[15:05:55] [main/WARN]: Mod file /home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/minecraftforge/mclanguage/1.20.1-47.4.29/mclanguage-1.20.1-47.4.29.jar is missing mods.toml file
+[15:05:55] [main/INFO]: Found mod file fmlcore-1.20.1-47.4.29.jar of type LIBRARY with provider net.minecraftforge.fml.loading.moddiscovery.MinecraftLocator@6d511b5f
+[15:05:55] [main/INFO]: Found mod file javafmllanguage-1.20.1-47.4.29.jar of type LANGPROVIDER with provider net.minecraftforge.fml.loading.moddiscovery.MinecraftLocator@6d511b5f
+[15:05:55] [main/INFO]: Found mod file lowcodelanguage-1.20.1-47.4.29.jar of type LANGPROVIDER with provider net.minecraftforge.fml.loading.moddiscovery.MinecraftLocator@6d511b5f
+[15:05:55] [main/INFO]: Found mod file mclanguage-1.20.1-47.4.29.jar of type LANGPROVIDER with provider net.minecraftforge.fml.loading.moddiscovery.MinecraftLocator@6d511b5f
+[15:05:55] [main/INFO]: Found mod file client-1.20.1-20230612.114412-srg.jar of type MOD with provider net.minecraftforge.fml.loading.moddiscovery.MinecraftLocator@6d511b5f
+[15:05:55] [main/INFO]: Found mod file forge-1.20.1-47.4.29-universal.jar of type MOD with provider net.minecraftforge.fml.loading.moddiscovery.MinecraftLocator@6d511b5f
+[15:05:55] [main/INFO]: No dependencies to load found. Skipping!
+[15:05:56] [main/INFO]: Compatibility level set to JAVA_17
+[15:05:56] [main/INFO]: Launching target 'forgeclient' with arguments [--version, forge-1.20.1-47.4.29, --gameDir, /home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/mc, --assetsDir, /home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/assets, --uuid, 380df991f603344ca090369bad2a924a, --username, Dev, --assetIndex, 5, --accessToken, ❄❄❄❄❄❄❄❄, --clientId, , --xuid, , --userType, , --versionType, release, --width, 960, --height, 540, --quickPlaySingleplayer, smoke]
+[15:05:59] [Datafixer Bootstrap/INFO]: 188 Datafixer optimizations took 179 milliseconds
+[15:06:00] [main/WARN]: Unrecognized user type: 
+[15:06:00] [Render thread/WARN]: Assets URL 'union:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/minecraft/client/1.20.1-20230612.114412/client-1.20.1-20230612.114412-srg.jar%23148!/assets/.mcassetsroot' uses unexpected schema
+[15:06:00] [Render thread/WARN]: Assets URL 'union:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/minecraft/client/1.20.1-20230612.114412/client-1.20.1-20230612.114412-srg.jar%23148!/data/.mcassetsroot' uses unexpected schema
+[15:06:00] [Render thread/INFO]: Environment: authHost='https://authserver.mojang.com', accountsHost='https://api.mojang.com', sessionHost='https://sessionserver.mojang.com', servicesHost='https://api.minecraftservices.com', name='PROD'
+[15:06:01] [Render thread/ERROR]: Failed to verify authentication
+com.mojang.authlib.exceptions.InvalidCredentialsException: Status: 401
+	at com.mojang.authlib.exceptions.MinecraftClientHttpException.toAuthenticationException(MinecraftClientHttpException.java:56) ~[authlib-4.0.43.jar%2399!/:?]
+	at com.mojang.authlib.yggdrasil.YggdrasilUserApiService.fetchProperties(YggdrasilUserApiService.java:156) ~[authlib-4.0.43.jar%2399!/:?]
+	at com.mojang.authlib.yggdrasil.YggdrasilUserApiService.<init>(YggdrasilUserApiService.java:55) ~[authlib-4.0.43.jar%2399!/:?]
+	at com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService.createUserApiService(YggdrasilAuthenticationService.java:124) ~[authlib-4.0.43.jar%2399!/:?]
+	at net.minecraft.client.Minecraft.m_193585_(Minecraft.java:649) ~[client-1.20.1-20230612.114412-srg.jar%23148!/:?]
+	at net.minecraft.client.Minecraft.<init>(Minecraft.java:413) ~[client-1.20.1-20230612.114412-srg.jar%23148!/:?]
+	at net.minecraft.client.main.Main.main(Main.java:182) ~[forge-1.20.1-47.4.29.jar:?]
+	at jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:?]
+	at jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77) ~[?:?]
+	at jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[?:?]
+	at java.lang.reflect.Method.invoke(Method.java:569) ~[?:?]
+	at net.minecraftforge.fml.loading.targets.CommonLaunchHandler.runTarget(CommonLaunchHandler.java:111) ~[fmlloader-1.20.1-47.4.29.jar:?]
+	at net.minecraftforge.fml.loading.targets.CommonLaunchHandler.clientService(CommonLaunchHandler.java:99) ~[fmlloader-1.20.1-47.4.29.jar:?]
+	at net.minecraftforge.fml.loading.targets.CommonClientLaunchHandler.lambda$makeService$0(CommonClientLaunchHandler.java:25) ~[fmlloader-1.20.1-47.4.29.jar:?]
+	at cpw.mods.modlauncher.LaunchServiceHandlerDecorator.launch(LaunchServiceHandlerDecorator.java:30) ~[modlauncher-10.0.9.jar:?]
+	at cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:53) ~[modlauncher-10.0.9.jar:?]
+	at cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:71) ~[modlauncher-10.0.9.jar:?]
+	at cpw.mods.modlauncher.Launcher.run(Launcher.java:108) ~[modlauncher-10.0.9.jar:?]
+	at cpw.mods.modlauncher.Launcher.main(Launcher.java:78) ~[modlauncher-10.0.9.jar:?]
+	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) ~[modlauncher-10.0.9.jar:?]
+	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) ~[modlauncher-10.0.9.jar:?]
+	at cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:141) ~[bootstraplauncher-1.1.2.jar:?]
+Caused by: com.mojang.authlib.exceptions.MinecraftClientHttpException: Status: 401
+	at com.mojang.authlib.minecraft.client.MinecraftClient.readInputStream(MinecraftClient.java:85) ~[authlib-4.0.43.jar%2399!/:?]
+	at com.mojang.authlib.minecraft.client.MinecraftClient.get(MinecraftClient.java:48) ~[authlib-4.0.43.jar%2399!/:?]
+	at com.mojang.authlib.yggdrasil.YggdrasilUserApiService.fetchProperties(YggdrasilUserApiService.java:129) ~[authlib-4.0.43.jar%2399!/:?]
+	... 20 more
+[15:06:01] [Render thread/INFO]: Setting user: Dev
+[15:06:01] [Render thread/INFO]: Backend library: LWJGL version 3.3.1 build 7
+[15:06:01] [modloading-worker-0/INFO]: Forge mod loading, version 47.4.29, for MC 1.20.1 with MCP 20230612.114412
+[15:06:01] [modloading-worker-0/INFO]: MinecraftForge v47.4.29 Initialized
+[15:06:01] [modloading-worker-0/INFO]: client test mode
+[15:06:01] [Render thread/ERROR]: Error while loading the narrator
+com.mojang.text2speech.Narrator$InitializeException: Failed to load library flite
+	at com.mojang.text2speech.NarratorLinux$FliteLibrary.loadNative(NarratorLinux.java:69) ~[text2speech-1.17.9.jar%23105!/:?]
+	at com.mojang.text2speech.NarratorLinux.<init>(NarratorLinux.java:18) ~[text2speech-1.17.9.jar%23105!/:?]
+	at com.mojang.text2speech.Narrator.getNarrator(Narrator.java:41) ~[text2speech-1.17.9.jar%23105!/:?]
+	at net.minecraft.client.GameNarrator.<init>(GameNarrator.java:19) ~[client-1.20.1-20230612.114412-srg.jar%23148!/:?]
+	at net.minecraft.client.Minecraft.<init>(Minecraft.java:553) ~[client-1.20.1-20230612.114412-srg.jar%23148!/:?]
+	at net.minecraft.client.main.Main.main(Main.java:182) ~[forge-1.20.1-47.4.29.jar:?]
+	at jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:?]
+	at jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77) ~[?:?]
+	at jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[?:?]
+	at java.lang.reflect.Method.invoke(Method.java:569) ~[?:?]
+	at net.minecraftforge.fml.loading.targets.CommonLaunchHandler.runTarget(CommonLaunchHandler.java:111) ~[fmlloader-1.20.1-47.4.29.jar:?]
+	at net.minecraftforge.fml.loading.targets.CommonLaunchHandler.clientService(CommonLaunchHandler.java:99) ~[fmlloader-1.20.1-47.4.29.jar:?]
+	at net.minecraftforge.fml.loading.targets.CommonClientLaunchHandler.lambda$makeService$0(CommonClientLaunchHandler.java:25) ~[fmlloader-1.20.1-47.4.29.jar:?]
+	at cpw.mods.modlauncher.LaunchServiceHandlerDecorator.launch(LaunchServiceHandlerDecorator.java:30) ~[modlauncher-10.0.9.jar:?]
+	at cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:53) ~[modlauncher-10.0.9.jar:?]
+	at cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:71) ~[modlauncher-10.0.9.jar:?]
+	at cpw.mods.modlauncher.Launcher.run(Launcher.java:108) ~[modlauncher-10.0.9.jar:?]
+	at cpw.mods.modlauncher.Launcher.main(Launcher.java:78) ~[modlauncher-10.0.9.jar:?]
+	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) ~[modlauncher-10.0.9.jar:?]
+	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) ~[modlauncher-10.0.9.jar:?]
+	at cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:141) ~[bootstraplauncher-1.1.2.jar:?]
+Caused by: java.lang.UnsatisfiedLinkError: Unable to load library 'flite':
+libflite.so: cannot open shared object file: No such file or directory
+libflite.so: cannot open shared object file: No such file or directory
+Native library (linux-x86-64/libflite.so) not found in resource path (/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/cpw/mods/securejarhandler/2.1.10/securejarhandler-2.1.10.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/ow2/asm/asm/9.9.1/asm-9.9.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/ow2/asm/asm-commons/9.9.1/asm-commons-9.9.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/ow2/asm/asm-tree/9.9.1/asm-tree-9.9.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/ow2/asm/asm-util/9.9.1/asm-util-9.9.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/ow2/asm/asm-analysis/9.9.1/asm-analysis-9.9.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/minecraftforge/accesstransformers/8.0.4/accesstransformers-8.0.4.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/antlr/antlr4-runtime/4.9.1/antlr4-runtime-4.9.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/minecraftforge/eventbus/6.2.33/eventbus-6.2.33.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/minecraftforge/forgespi/7.0.1/forgespi-7.0.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/minecraftforge/coremods/5.2.4/coremods-5.2.4.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/cpw/mods/modlauncher/10.0.9/modlauncher-10.0.9.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/minecraftforge/unsafe/0.2.0/unsafe-0.2.0.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/minecraftforge/mergetool/1.1.5/mergetool-1.1.5-api.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/com/electronwill/night-config/core/3.6.4/core-3.6.4.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/com/electronwill/night-config/toml/3.6.4/toml-3.6.4.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/apache/maven/maven-artifact/3.8.5/maven-artifact-3.8.5.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/jodah/typetools/0.6.3/typetools-0.6.3.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/minecrell/terminalconsoleappender/1.2.0/terminalconsoleappender-1.2.0.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/jline/jline-reader/3.12.1/jline-reader-3.12.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/jline/jline-terminal/3.12.1/jline-terminal-3.12.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/spongepowered/mixin/0.8.5/mixin-0.8.5.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/openjdk/nashorn/nashorn-core/15.4/nashorn-core-15.4.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/minecraftforge/JarJarSelector/0.3.19/JarJarSelector-0.3.19.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/minecraftforge/JarJarMetadata/0.3.19/JarJarMetadata-0.3.19.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/cpw/mods/bootstraplauncher/1.1.2/bootstraplauncher-1.1.2.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/minecraftforge/JarJarFileSystems/0.3.19/JarJarFileSystems-0.3.19.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/minecraftforge/fmlloader/1.20.1-47.4.29/fmlloader-1.20.1-47.4.29.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/minecraftforge/fmlearlydisplay/1.20.1-47.4.29/fmlearlydisplay-1.20.1-47.4.29.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/com/github/oshi/oshi-core/6.2.2/oshi-core-6.2.2.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/com/google/code/gson/gson/2.10/gson-2.10.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/com/google/guava/failureaccess/1.0.1/failureaccess-1.0.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/com/google/guava/guava/31.1-jre/guava-31.1-jre.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/com/ibm/icu/icu4j/71.1/icu4j-71.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/com/mojang/authlib/4.0.43/authlib-4.0.43.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/com/mojang/blocklist/1.0.10/blocklist-1.0.10.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/com/mojang/brigadier/1.1.8/brigadier-1.1.8.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/com/mojang/datafixerupper/6.0.8/datafixerupper-6.0.8.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/com/mojang/logging/1.1.1/logging-1.1.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/com/mojang/patchy/2.2.10/patchy-2.2.10.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/com/mojang/text2speech/1.17.9/text2speech-1.17.9.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/commons-codec/commons-codec/1.15/commons-codec-1.15.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/commons-io/commons-io/2.11.0/commons-io-2.11.0.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/commons-logging/commons-logging/1.2/commons-logging-1.2.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/io/netty/netty-buffer/4.1.82.Final/netty-buffer-4.1.82.Final.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/io/netty/netty-codec/4.1.82.Final/netty-codec-4.1.82.Final.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/io/netty/netty-common/4.1.82.Final/netty-common-4.1.82.Final.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/io/netty/netty-handler/4.1.82.Final/netty-handler-4.1.82.Final.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/io/netty/netty-resolver/4.1.82.Final/netty-resolver-4.1.82.Final.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/io/netty/netty-transport-classes-epoll/4.1.82.Final/netty-transport-classes-epoll-4.1.82.Final.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/io/netty/netty-transport-native-epoll/4.1.82.Final/netty-transport-native-epoll-4.1.82.Final-linux-aarch_64.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/io/netty/netty-transport-native-epoll/4.1.82.Final/netty-transport-native-epoll-4.1.82.Final-linux-x86_64.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/io/netty/netty-transport-native-unix-common/4.1.82.Final/netty-transport-native-unix-common-4.1.82.Final.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/io/netty/netty-transport/4.1.82.Final/netty-transport-4.1.82.Final.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/it/unimi/dsi/fastutil/8.5.9/fastutil-8.5.9.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/java/dev/jna/jna-platform/5.12.1/jna-platform-5.12.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/java/dev/jna/jna/5.12.1/jna-5.12.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/sf/jopt-simple/jopt-simple/5.0.4/jopt-simple-5.0.4.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/apache/commons/commons-compress/1.21/commons-compress-1.21.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/apache/commons/commons-lang3/3.12.0/commons-lang3-3.12.0.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/apache/httpcomponents/httpclient/4.5.13/httpclient-4.5.13.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/apache/httpcomponents/httpcore/4.4.15/httpcore-4.4.15.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/apache/logging/log4j/log4j-api/2.19.0/log4j-api-2.19.0.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/apache/logging/log4j/log4j-core/2.19.0/log4j-core-2.19.0.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/apache/logging/log4j/log4j-slf4j2-impl/2.19.0/log4j-slf4j2-impl-2.19.0.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/joml/joml/1.10.5/joml-1.10.5.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/lwjgl/lwjgl-glfw/3.3.1/lwjgl-glfw-3.3.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/lwjgl/lwjgl-glfw/3.3.1/lwjgl-glfw-3.3.1-natives-linux.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/lwjgl/lwjgl-jemalloc/3.3.1/lwjgl-jemalloc-3.3.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/lwjgl/lwjgl-jemalloc/3.3.1/lwjgl-jemalloc-3.3.1-natives-linux.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/lwjgl/lwjgl-openal/3.3.1/lwjgl-openal-3.3.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/lwjgl/lwjgl-openal/3.3.1/lwjgl-openal-3.3.1-natives-linux.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/lwjgl/lwjgl-opengl/3.3.1/lwjgl-opengl-3.3.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/lwjgl/lwjgl-opengl/3.3.1/lwjgl-opengl-3.3.1-natives-linux.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/lwjgl/lwjgl-stb/3.3.1/lwjgl-stb-3.3.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/lwjgl/lwjgl-stb/3.3.1/lwjgl-stb-3.3.1-natives-linux.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/lwjgl/lwjgl-tinyfd/3.3.1/lwjgl-tinyfd-3.3.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/lwjgl/lwjgl-tinyfd/3.3.1/lwjgl-tinyfd-3.3.1-natives-linux.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/lwjgl/lwjgl/3.3.1/lwjgl-3.3.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/lwjgl/lwjgl/3.3.1/lwjgl-3.3.1-natives-linux.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/slf4j/slf4j-api/2.0.1/slf4j-api-2.0.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/versions/forge-1.20.1-47.4.29/forge-1.20.1-47.4.29.jar)
+	at com.sun.jna.NativeLibrary.loadLibrary(NativeLibrary.java:307) ~[jna-5.12.1.jar%23121!/:5.12.1 (b0)]
+	at com.sun.jna.NativeLibrary.getInstance(NativeLibrary.java:467) ~[jna-5.12.1.jar%23121!/:5.12.1 (b0)]
+	at com.sun.jna.NativeLibrary.getInstance(NativeLibrary.java:409) ~[jna-5.12.1.jar%23121!/:5.12.1 (b0)]
+	at com.mojang.text2speech.NarratorLinux$FliteLibrary.loadNative(NarratorLinux.java:67) ~[text2speech-1.17.9.jar%23105!/:?]
+	... 20 more
+	Suppressed: java.lang.UnsatisfiedLinkError: libflite.so: cannot open shared object file: No such file or directory
+		at com.sun.jna.Native.open(Native Method) ~[jna-5.12.1.jar%23121!/:5.12.1 (b0)]
+		at com.sun.jna.NativeLibrary.loadLibrary(NativeLibrary.java:197) ~[jna-5.12.1.jar%23121!/:5.12.1 (b0)]
+		at com.sun.jna.NativeLibrary.getInstance(NativeLibrary.java:467) ~[jna-5.12.1.jar%23121!/:5.12.1 (b0)]
+		at com.sun.jna.NativeLibrary.getInstance(NativeLibrary.java:409) ~[jna-5.12.1.jar%23121!/:5.12.1 (b0)]
+		at com.mojang.text2speech.NarratorLinux$FliteLibrary.loadNative(NarratorLinux.java:67) ~[text2speech-1.17.9.jar%23105!/:?]
+		at com.mojang.text2speech.NarratorLinux.<init>(NarratorLinux.java:18) ~[text2speech-1.17.9.jar%23105!/:?]
+		at com.mojang.text2speech.Narrator.getNarrator(Narrator.java:41) ~[text2speech-1.17.9.jar%23105!/:?]
+		at net.minecraft.client.GameNarrator.<init>(GameNarrator.java:19) ~[client-1.20.1-20230612.114412-srg.jar%23148!/:?]
+		at net.minecraft.client.Minecraft.<init>(Minecraft.java:553) ~[client-1.20.1-20230612.114412-srg.jar%23148!/:?]
+		at net.minecraft.client.main.Main.main(Main.java:182) ~[forge-1.20.1-47.4.29.jar:?]
+		at jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:?]
+		at jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77) ~[?:?]
+		at jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[?:?]
+		at java.lang.reflect.Method.invoke(Method.java:569) ~[?:?]
+		at net.minecraftforge.fml.loading.targets.CommonLaunchHandler.runTarget(CommonLaunchHandler.java:111) ~[fmlloader-1.20.1-47.4.29.jar:?]
+		at net.minecraftforge.fml.loading.targets.CommonLaunchHandler.clientService(CommonLaunchHandler.java:99) ~[fmlloader-1.20.1-47.4.29.jar:?]
+		at net.minecraftforge.fml.loading.targets.CommonClientLaunchHandler.lambda$makeService$0(CommonClientLaunchHandler.java:25) ~[fmlloader-1.20.1-47.4.29.jar:?]
+		at cpw.mods.modlauncher.LaunchServiceHandlerDecorator.launch(LaunchServiceHandlerDecorator.java:30) ~[modlauncher-10.0.9.jar:?]
+		at cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:53) ~[modlauncher-10.0.9.jar:?]
+		at cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:71) ~[modlauncher-10.0.9.jar:?]
+		at cpw.mods.modlauncher.Launcher.run(Launcher.java:108) ~[modlauncher-10.0.9.jar:?]
+		at cpw.mods.modlauncher.Launcher.main(Launcher.java:78) ~[modlauncher-10.0.9.jar:?]
+		at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) ~[modlauncher-10.0.9.jar:?]
+		at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) ~[modlauncher-10.0.9.jar:?]
+		at cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:141) ~[bootstraplauncher-1.1.2.jar:?]
+	Suppressed: java.lang.UnsatisfiedLinkError: libflite.so: cannot open shared object file: No such file or directory
+		at com.sun.jna.Native.open(Native Method) ~[jna-5.12.1.jar%23121!/:5.12.1 (b0)]
+		at com.sun.jna.NativeLibrary.loadLibrary(NativeLibrary.java:210) ~[jna-5.12.1.jar%23121!/:5.12.1 (b0)]
+		at com.sun.jna.NativeLibrary.getInstance(NativeLibrary.java:467) ~[jna-5.12.1.jar%23121!/:5.12.1 (b0)]
+		at com.sun.jna.NativeLibrary.getInstance(NativeLibrary.java:409) ~[jna-5.12.1.jar%23121!/:5.12.1 (b0)]
+		at com.mojang.text2speech.NarratorLinux$FliteLibrary.loadNative(NarratorLinux.java:67) ~[text2speech-1.17.9.jar%23105!/:?]
+		at com.mojang.text2speech.NarratorLinux.<init>(NarratorLinux.java:18) ~[text2speech-1.17.9.jar%23105!/:?]
+		at com.mojang.text2speech.Narrator.getNarrator(Narrator.java:41) ~[text2speech-1.17.9.jar%23105!/:?]
+		at net.minecraft.client.GameNarrator.<init>(GameNarrator.java:19) ~[client-1.20.1-20230612.114412-srg.jar%23148!/:?]
+		at net.minecraft.client.Minecraft.<init>(Minecraft.java:553) ~[client-1.20.1-20230612.114412-srg.jar%23148!/:?]
+		at net.minecraft.client.main.Main.main(Main.java:182) ~[forge-1.20.1-47.4.29.jar:?]
+		at jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:?]
+		at jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77) ~[?:?]
+		at jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[?:?]
+		at java.lang.reflect.Method.invoke(Method.java:569) ~[?:?]
+		at net.minecraftforge.fml.loading.targets.CommonLaunchHandler.runTarget(CommonLaunchHandler.java:111) ~[fmlloader-1.20.1-47.4.29.jar:?]
+		at net.minecraftforge.fml.loading.targets.CommonLaunchHandler.clientService(CommonLaunchHandler.java:99) ~[fmlloader-1.20.1-47.4.29.jar:?]
+		at net.minecraftforge.fml.loading.targets.CommonClientLaunchHandler.lambda$makeService$0(CommonClientLaunchHandler.java:25) ~[fmlloader-1.20.1-47.4.29.jar:?]
+		at cpw.mods.modlauncher.LaunchServiceHandlerDecorator.launch(LaunchServiceHandlerDecorator.java:30) ~[modlauncher-10.0.9.jar:?]
+		at cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:53) ~[modlauncher-10.0.9.jar:?]
+		at cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:71) ~[modlauncher-10.0.9.jar:?]
+		at cpw.mods.modlauncher.Launcher.run(Launcher.java:108) ~[modlauncher-10.0.9.jar:?]
+		at cpw.mods.modlauncher.Launcher.main(Launcher.java:78) ~[modlauncher-10.0.9.jar:?]
+		at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) ~[modlauncher-10.0.9.jar:?]
+		at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) ~[modlauncher-10.0.9.jar:?]
+		at cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:141) ~[bootstraplauncher-1.1.2.jar:?]
+	Suppressed: java.io.IOException: Native library (linux-x86-64/libflite.so) not found in resource path (/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/cpw/mods/securejarhandler/2.1.10/securejarhandler-2.1.10.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/ow2/asm/asm/9.9.1/asm-9.9.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/ow2/asm/asm-commons/9.9.1/asm-commons-9.9.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/ow2/asm/asm-tree/9.9.1/asm-tree-9.9.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/ow2/asm/asm-util/9.9.1/asm-util-9.9.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/ow2/asm/asm-analysis/9.9.1/asm-analysis-9.9.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/minecraftforge/accesstransformers/8.0.4/accesstransformers-8.0.4.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/antlr/antlr4-runtime/4.9.1/antlr4-runtime-4.9.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/minecraftforge/eventbus/6.2.33/eventbus-6.2.33.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/minecraftforge/forgespi/7.0.1/forgespi-7.0.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/minecraftforge/coremods/5.2.4/coremods-5.2.4.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/cpw/mods/modlauncher/10.0.9/modlauncher-10.0.9.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/minecraftforge/unsafe/0.2.0/unsafe-0.2.0.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/minecraftforge/mergetool/1.1.5/mergetool-1.1.5-api.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/com/electronwill/night-config/core/3.6.4/core-3.6.4.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/com/electronwill/night-config/toml/3.6.4/toml-3.6.4.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/apache/maven/maven-artifact/3.8.5/maven-artifact-3.8.5.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/jodah/typetools/0.6.3/typetools-0.6.3.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/minecrell/terminalconsoleappender/1.2.0/terminalconsoleappender-1.2.0.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/jline/jline-reader/3.12.1/jline-reader-3.12.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/jline/jline-terminal/3.12.1/jline-terminal-3.12.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/spongepowered/mixin/0.8.5/mixin-0.8.5.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/openjdk/nashorn/nashorn-core/15.4/nashorn-core-15.4.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/minecraftforge/JarJarSelector/0.3.19/JarJarSelector-0.3.19.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/minecraftforge/JarJarMetadata/0.3.19/JarJarMetadata-0.3.19.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/cpw/mods/bootstraplauncher/1.1.2/bootstraplauncher-1.1.2.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/minecraftforge/JarJarFileSystems/0.3.19/JarJarFileSystems-0.3.19.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/minecraftforge/fmlloader/1.20.1-47.4.29/fmlloader-1.20.1-47.4.29.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/minecraftforge/fmlearlydisplay/1.20.1-47.4.29/fmlearlydisplay-1.20.1-47.4.29.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/com/github/oshi/oshi-core/6.2.2/oshi-core-6.2.2.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/com/google/code/gson/gson/2.10/gson-2.10.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/com/google/guava/failureaccess/1.0.1/failureaccess-1.0.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/com/google/guava/guava/31.1-jre/guava-31.1-jre.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/com/ibm/icu/icu4j/71.1/icu4j-71.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/com/mojang/authlib/4.0.43/authlib-4.0.43.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/com/mojang/blocklist/1.0.10/blocklist-1.0.10.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/com/mojang/brigadier/1.1.8/brigadier-1.1.8.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/com/mojang/datafixerupper/6.0.8/datafixerupper-6.0.8.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/com/mojang/logging/1.1.1/logging-1.1.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/com/mojang/patchy/2.2.10/patchy-2.2.10.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/com/mojang/text2speech/1.17.9/text2speech-1.17.9.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/commons-codec/commons-codec/1.15/commons-codec-1.15.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/commons-io/commons-io/2.11.0/commons-io-2.11.0.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/commons-logging/commons-logging/1.2/commons-logging-1.2.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/io/netty/netty-buffer/4.1.82.Final/netty-buffer-4.1.82.Final.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/io/netty/netty-codec/4.1.82.Final/netty-codec-4.1.82.Final.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/io/netty/netty-common/4.1.82.Final/netty-common-4.1.82.Final.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/io/netty/netty-handler/4.1.82.Final/netty-handler-4.1.82.Final.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/io/netty/netty-resolver/4.1.82.Final/netty-resolver-4.1.82.Final.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/io/netty/netty-transport-classes-epoll/4.1.82.Final/netty-transport-classes-epoll-4.1.82.Final.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/io/netty/netty-transport-native-epoll/4.1.82.Final/netty-transport-native-epoll-4.1.82.Final-linux-aarch_64.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/io/netty/netty-transport-native-epoll/4.1.82.Final/netty-transport-native-epoll-4.1.82.Final-linux-x86_64.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/io/netty/netty-transport-native-unix-common/4.1.82.Final/netty-transport-native-unix-common-4.1.82.Final.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/io/netty/netty-transport/4.1.82.Final/netty-transport-4.1.82.Final.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/it/unimi/dsi/fastutil/8.5.9/fastutil-8.5.9.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/java/dev/jna/jna-platform/5.12.1/jna-platform-5.12.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/java/dev/jna/jna/5.12.1/jna-5.12.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/net/sf/jopt-simple/jopt-simple/5.0.4/jopt-simple-5.0.4.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/apache/commons/commons-compress/1.21/commons-compress-1.21.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/apache/commons/commons-lang3/3.12.0/commons-lang3-3.12.0.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/apache/httpcomponents/httpclient/4.5.13/httpclient-4.5.13.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/apache/httpcomponents/httpcore/4.4.15/httpcore-4.4.15.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/apache/logging/log4j/log4j-api/2.19.0/log4j-api-2.19.0.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/apache/logging/log4j/log4j-core/2.19.0/log4j-core-2.19.0.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/apache/logging/log4j/log4j-slf4j2-impl/2.19.0/log4j-slf4j2-impl-2.19.0.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/joml/joml/1.10.5/joml-1.10.5.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/lwjgl/lwjgl-glfw/3.3.1/lwjgl-glfw-3.3.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/lwjgl/lwjgl-glfw/3.3.1/lwjgl-glfw-3.3.1-natives-linux.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/lwjgl/lwjgl-jemalloc/3.3.1/lwjgl-jemalloc-3.3.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/lwjgl/lwjgl-jemalloc/3.3.1/lwjgl-jemalloc-3.3.1-natives-linux.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/lwjgl/lwjgl-openal/3.3.1/lwjgl-openal-3.3.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/lwjgl/lwjgl-openal/3.3.1/lwjgl-openal-3.3.1-natives-linux.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/lwjgl/lwjgl-opengl/3.3.1/lwjgl-opengl-3.3.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/lwjgl/lwjgl-opengl/3.3.1/lwjgl-opengl-3.3.1-natives-linux.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/lwjgl/lwjgl-stb/3.3.1/lwjgl-stb-3.3.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/lwjgl/lwjgl-stb/3.3.1/lwjgl-stb-3.3.1-natives-linux.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/lwjgl/lwjgl-tinyfd/3.3.1/lwjgl-tinyfd-3.3.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/lwjgl/lwjgl-tinyfd/3.3.1/lwjgl-tinyfd-3.3.1-natives-linux.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/lwjgl/lwjgl/3.3.1/lwjgl-3.3.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/lwjgl/lwjgl/3.3.1/lwjgl-3.3.1-natives-linux.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/libraries/org/slf4j/slf4j-api/2.0.1/slf4j-api-2.0.1.jar:/home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/pmc-main/versions/forge-1.20.1-47.4.29/forge-1.20.1-47.4.29.jar)
+		at com.sun.jna.Native.extractFromResourcePath(Native.java:1145) ~[jna-5.12.1.jar%23121!/:5.12.1 (b0)]
+		at com.sun.jna.NativeLibrary.loadLibrary(NativeLibrary.java:281) ~[jna-5.12.1.jar%23121!/:5.12.1 (b0)]
+		at com.sun.jna.NativeLibrary.getInstance(NativeLibrary.java:467) ~[jna-5.12.1.jar%23121!/:5.12.1 (b0)]
+		at com.sun.jna.NativeLibrary.getInstance(NativeLibrary.java:409) ~[jna-5.12.1.jar%23121!/:5.12.1 (b0)]
+		at com.mojang.text2speech.NarratorLinux$FliteLibrary.loadNative(NarratorLinux.java:67) ~[text2speech-1.17.9.jar%23105!/:?]
+		at com.mojang.text2speech.NarratorLinux.<init>(NarratorLinux.java:18) ~[text2speech-1.17.9.jar%23105!/:?]
+		at com.mojang.text2speech.Narrator.getNarrator(Narrator.java:41) ~[text2speech-1.17.9.jar%23105!/:?]
+		at net.minecraft.client.GameNarrator.<init>(GameNarrator.java:19) ~[client-1.20.1-20230612.114412-srg.jar%23148!/:?]
+		at net.minecraft.client.Minecraft.<init>(Minecraft.java:553) ~[client-1.20.1-20230612.114412-srg.jar%23148!/:?]
+		at net.minecraft.client.main.Main.main(Main.java:182) ~[forge-1.20.1-47.4.29.jar:?]
+		at jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:?]
+		at jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77) ~[?:?]
+		at jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[?:?]
+		at java.lang.reflect.Method.invoke(Method.java:569) ~[?:?]
+		at net.minecraftforge.fml.loading.targets.CommonLaunchHandler.runTarget(CommonLaunchHandler.java:111) ~[fmlloader-1.20.1-47.4.29.jar:?]
+		at net.minecraftforge.fml.loading.targets.CommonLaunchHandler.clientService(CommonLaunchHandler.java:99) ~[fmlloader-1.20.1-47.4.29.jar:?]
+		at net.minecraftforge.fml.loading.targets.CommonClientLaunchHandler.lambda$makeService$0(CommonClientLaunchHandler.java:25) ~[fmlloader-1.20.1-47.4.29.jar:?]
+		at cpw.mods.modlauncher.LaunchServiceHandlerDecorator.launch(LaunchServiceHandlerDecorator.java:30) ~[modlauncher-10.0.9.jar:?]
+		at cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:53) ~[modlauncher-10.0.9.jar:?]
+		at cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:71) ~[modlauncher-10.0.9.jar:?]
+		at cpw.mods.modlauncher.Launcher.run(Launcher.java:108) ~[modlauncher-10.0.9.jar:?]
+		at cpw.mods.modlauncher.Launcher.main(Launcher.java:78) ~[modlauncher-10.0.9.jar:?]
+		at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) ~[modlauncher-10.0.9.jar:?]
+		at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) ~[modlauncher-10.0.9.jar:?]
+		at cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:141) ~[bootstraplauncher-1.1.2.jar:?]
+[15:06:01] [Render thread/INFO]: Reloading ResourceManager: vanilla, mod_resources, lifelikemotion:3d_items
+[15:06:01] [modloading-worker-0/WARN]: Configuration file /home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/mc/config/lifelikemotion-client.toml is not correct. Correcting
+[15:06:01] [modloading-worker-0/WARN]: Incorrect key firstPerson was corrected from null to its default, SimpleCommentedConfig:{}. 
+[15:06:01] [modloading-worker-0/WARN]: Incorrect key firstPerson.enabled was corrected from null to its default, true. 
+[15:06:01] [modloading-worker-0/WARN]: Incorrect key firstPerson.armHoldsItems was corrected from null to its default, true. 
+[15:06:01] [modloading-worker-0/WARN]: Incorrect key firstPerson.bothFistsUp was corrected from null to its default, false. 
+[15:06:01] [modloading-worker-0/WARN]: Incorrect key firstPerson.swingTrails was corrected from null to its default, false. 
+[15:06:01] [modloading-worker-0/WARN]: Incorrect key firstPerson.cameraKick was corrected from null to its default, 0.0. 
+[15:06:01] [modloading-worker-0/WARN]: Incorrect key firstPerson.showOffWhenStill was corrected from null to its default, false. 
+[15:06:01] [modloading-worker-0/WARN]: Incorrect key firstPerson.auras was corrected from null to its default, true. 
+[15:06:01] [modloading-worker-0/WARN]: Incorrect key firstPerson.physics was corrected from null to its default, true. 
+[15:06:01] [modloading-worker-0/WARN]: Incorrect key firstPerson.useAnimations was corrected from null to its default, true. 
+[15:06:01] [modloading-worker-0/WARN]: Incorrect key firstPerson.reactions was corrected from null to its default, true. 
+[15:06:01] [modloading-worker-0/WARN]: Incorrect key firstPerson.worldActions was corrected from null to its default, true. 
+[15:06:01] [modloading-worker-0/WARN]: Incorrect key firstPerson.speed was corrected from null to its default, 1.0. 
+[15:06:01] [modloading-worker-0/WARN]: Incorrect key firstPerson.sway was corrected from null to its default, 1.0. 
+[15:06:01] [modloading-worker-0/WARN]: Incorrect key firstPerson.bob was corrected from null to its default, 1.0. 
+[15:06:01] [modloading-worker-0/WARN]: Incorrect key firstPerson.swing was corrected from null to its default, 1.0. 
+[15:06:01] [modloading-worker-0/WARN]: Incorrect key body was corrected from null to its default, SimpleCommentedConfig:{}. 
+[15:06:01] [modloading-worker-0/WARN]: Incorrect key body.enabled was corrected from null to its default, true. 
+[15:06:01] [modloading-worker-0/WARN]: Incorrect key body.otherPlayers was corrected from null to its default, true. 
+[15:06:01] [modloading-worker-0/WARN]: Incorrect key body.intensity was corrected from null to its default, 1.0. 
+[15:06:01] [modloading-worker-0/WARN]: Incorrect key mobs was corrected from null to its default, SimpleCommentedConfig:{}. 
+[15:06:01] [modloading-worker-0/WARN]: Incorrect key mobs.enabled was corrected from null to its default, true. 
+[15:06:01] [modloading-worker-0/WARN]: Incorrect key mobs.intensity was corrected from null to its default, 1.0. 
+[15:06:01] [modloading-worker-0/WARN]: Incorrect key items3d was corrected from null to its default, SimpleCommentedConfig:{}. 
+[15:06:01] [modloading-worker-0/WARN]: Incorrect key items3d.packAddedOnce was corrected from null to its default, false. 
+[15:06:01] [modloading-worker-0/WARN]: Configuration file /home/runner/work/animatin-minecraft-claude/animatin-minecraft-claude/mc/config/forge-client.toml is not correct. Correcting
+[15:06:01] [modloading-worker-0/WARN]: Incorrect key client was corrected from null to its default, SimpleCommentedConfig:{}. 
+[15:06:01] [modloading-worker-0/WARN]: Incorrect key client.alwaysSetupTerrainOffThread was corrected from null to its default, false. 
+[15:06:01] [modloading-worker-0/WARN]: Incorrect key client.experimentalForgeLightPipelineEnabled was corrected from null to its default, false. 
+[15:06:01] [modloading-worker-0/WARN]: Incorrect key client.showLoadWarnings was corrected from null to its default, true. 
+[15:06:01] [modloading-worker-0/WARN]: Incorrect key client.useCombinedDepthStencilAttachment was corrected from null to its default, false. 
+[15:06:01] [modloading-worker-0/WARN]: Incorrect key client.compressLanIPv6Addresses was corrected from null to its default, true. 
+[15:06:01] [modloading-worker-0/WARN]: Incorrect key client.calculateAllNormals was corrected from null to its default, false. 
+[15:06:01] [modloading-worker-0/WARN]: Incorrect key client.stabilizeDirectionGetNearest was corrected from null to its default, true. 
+[15:06:01] [modloading-worker-0/WARN]: Incorrect key client.allowMipmapLowering was corrected from null to its default, false. 
+[15:06:02] [Worker-Main-3/INFO]: Found unifont_all_no_pua-15.0.06.hex, loading
+[15:06:03] [Forge Version Check/INFO]: [forge] Starting version check at https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json
+[15:06:03] [Forge Version Check/INFO]: [forge] Found status: AHEAD Current: 47.4.29 Target: null
+[15:06:04] [Worker-Main-3/WARN]: Missing textures in model minecraft:cyan_bed#inventory:
+    minecraft:textures/atlas/blocks.png:minecraft:item/cyan_bed
+[15:06:04] [Worker-Main-3/WARN]: Missing textures in model minecraft:light_blue_bed#inventory:
+    minecraft:textures/atlas/blocks.png:minecraft:item/light_blue_bed
+[15:06:04] [Worker-Main-3/WARN]: Missing textures in model minecraft:orange_bed#inventory:
+    minecraft:textures/atlas/blocks.png:minecraft:item/orange_bed
+[15:06:04] [Worker-Main-3/WARN]: Missing textures in model minecraft:purple_bed#inventory:
+    minecraft:textures/atlas/blocks.png:minecraft:item/purple_bed
+[15:06:04] [Worker-Main-3/WARN]: Missing textures in model minecraft:pink_bed#inventory:
+    minecraft:textures/atlas/blocks.png:minecraft:item/pink_bed
+[15:06:04] [Worker-Main-3/WARN]: Missing textures in model minecraft:gray_bed#inventory:
+    minecraft:textures/atlas/blocks.png:minecraft:item/gray_bed
+[15:06:04] [Worker-Main-3/WARN]: Missing textures in model minecraft:yellow_bed#inventory:
+    minecraft:textures/atlas/blocks.png:minecraft:item/yellow_bed
+[15:06:04] [Worker-Main-3/WARN]: Missing textures in model minecraft:green_bed#inventory:
+    minecraft:textures/atlas/blocks.png:minecraft:item/green_bed
+[15:06:04] [Worker-Main-3/WARN]: Missing textures in model minecraft:brown_bed#inventory:
+    minecraft:textures/atlas/blocks.png:minecraft:item/brown_bed
+[15:06:04] [Worker-Main-3/WARN]: Missing textures in model minecraft:black_bed#inventory:
+    minecraft:textures/atlas/blocks.png:minecraft:item/black_bed
+[15:06:04] [Worker-Main-3/WARN]: Missing textures in model minecraft:lime_bed#inventory:
+    minecraft:textures/atlas/blocks.png:minecraft:item/lime_bed
+[15:06:04] [Worker-Main-3/WARN]: Missing textures in model minecraft:white_bed#inventory:
+    minecraft:textures/atlas/blocks.png:minecraft:item/white_bed
+[15:06:04] [Worker-Main-3/WARN]: Missing textures in model minecraft:red_bed#inventory:
+    minecraft:textures/atlas/blocks.png:minecraft:item/red_bed
+[15:06:04] [Worker-Main-3/WARN]: Missing textures in model minecraft:light_gray_bed#inventory:
+    minecraft:textures/atlas/blocks.png:minecraft:item/light_gray_bed
+[15:06:04] [Worker-Main-3/WARN]: Missing textures in model minecraft:magenta_bed#inventory:
+    minecraft:textures/atlas/blocks.png:minecraft:item/magenta_bed
+[15:06:04] [Worker-Main-3/WARN]: Missing textures in model minecraft:blue_bed#inventory:
+    minecraft:textures/atlas/blocks.png:minecraft:item/blue_bed
+[15:06:05] [Render thread/WARN]: Missing sound for event: minecraft:item.goat_horn.play
+[15:06:05] [Render thread/WARN]: Missing sound for event: minecraft:entity.goat.screaming.horn_break
+[15:06:05] [Render thread/ERROR]: Error starting SoundSystem. Turning off sounds & music
+java.lang.IllegalStateException: Failed to open OpenAL device
+	at com.mojang.blaze3d.audio.Library.m_193472_(Library.java:283) ~[client-1.20.1-20230612.114412-srg.jar%23148!/:?]
+	at com.mojang.blaze3d.audio.Library.m_231084_(Library.java:153) ~[client-1.20.1-20230612.114412-srg.jar%23148!/:?]
+	at net.minecraft.client.sounds.SoundEngine.m_120323_(SoundEngine.java:104) ~[client-1.20.1-20230612.114412-srg.jar%23148!/:?]
+	at net.minecraft.client.sounds.SoundEngine.m_120239_(SoundEngine.java:96) ~[client-1.20.1-20230612.114412-srg.jar%23148!/:?]
+	at net.minecraft.client.sounds.SoundManager.m_5787_(SoundManager.java:125) ~[client-1.20.1-20230612.114412-srg.jar%23148!/:?]
+	at net.minecraft.client.sounds.SoundManager.m_5787_(SoundManager.java:40) ~[client-1.20.1-20230612.114412-srg.jar%23148!/:?]
+	at net.minecraft.server.packs.resources.SimplePreparableReloadListener.m_10789_(SimplePreparableReloadListener.java:13) ~[client-1.20.1-20230612.114412-srg.jar%23148!/:?]
+	at java.util.concurrent.CompletableFuture$UniAccept.tryFire(CompletableFuture.java:718) ~[?:?]
+	at java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482) ~[?:?]
+	at net.minecraft.server.packs.resources.SimpleReloadInstance.m_143940_(SimpleReloadInstance.java:69) ~[client-1.20.1-20230612.114412-srg.jar%23148!/:?]
+	at net.minecraft.util.thread.BlockableEventLoop.m_6367_(BlockableEventLoop.java:156) ~[client-1.20.1-20230612.114412-srg.jar%23148!/:?]
+	at net.minecraft.util.thread.ReentrantBlockableEventLoop.m_6367_(ReentrantBlockableEventLoop.java:23) ~[client-1.20.1-20230612.114412-srg.jar%23148!/:?]
+	at net.minecraft.util.thread.BlockableEventLoop.m_7245_(BlockableEventLoop.java:130) ~[client-1.20.1-20230612.114412-srg.jar%23148!/:?]
+	at net.minecraft.util.thread.BlockableEventLoop.m_18699_(BlockableEventLoop.java:115) ~[client-1.20.1-20230612.114412-srg.jar%23148!/:?]
+	at net.minecraft.client.Minecraft.m_91383_(Minecraft.java:1106) ~[client-1.20.1-20230612.114412-srg.jar%23148!/:?]
+	at net.minecraft.client.Minecraft.m_91374_(Minecraft.java:718) ~[client-1.20.1-20230612.114412-srg.jar%23148!/:?]
+	at net.minecraft.client.main.Main.main(Main.java:218) ~[forge-1.20.1-47.4.29.jar:?]
+	at jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:?]
+	at jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77) ~[?:?]
+	at jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[?:?]
+	at java.lang.reflect.Method.invoke(Method.java:569) ~[?:?]
+	at net.minecraftforge.fml.loading.targets.CommonLaunchHandler.runTarget(CommonLaunchHandler.java:111) ~[fmlloader-1.20.1-47.4.29.jar:?]
+	at net.minecraftforge.fml.loading.targets.CommonLaunchHandler.clientService(CommonLaunchHandler.java:99) ~[fmlloader-1.20.1-47.4.29.jar:?]
+	at net.minecraftforge.fml.loading.targets.CommonClientLaunchHandler.lambda$makeService$0(CommonClientLaunchHandler.java:25) ~[fmlloader-1.20.1-47.4.29.jar:?]
+	at cpw.mods.modlauncher.LaunchServiceHandlerDecorator.launch(LaunchServiceHandlerDecorator.java:30) ~[modlauncher-10.0.9.jar:?]
+	at cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:53) ~[modlauncher-10.0.9.jar:?]
+	at cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:71) ~[modlauncher-10.0.9.jar:?]
+	at cpw.mods.modlauncher.Launcher.run(Launcher.java:108) ~[modlauncher-10.0.9.jar:?]
+	at cpw.mods.modlauncher.Launcher.main(Launcher.java:78) ~[modlauncher-10.0.9.jar:?]
+	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) ~[modlauncher-10.0.9.jar:?]
+	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) ~[modlauncher-10.0.9.jar:?]
+	at cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:141) ~[bootstraplauncher-1.1.2.jar:?]
+[15:06:05] [Render thread/INFO]: Created: 2048x2048x4 minecraft:textures/atlas/blocks.png-atlas
+[15:06:05] [Render thread/INFO]: Created: 256x256x4 minecraft:textures/atlas/signs.png-atlas
+[15:06:05] [Render thread/INFO]: Created: 512x512x4 minecraft:textures/atlas/shield_patterns.png-atlas
+[15:06:05] [Render thread/INFO]: Created: 512x512x4 minecraft:textures/atlas/banner_patterns.png-atlas
+[15:06:05] [Render thread/INFO]: Created: 1024x1024x4 minecraft:textures/atlas/armor_trims.png-atlas
+[15:06:05] [Render thread/INFO]: Created: 128x64x4 minecraft:textures/atlas/decorated_pot.png-atlas
+[15:06:05] [Render thread/INFO]: Created: 256x256x4 minecraft:textures/atlas/chest.png-atlas
+[15:06:05] [Render thread/INFO]: Created: 512x256x4 minecraft:textures/atlas/shulker_boxes.png-atlas
+[15:06:05] [Render thread/INFO]: Created: 512x256x4 minecraft:textures/atlas/beds.png-atlas
+[15:06:05] [Render thread/WARN]: Shader rendertype_entity_translucent_emissive could not find sampler named Sampler2 in the specified shader program.
+[15:06:05] [Render thread/INFO]: Created: 256x256x0 minecraft:textures/atlas/particles.png-atlas
+[15:06:05] [Render thread/INFO]: Created: 256x256x0 minecraft:textures/atlas/paintings.png-atlas
+[15:06:05] [Render thread/INFO]: Created: 128x128x0 minecraft:textures/atlas/mob_effects.png-atlas
+[15:06:05] [Render thread/WARN]: The following mods have version differences that were not resolved:
+forge (version 47.4.8 -> 47.4.29)
+Things may not work well.
+[15:06:05] [Render thread/INFO]: Injecting existing registry data into this CLIENT instance
+[15:06:07] [Render thread/INFO]: Loaded 7 recipes
+[15:06:07] [Render thread/INFO]: Loaded 1271 advancements
+[15:06:07] [Server thread/INFO]: Starting integrated minecraft server version 1.20.1
+[15:06:07] [Server thread/INFO]: Generating keypair
+[15:06:07] [Server thread/INFO]: Preparing start region for dimension minecraft:overworld
+[15:06:09] [Render thread/INFO]: Preparing spawn area: 0%
+[15:06:09] [Render thread/INFO]: Preparing spawn area: 0%
+[15:06:09] [Render thread/INFO]: Preparing spawn area: 0%
+[15:06:09] [Render thread/INFO]: Preparing spawn area: 0%
+[15:06:09] [Render thread/INFO]: Preparing spawn area: 0%
+[15:06:10] [Render thread/INFO]: Preparing spawn area: 4%
+[15:06:10] [Render thread/INFO]: Preparing spawn area: 91%
+[15:06:10] [Server thread/INFO]: Successfully initialized permission handler forge:default_handler
+[15:06:10] [Render thread/INFO]: Time elapsed: 3131 ms
+[15:06:11] [Server thread/INFO]: Changing view distance to 6, from 10
+[15:06:11] [Server thread/INFO]: Changing simulation distance to 6, from 0
+[15:06:11] [Render thread/WARN]: Unable to parse the boolean system property 'java.net.preferIPv6Addresses':system - using the default value: false
+[15:06:11] [Netty Local Client IO #0/INFO]: Connected to a modded server.
+[15:06:11] [Server thread/INFO]: Dev[local:E:76273544] logged in with entity id 2 at (10.5, -60.0, -4.5)
+[15:06:11] [Server thread/INFO]: Dev joined the game
+[15:06:11] [Render thread/INFO]: Loaded 2 advancements
+[15:06:22] [Server thread/INFO]: Villager Villager['Villager'/1, l='ServerLevel[world]', x=-173.63, y=-58.00, z=122.72] died, message: 'Villager was killed'
+[15:06:32] [Server thread/INFO]: Dev has made the advancement [Getting an Upgrade]
+[15:06:32] [Render thread/INFO]: [System] [CHAT] Dev has made the advancement [Getting an Upgrade]
+[15:06:32] [Render thread/INFO]: Loaded 10 advancements
+[15:06:38] [Render thread/INFO]: Loaded 12 advancements
+[15:06:40] [Server thread/INFO]: Dev has made the advancement [Isn't It Iron Pick]
+[15:06:40] [Render thread/INFO]: [System] [CHAT] Dev has made the advancement [Isn't It Iron Pick]
+[15:06:40] [Render thread/INFO]: Loaded 15 advancements
+[15:06:46] [Render thread/INFO]: Loaded 17 advancements
+[15:07:06] [Server thread/INFO]: Dev has completed the challenge [Serious Dedication]
+[15:07:06] [Render thread/INFO]: [System] [CHAT] Dev has completed the challenge [Serious Dedication]
+[15:07:06] [Render thread/INFO]: Loaded 20 advancements
+[15:07:10] [Render thread/INFO]: Loaded 21 advancements
+[15:07:12] [Render thread/INFO]: Loaded 22 advancements
+[15:07:15] [Render thread/INFO]: Loaded 25 advancements
+[15:07:19] [Render thread/INFO]: Loaded 27 advancements
+[15:07:20] [Render thread/INFO]: Loaded 30 advancements
+[15:07:25] [Render thread/INFO]: Loaded 31 advancements
+[15:07:31] [Render thread/INFO]: Loaded 34 advancements
+[15:07:33] [Render thread/INFO]: Loaded 37 advancements
+[15:07:36] [Render thread/INFO]: Loaded 40 advancements
+[15:07:39] [Render thread/INFO]: Loaded 43 advancements
+[15:07:41] [Render thread/INFO]: Loaded 45 advancements
+[15:07:42] [Render thread/INFO]: Loaded 48 advancements
+[15:07:46] [Render thread/INFO]: Loaded 49 advancements
+[15:07:48] [Render thread/INFO]: Loaded 50 advancements
+[15:07:49] [Render thread/INFO]: Loaded 53 advancements
+[15:07:52] [Render thread/INFO]: Loaded 56 advancements
+[15:07:58] [Render thread/INFO]: Loaded 58 advancements
+[15:08:04] [Render thread/INFO]: Loaded 60 advancements
+[15:08:07] [Render thread/INFO]: Loaded 61 advancements
+[15:08:08] [Server thread/INFO]: Dev has made the advancement [Hot Stuff]
+[15:08:08] [Render thread/INFO]: [System] [CHAT] Dev has made the advancement [Hot Stuff]
+[15:08:08] [Render thread/INFO]: Loaded 63 advancements
+[15:08:28] [Server thread/INFO]: Dev has reached the goal [You Need a Mint]
+[15:08:28] [Render thread/INFO]: [System] [CHAT] Dev has reached the goal [You Need a Mint]
+[15:08:28] [Render thread/INFO]: Loaded 66 advancements
+[15:08:30] [Server thread/INFO]: Dev has made the advancement [Diamonds!]
+[15:08:30] [Render thread/INFO]: [System] [CHAT] Dev has made the advancement [Diamonds!]
+[15:08:30] [Render thread/INFO]: Loaded 77 advancements
+[15:08:31] [Render thread/INFO]: Loaded 78 advancements
+[15:08:33] [Render thread/INFO]: Loaded 80 advancements
+[15:08:34] [Render thread/INFO]: Loaded 84 advancements
+[15:08:36] [Render thread/INFO]: Loaded 90 advancements
+[15:08:37] [Render thread/INFO]: Loaded 91 advancements
+[15:08:39] [Render thread/INFO]: Loaded 94 advancements
+[15:08:40] [Render thread/INFO]: Loaded 95 advancements
+[15:08:42] [Render thread/INFO]: Loaded 97 advancements
+[15:08:44] [Render thread/INFO]: Loaded 100 advancements
+[15:08:46] [Render thread/INFO]: Loaded 102 advancements
+[15:08:47] [Render thread/INFO]: Loaded 105 advancements
+[15:08:49] [Render thread/INFO]: Loaded 108 advancements
+[15:08:50] [Render thread/INFO]: Loaded 111 advancements
+[15:08:52] [Server thread/INFO]: Dev has made the advancement [Acquire Hardware]
+[15:08:52] [Render thread/INFO]: [System] [CHAT] Dev has made the advancement [Acquire Hardware]
+[15:08:52] [Render thread/INFO]: Loaded 136 advancements
+[15:08:53] [Render thread/INFO]: Loaded 149 advancements
+[15:08:55] [Render thread/INFO]: Loaded 152 advancements
+[15:08:56] [Render thread/INFO]: Loaded 163 advancements
+[15:08:58] [Render thread/INFO]: Loaded 164 advancements
+[15:08:59] [Render thread/INFO]: Loaded 165 advancements
+[15:09:00] [Render thread/INFO]: Loaded 167 advancements
+[15:09:02] [Render thread/INFO]: Loaded 175 advancements
+[15:09:03] [Render thread/INFO]: Loaded 177 advancements
+[15:09:05] [Render thread/INFO]: Loaded 179 advancements
+[15:09:08] [Render thread/INFO]: Loaded 182 advancements
+[15:09:09] [Render thread/INFO]: Loaded 184 advancements
+[15:09:12] [Render thread/INFO]: Loaded 186 advancements
+[15:09:13] [Render thread/INFO]: Loaded 187 advancements
+[15:09:15] [Render thread/INFO]: Loaded 188 advancements
+[15:09:16] [Server thread/INFO]: Dev has made the advancement [Into Fire]
+[15:09:16] [Render thread/INFO]: [System] [CHAT] Dev has made the advancement [Into Fire]
+[15:09:16] [Render thread/INFO]: Loaded 195 advancements
+[15:09:18] [Render thread/INFO]: Loaded 198 advancements
+[15:09:19] [Render thread/INFO]: Loaded 199 advancements
+[15:09:21] [Render thread/INFO]: Loaded 202 advancements
+[15:09:22] [Render thread/INFO]: Loaded 203 advancements
+[15:09:24] [Render thread/INFO]: Loaded 209 advancements
+[15:09:25] [Render thread/INFO]: Loaded 210 advancements
+[15:09:26] [Render thread/INFO]: Loaded 216 advancements
+[15:09:29] [Render thread/INFO]: Loaded 222 advancements
+[15:09:31] [Render thread/INFO]: Loaded 223 advancements
+[15:09:34] [Render thread/INFO]: Loaded 224 advancements
+[15:09:35] [Render thread/INFO]: Loaded 225 advancements
+[15:09:37] [Render thread/INFO]: Loaded 227 advancements
+[15:09:38] [Render thread/INFO]: Loaded 228 advancements
+[15:09:40] [Render thread/INFO]: Loaded 229 advancements
+[15:09:45] [Render thread/INFO]: Loaded 231 advancements
+[15:09:47] [Render thread/INFO]: Loaded 233 advancements
+[15:09:48] [Render thread/INFO]: Loaded 234 advancements
+[15:09:50] [Render thread/INFO]: Loaded 236 advancements
+[15:09:58] [Render thread/INFO]: Loaded 238 advancements
+[15:10:00] [Render thread/INFO]: Loaded 239 advancements
+[15:10:04] [Render thread/INFO]: Loaded 240 advancements
+[15:10:27] [Render thread/INFO]: Loaded 244 advancements
+[15:10:40] [Render thread/INFO]: Loaded 245 advancements
+[15:10:42] [Render thread/INFO]: Loaded 246 advancements
+[15:11:24] [Server thread/INFO]: Dev has made the advancement [Suit Up]
+[15:11:24] [Render thread/INFO]: [System] [CHAT] Dev has made the advancement [Suit Up]
+[15:11:24] [Render thread/INFO]: Loaded 246 advancements
+[15:11:36] [Server thread/INFO]: Dev has made the advancement [Cover Me with Diamonds]
+[15:11:36] [Render thread/INFO]: [System] [CHAT] Dev has made the advancement [Cover Me with Diamonds]
+[15:11:36] [Render thread/INFO]: Loaded 246 advancements
+[15:11:53] [Render thread/INFO]: Loaded 255 advancements
+[15:12:19] [Render thread/INFO]: Loaded 260 advancements
+[15:12:58] [Render thread/INFO]: Loaded 261 advancements
+[15:13:05] [Render thread/INFO]: Loaded 273 advancements
+[15:13:07] [Render thread/INFO]: Loaded 278 advancements
+[15:13:08] [Render thread/INFO]: Loaded 283 advancements
+[15:13:10] [Render thread/INFO]: Loaded 288 advancements
+[15:13:11] [Render thread/INFO]: Loaded 294 advancements
+[15:13:13] [Render thread/INFO]: Loaded 299 advancements
+[15:13:14] [Render thread/INFO]: Loaded 306 advancements
+[15:13:16] [Render thread/INFO]: Loaded 311 advancements
+[15:13:17] [Render thread/INFO]: Loaded 316 advancements
+[15:13:18] [Render thread/INFO]: Loaded 321 advancements
+[15:13:20] [Render thread/INFO]: Loaded 326 advancements
+[15:13:21] [Render thread/INFO]: Loaded 333 advancements
+[15:13:23] [Render thread/INFO]: Loaded 338 advancements
+[15:13:24] [Render thread/INFO]: Loaded 343 advancements
+[15:13:26] [Render thread/INFO]: Loaded 348 advancements
+[15:13:27] [Render thread/INFO]: Loaded 353 advancements
+[15:13:29] [Render thread/INFO]: Loaded 355 advancements
+[15:13:30] [Render thread/INFO]: Loaded 357 advancements
+[15:13:32] [Render thread/INFO]: Loaded 359 advancements
+[15:13:33] [Render thread/INFO]: Loaded 361 advancements
+[15:13:34] [Render thread/INFO]: Loaded 362 advancements
+[15:13:36] [Render thread/INFO]: Loaded 364 advancements
+[15:13:37] [Render thread/INFO]: Loaded 366 advancements
+[15:13:39] [Render thread/INFO]: Loaded 368 advancements
+[15:13:40] [Render thread/INFO]: Loaded 370 advancements
+[15:13:42] [Render thread/INFO]: Loaded 372 advancements
+[15:13:43] [Render thread/INFO]: Loaded 374 advancements
+[15:13:45] [Render thread/INFO]: Loaded 376 advancements
+[15:13:46] [Render thread/INFO]: Loaded 378 advancements
+[15:13:47] [Render thread/INFO]: Loaded 380 advancements
+[15:13:49] [Render thread/INFO]: Loaded 382 advancements
+[15:13:50] [Render thread/INFO]: Loaded 384 advancements
+[15:13:52] [Render thread/INFO]: Loaded 386 advancements
+[15:14:22] [Render thread/INFO]: Loaded 387 advancements
+[15:14:24] [Render thread/INFO]: Loaded 388 advancements
+[15:14:25] [Render thread/INFO]: Loaded 389 advancements
+[15:14:27] [Render thread/INFO]: Loaded 390 advancements
+[15:14:28] [Render thread/INFO]: Loaded 391 advancements
+[15:14:30] [Render thread/INFO]: Loaded 392 advancements
+[15:14:31] [Render thread/INFO]: Loaded 393 advancements
+[15:14:32] [Render thread/INFO]: Loaded 394 advancements
+[15:14:34] [Render thread/INFO]: Loaded 395 advancements
+[15:14:35] [Render thread/INFO]: Loaded 397 advancements
+[15:14:37] [Render thread/INFO]: Loaded 398 advancements
+[15:14:38] [Render thread/INFO]: Loaded 399 advancements
+[15:14:40] [Render thread/INFO]: Loaded 400 advancements
+[15:14:41] [Render thread/INFO]: Loaded 401 advancements
+[15:14:43] [Render thread/INFO]: Loaded 402 advancements
+[15:14:44] [Render thread/INFO]: Loaded 403 advancements
+[15:14:46] [Render thread/INFO]: Loaded 404 advancements
+[15:14:47] [Render thread/INFO]: Loaded 405 advancements
+[15:14:48] [Render thread/INFO]: Loaded 406 advancements
+[15:14:50] [Render thread/INFO]: Loaded 407 advancements
+[15:15:12] [Render thread/INFO]: Loaded 410 advancements
+[15:15:13] [Render thread/INFO]: Loaded 413 advancements
+[15:15:14] [Render thread/INFO]: Loaded 415 advancements
+[15:15:25] [Render thread/INFO]: Loaded 416 advancements
+[15:15:33] [Render thread/INFO]: Loaded 418 advancements
+[15:16:11] [Render thread/INFO]: Loaded 420 advancements
+[15:17:41] [Render thread/INFO]: Loaded 431 advancements
+[15:18:10] [Server thread/INFO]: Villager Villager['Villager'/1319, l='ServerLevel[world]', x=3.00, y=-60.00, z=-10.50] died, message: 'Villager was killed'
+[15:18:10] [Render thread/INFO]: Villager Villager['Villager'/1319, l='ClientLevel', x=3.00, y=-60.00, z=-10.50] died, message: 'Villager died'
+[15:18:10] [Render thread/INFO]: [client smoke] took 509 screenshots
+[15:18:10] [Render thread/INFO]: CLIENT SMOKE OK
+[15:18:12] [Render thread/INFO]: Stopping!
+[15:18:12] [Server thread/INFO]: Dev lost connection: Disconnected
+[15:18:12] [Server thread/INFO]: Dev left the game
+[15:18:12] [Server thread/INFO]: Stopping singleplayer server as player logged out
+[15:18:12] [Server thread/INFO]: Stopping server
+[15:18:12] [Server thread/INFO]: Saving players
+[15:18:12] [Server thread/INFO]: Saving worlds
+[15:18:13] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[15:18:13] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+[15:18:13] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+[15:18:13] [Server thread/INFO]: ThreadedAnvilChunkStorage (smoke): All chunks are saved
+[15:18:13] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[15:18:13] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[15:18:13] [Server thread/INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
